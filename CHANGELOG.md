@@ -8,9 +8,13 @@ A release changes `Unreleased` to `x.y.z — YYYY-MM-DD`, and adds a new `Unrele
 
 ## Unreleased
 
+## 0.1.0 — 2026-11-12
+
 ### Added
 
 - The engine, with its tests and its history, from
   [propslab](https://github.com/Bimmiest/propslab). Its public API is
   `src/index.ts`, and a consumer installs a tag
   ([propslab ADR 0023](https://github.com/Bimmiest/propslab/blob/main/docs/adr/0023-the-engine-moves-to-a-repository-of-its-own.md)).
+- The package ships `scripts/generate-cim-models.js`, so that a consumer can
+  read its `INCLUDE` table, the datasets that `CIM_MODELS` presents.
