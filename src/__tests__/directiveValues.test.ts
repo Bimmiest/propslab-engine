@@ -196,8 +196,8 @@ describe('default-true settings accept every false spelling (was: exactly "false
   describe('the INDEXED_EXTRACTIONS = json duplicate warning under rename', () => {
     const props = (renamed: string) => `[raw]\nINDEXED_EXTRACTIONS = json\nrename = r2\n[r2]\n${renamed}\n`;
     const dup = (conf: string) =>
-      runPipeline('{"a":1}', { ...META, sourcetype: 'raw' }, conf, '', AT_FIXED_NOW).diagnostics.filter((x) =>
-        x.message.includes('extracts them again at search time'),
+      runPipeline('{"a":1}', { ...META, sourcetype: 'raw' }, conf, '', AT_FIXED_NOW).diagnostics.filter(
+        (x) => x.code === 'json-extracted-twice',
       );
 
     it('is silent when the rename target turns KV_MODE off', () => {
@@ -232,8 +232,8 @@ describe('transforms diagnostics point at the definition that took effect (was: 
 
   it('an unknown DEST_KEY is reported on the line that set it', () => {
     // The config-time lint is the one report: the router no longer adds its own (propslab#477).
-    const diags = run('[t1]\nREGEX = (\\w+)\nDEST_KEY = queue\nDEST_KEY = not_a_key\nFORMAT = x\n').filter((x) =>
-      /not a recogni[sz]ed Splunk DEST_KEY/.test(x.message),
+    const diags = run('[t1]\nREGEX = (\\w+)\nDEST_KEY = queue\nDEST_KEY = not_a_key\nFORMAT = x\n').filter(
+      (x) => x.code === 'dest-key-unknown',
     );
     expect(diags).toHaveLength(1);
     expect(diags[0]?.line).toBe(4);
@@ -242,13 +242,13 @@ describe('transforms diagnostics point at the definition that took effect (was: 
   it('REPEAT_MATCH beside DEST_KEY = _raw is reported on the effective REPEAT_MATCH', () => {
     const diag = run(
       '[t1]\nREPEAT_MATCH = false\nREGEX = (\\w+)\nDEST_KEY = _raw\nFORMAT = $1\nREPEAT_MATCH = true\n',
-    ).find((x) => x.message.includes('ignored when DEST_KEY = _raw'));
+    ).find((x) => x.code === 'repeat-match-ignored');
     expect(diag?.line).toBe(6);
   });
 
   it('the DEST_KEY = _raw data-loss warning is placed on the DEST_KEY that ran', () => {
-    const diag = run('[t1]\nDEST_KEY = queue\nREGEX = (h)\nDEST_KEY = _raw\nFORMAT = $1\n').find((x) =>
-      x.message.includes('replaced the event and dropped'),
+    const diag = run('[t1]\nDEST_KEY = queue\nREGEX = (h)\nDEST_KEY = _raw\nFORMAT = $1\n').find(
+      (x) => x.code === 'raw-text-dropped',
     );
     expect(diag).toBeDefined();
     expect(diag?.line).toBe(4);
@@ -287,7 +287,7 @@ describe('every boolean directive follows one rule (propslab#473)', () => {
         lintDirectiveValues([stanza('x', { [info.key]: v })], file, diagnostics);
         const empty = v.trim() === '';
         expect(diagnostics.length > 0).toBe(!empty && !isSplunkBoolLiteral(v));
-        for (const diag of diagnostics) expect(diag.message).toContain('reads an unrecognised value as false');
+        for (const diag of diagnostics) expect(diag.code).toBe('value-not-boolean');
         // ...and what the linter says is what the reader does.
         if (!empty && !isSplunkBoolLiteral(v)) {
           expect(parseSplunkBool(v, true)).toBe(false);

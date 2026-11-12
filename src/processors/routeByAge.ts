@@ -52,6 +52,7 @@ export function routeEventsByAge(events: SplunkEvent[], directives: ConfDirectiv
   const ageMs = parseAge(raw);
   if (ageMs === null) {
     diagnostics.push({
+      code: 'route-age-invalid',
       level: 'warning',
       message:
         `ROUTE_EVENTS_OLDER_THAN = ${raw} is not a non-negative integer with an optional s, m, h or d ` +

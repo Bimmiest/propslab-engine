@@ -75,7 +75,7 @@ export interface DiagnosticsCollector extends DiagnosticSink {
 }
 
 function visibleKey(d: ValidationDiagnostic): string {
-  return `${d.level}|${d.file}|${d.layer ?? ''}|${d.line ?? ''}|${d.directiveKey ?? ''}|${d.message}`;
+  return `${d.code}|${d.level}|${d.file}|${d.layer ?? ''}|${d.line ?? ''}|${d.directiveKey ?? ''}|${d.message}`;
 }
 
 function makeCollector(

@@ -26,12 +26,12 @@ describe('EXTRACT — a pattern that cannot be compiled', () => {
 
     expect(diagnostics).toHaveLength(1);
     expect(diagnostics[0]).toMatchObject({
+      code: 'regex-invalid',
       level: 'warning',
       file: 'props.conf',
       line: 7,
       directiveKey: 'EXTRACT-broken',
     });
-    expect(diagnostics[0]!.message).toMatch(/^EXTRACT-broken was skipped/);
 
     for (const e of out) {
       expect(e.noOps).toHaveLength(1);
@@ -56,9 +56,12 @@ describe('EXTRACT — "in <field>" naming an underscore-prefixed source', () => 
     const out = extractFields(events, [dir('u', '(?<first>\\w) in _user', 4)], runCtx(FIXED_NOW, diagnostics));
 
     expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0]).toMatchObject({ level: 'warning', line: 4, directiveKey: 'EXTRACT-u' });
-    expect(diagnostics[0]!.message).toContain('"_user"');
-    expect(diagnostics[0]!.message).toContain('"user"');
+    expect(diagnostics[0]).toMatchObject({
+      code: 'leading-underscore-stripped',
+      level: 'warning',
+      line: 4,
+      directiveKey: 'EXTRACT-u',
+    });
     expect(diagnostics[0]!.suggestion).toBe('Replace "in _user" with "in user"');
     // It still extracted nothing — the warning explains the no-op, it does not fix it.
     expect(out[0]!.fields['first']).toBeUndefined();

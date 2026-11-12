@@ -598,7 +598,7 @@ describe('matchStanzas — a pattern PCRE rejects', () => {
       captureOffsets: false,
       now: FIXED_NOW,
     });
-    const reported = diagnostics.filter((d) => d.message.includes('never matches'));
+    const reported = diagnostics.filter((d) => d.code === 'stanza-pattern-invalid');
     expect(reported.map((d) => [d.level, d.file, d.line])).toEqual([['warning', 'props.conf', 4]]);
     expect(reported[0]?.message).toMatch(
       /^\[host::web\(01\] never matches: its pattern reads as the regular expression web\(01, which does not compile \(missing closing parenthesis.*\)\. None of the stanza's settings apply\.$/,

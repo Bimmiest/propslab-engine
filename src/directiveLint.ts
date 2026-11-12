@@ -13,7 +13,7 @@
 //   2. A value that is not the type the directive documents.
 // ---------------------------------------------------------------------------
 
-import type { ConfStanza, ValidationDiagnostic } from './types';
+import type { ConfStanza, DiagnosticCode, ValidationDiagnostic } from './types';
 import { atDirective } from './parser/provenance';
 import { getDirectiveInfo } from './directiveRegistry';
 import {
@@ -73,6 +73,7 @@ export function lintInertTransformSettings(
       if (!Object.hasOwn(inert, dir.key)) continue;
       const reason = inert[dir.key];
       diagnostics.push({
+        code: 'setting-inert-in-phase',
         level: 'warning',
         message:
           `${dir.key} does nothing here: this stanza is reached from props.conf through ` +
@@ -94,6 +95,7 @@ export function lintInertTransformSettings(
     const repeat = effectiveDirective(stanza.directives, 'REPEAT_MATCH');
     if (!repeat) continue;
     diagnostics.push({
+      code: 'repeat-match-ignored',
       level: 'warning',
       message:
         'REPEAT_MATCH is ignored when DEST_KEY = _raw, because the whole event is replaced by the ' +
@@ -132,8 +134,9 @@ export function lintDirectiveValues(
       // being a type error.
       if (value === '') continue;
 
-      const report = (message: string, suggestion?: string) => {
+      const report = (code: DiagnosticCode, message: string, suggestion?: string) => {
         diagnostics.push({
+          code,
           level: 'warning',
           message,
           file,
@@ -145,6 +148,7 @@ export function lintDirectiveValues(
 
       if (info.valueType === 'boolean' && !isSplunkBoolLiteral(value)) {
         report(
+          'value-not-boolean',
           `${dir.key} takes a boolean, and "${value}" is not one. Splunk reads an unrecognised ` +
             'value as false rather than reporting it.',
           'true',
@@ -154,9 +158,12 @@ export function lintDirectiveValues(
 
       if (info.valueType === 'number') {
         if (!isIntegerLiteral(value)) {
-          report(`${dir.key} takes an integer, and "${value}" is not one.`);
+          report('value-not-integer', `${dir.key} takes an integer, and "${value}" is not one.`);
         } else if (isDisallowedNegative(info.key, value)) {
-          report(`${dir.key} cannot be negative — "${value}" will not do what it looks like it does.`);
+          report(
+            'value-negative',
+            `${dir.key} cannot be negative — "${value}" will not do what it looks like it does.`,
+          );
         }
         continue;
       }
@@ -164,6 +171,7 @@ export function lintDirectiveValues(
       if (info.valueType === 'enum' && info.enumValues) {
         if (!isEnumMember(value, info.enumValues)) {
           report(
+            'value-not-in-enum',
             `${dir.key} does not accept "${value}". Splunk falls back to the default rather than ` +
               `reporting it. Valid values: ${info.enumValues.join(', ')}.`,
             info.enumValues[0],

@@ -38,6 +38,103 @@ of the recording, and the result stays the same.
 | `explanationsPerDirective` | 50 | The engine stops the analysis of the events that a directive did not match ([no-ops](#the-cost-of-a-no-op)). |
 | `maxRunMs` | no limit | The stages stop at the next regex call, and an error names the stage. |
 
+## Diagnostics
+
+`runPipeline` returns a list of `ValidationDiagnostic` in `diagnostics`.
+`parseConf` returns its diagnostics in `errors`. A diagnostic has these
+fields:
+
+| Field | What it holds |
+|---|---|
+| `code` | What the diagnostic is about: one `DiagnosticCode`, from the tables below. |
+| `level` | `error`, `warning` or `info`. |
+| `message` | The text for a person. The words can change in any release. |
+| `file` | `props.conf` or `transforms.conf`, or `raw` for a problem in the input data. |
+| `layer`, `line`, `column` | Where the problem is. When `file` is `raw`, `line` is a line of the input. |
+| `directiveKey` | The key of the directive, when the diagnostic is about one directive. |
+| `suggestion` | A replacement to show to the user, when the engine has one. |
+
+**Act on the code, not on the message** (#4). The codes are part of the
+public API. To rename or remove a code is a breaking change. One code can
+come from more than one stage, and at more than one level. For example,
+`regex-invalid` is an error for `TIME_PREFIX` and a warning for `EXTRACT`.
+`directiveKey` names the directive.
+
+The conf text:
+
+| Code | What it means |
+|---|---|
+| `malformed-line` | A line is not a comment, a stanza header, a directive or a continuation. |
+| `directive-miscased` | The case of a key is wrong (`kv_mode`). Splunk ignores the line. |
+| `directive-misspelled` | A key is one edit from an attribute (`TIME_FROMAT`). Splunk ignores the line. |
+| `directive-in-wrong-file` | The attribute belongs to the other conf file. Splunk ignores it in this file. |
+| `directive-unclassified` | A valid Splunk attribute that the engine does not document or simulate. |
+| `directive-not-simulated` | The engine knows the directive, but does not simulate it. The preview ignores it. |
+| `stanza-pattern-invalid` | The pattern of a `[source::…]` or `[host::…]` stanza does not compile. The stanza never matches. |
+| `transform-not-found` | `TRANSFORMS-`, `RULESET-` or `REPORT-` names a stanza that `transforms.conf` does not have. |
+| `transform-unreferenced` | No directive in `props.conf` names this `transforms.conf` stanza. |
+| `setting-inert-in-phase` | A transforms setting does nothing in the phase of its stanza, for example `DEST_KEY` in a `REPORT-` stanza. |
+| `repeat-match-ignored` | `REPEAT_MATCH` with `DEST_KEY = _raw`. Splunk ignores `REPEAT_MATCH`. |
+| `value-not-boolean` | The value is not a boolean that Splunk knows. Splunk reads it as false. |
+| `value-not-integer` | The value is not an integer. |
+| `value-negative` | The value is negative, and the directive does not accept a negative value. |
+| `value-not-in-enum` | The value is not one of the values that the directive accepts. |
+| `route-age-invalid` | The value of `ROUTE_EVENTS_OLDER_THAN` is not an age. No event goes to a different index because of its age. |
+| `tz-alias-invalid` | An entry of `TZ_ALIAS` is not `<abbreviation>=<timezone>`. The engine skips the entry. |
+| `regex-limit-capped` | `MATCH_LIMIT` or `DEPTH_LIMIT` is 0 or more than 10,000,000. The preview uses 10,000,000. |
+| `dest-key-unknown` | Splunk does not document this `DEST_KEY`. It has no routing effect. |
+| `dest-key-not-simulated` | `DEST_KEY` is a valid routing key that the engine does not simulate, for example `_TCP_ROUTING`. |
+| `format-prefix-missing` | The `FORMAT` of a `DEST_KEY = MetaData:…` transform has no `host::`, `source::` or `sourcetype::` prefix. |
+| `format-has-index-prefix` | The `FORMAT` of a `DEST_KEY = MetaData:Index` transform starts with `index::`. Splunk keeps the prefix. |
+| `json-extracted-twice` | `INDEXED_EXTRACTIONS = json`, and search time extracts the JSON again. Splunk gives each field two values. |
+| `xml-pipeline-missing` | An XML value of `INDEXED_EXTRACTIONS`, with no valid `XML_INDEXED_EXTRACTIONS_PIPELINE`. Nothing is extracted. |
+| `line-breaker-no-capture-group` | `LINE_BREAKER` has no capture group. Splunk breaks on newlines. |
+| `field-alias-wildcard` | A `FIELDALIAS` has a wildcard. Splunk does not apply it. |
+| `field-name-needs-quotes` | A field name has characters that need single quotes. |
+| `leading-underscore-stripped` | A directive names a field with leading underscores, and index time removed them from the name. |
+| `sed-not-an-expression` | The value of a `SEDCMD` is not a sed expression. |
+| `sed-delimiter-missing` | A `SEDCMD` expression has no closing delimiter. |
+| `sed-sets-unequal-length` | The two sets of a `SEDCMD` `y///` do not have the same length. |
+| `sed-flag-not-simulated` | A `SEDCMD` has the numeric occurrence flag (`s/…/…/N`), which the engine does not simulate. |
+| `transform-no-write-meta` | An index-time transform extracts fields, with no `WRITE_META = true` and no `DEST_KEY`. Splunk keeps none of them. |
+| `report-no-format` | A `REPORT-` stanza matched, with no `FORMAT` and no named groups. It extracts nothing. |
+
+Patterns and expressions:
+
+| Code | What it means |
+|---|---|
+| `regex-invalid` | A pattern does not compile. The message gives the reason from PCRE2. |
+| `regex-limit-reached` | A search for each match stopped at a regex limit. The result holds only the matches before the limit. |
+| `eval-error` | An `EVAL-`, `INGEST_EVAL` or `STOP_PROCESSING_IF` expression did not parse, or did not evaluate. |
+| `eval-function-not-simulated` | The engine does not fully simulate an eval function. The result can be different from Splunk. |
+
+The events:
+
+| Code | What it means |
+|---|---|
+| `json-invalid` | Some events are not valid JSON (`INDEXED_EXTRACTIONS = json` or `KV_MODE`). `line` is the first of them. |
+| `extraction-failed` | `KV_MODE` or an XML `INDEXED_EXTRACTIONS` failed on some events. `line` is the first of them. |
+| `kv-maxchars-reached` | Automatic key-value extraction reads only the first 10240 characters of an event, and an event is longer. |
+| `timezone-unresolved` | The engine cannot find the offset of a timezone. It uses UTC. |
+| `timestamp-out-of-bounds` | A timestamp is outside a bound, for example `MAX_DAYS_AGO`. The engine does not use it. |
+| `epoch-out-of-range` | `DEST_KEY = _time` or `INGEST_EVAL _time` gave a value that is not a date. The event keeps its `_time`. |
+| `meta-fields-dropped` | `DEST_KEY = _meta` replaced `_meta`, and removed the indexed fields that were in it. |
+| `raw-text-dropped` | `DEST_KEY = _raw` replaced the event, and removed most of its text. |
+| `clone-loop` | `CLONE_SOURCETYPE` clones to a sourcetype that is already in the chain. The engine stops there. |
+| `sourcetype-assigned` | A `[source::…]` or `[host::…]` stanza assigned the sourcetype at input. |
+| `sourcetype-renamed` | `rename` changed the sourcetype that search time reads. |
+| `clones-not-rematched` | In batch mode, search time does not match the stanzas again for the clones. Set `perEventPipeline`. |
+| `rewrites-not-rematched` | In batch mode, search time does not match the stanzas again after a metadata rewrite. Set `perEventPipeline`. |
+
+The run:
+
+| Code | What it means |
+|---|---|
+| `input-truncated` | The input is longer than `maxRawChars`. The engine cut it at the last complete line. |
+| `event-limit-reached` | Line breaking stopped at `maxEvents`. The engine did not process the rest of the input. |
+| `time-budget-reached` | The run used all of `maxRunMs`. The events go through the stage and the stages after it with no change. |
+| `processor-failed` | A stage threw an error. The events go through it with no change. |
+
 ## Conf layers (`default/` and `local/`)
 
 > **Only the API.** The editors of propslab's app hold one props.conf and one

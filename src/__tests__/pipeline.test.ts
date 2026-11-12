@@ -6,8 +6,7 @@ import { AT_FIXED_NOW, FIXED_NOW } from './runCtx';
 const META: EventMetadata = { index: 'main', host: '', source: '', sourcetype: 'aws:cloudtrail' };
 const JSON_RAW = '{"eventTime":"2024-01-15T10:00:00Z","action":"login","user":"alice"}';
 
-const hasDupWarning = (diags: { message: string }[]) =>
-  diags.some((d) => d.message.includes('duplicate (multivalue) field values'));
+const hasDupWarning = (diags: ValidationDiagnostic[]) => diags.some((d) => d.code === 'json-extracted-twice');
 
 describe('runPipeline — INDEXED_EXTRACTIONS + KV_MODE duplicate-extraction warning', () => {
   it('warns when INDEXED_EXTRACTIONS=json and KV_MODE=json are both set', () => {
@@ -49,25 +48,25 @@ describe('runPipeline — DEST_KEY validation (SEM-11)', () => {
   it('warns when DEST_KEY is not a recognised routing key', () => {
     const transforms = '[route]\nREGEX = (.*)\nDEST_KEY = made_up_key\nFORMAT = $1';
     const { diagnostics } = runPipeline('a log line', PLAIN_META, props, transforms, AT_FIXED_NOW);
-    expect(diagnostics.some((d) => d.message.includes('not a recognised Splunk DEST_KEY'))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).toContain('dest-key-unknown');
   });
 
   it('an unknown DEST_KEY is warned about once, and writes no field (propslab#477)', () => {
     const transforms = '[route]\nREGEX = (.*)\nDEST_KEY = made_up_key\nFORMAT = $1';
     const { result, diagnostics } = runPipeline('a log line', PLAIN_META, props, transforms, AT_FIXED_NOW);
-    const about = diagnostics.filter((d) => d.message.includes('made_up_key'));
-    expect(about).toHaveLength(1);
-    expect(about[0]!.message).toMatch(/no routing effect/);
-    expect(about[0]!.message).not.toMatch(/field name/);
+    expect(diagnostics.map((d) => [d.code, d.directiveKey])).toEqual([['dest-key-unknown', 'DEST_KEY']]);
     expect(result.events[0]!.fields['made_up_key']).toBeUndefined();
   });
 
   it('warns that _TCP_ROUTING is valid but not simulated', () => {
     const transforms = '[route]\nREGEX = (.*)\nDEST_KEY = _TCP_ROUTING\nFORMAT = group1';
     const { diagnostics } = runPipeline('a log line', PLAIN_META, props, transforms, AT_FIXED_NOW);
-    // The conf lint's warning, not the router's note that it left the event alone.
-    const about = diagnostics.filter((d) => d.message.startsWith('DEST_KEY = _TCP_ROUTING is'));
-    expect(about.map((d) => [d.level, d.file, d.line])).toEqual([['warning', 'transforms.conf', 3]]);
+    // The conf lint's warning, then the router's note that it left the event alone.
+    const about = diagnostics.filter((d) => d.code === 'dest-key-not-simulated');
+    expect(about.map((d) => [d.level, d.file, d.line])).toEqual([
+      ['warning', 'transforms.conf', 3],
+      ['info', 'transforms.conf', 3],
+    ]);
     expect(about[0]?.message).toBe(
       'DEST_KEY = _TCP_ROUTING is a valid Splunk routing key but is not simulated — events will not be cloned/routed in the preview.',
     );
@@ -76,7 +75,7 @@ describe('runPipeline — DEST_KEY validation (SEM-11)', () => {
   it('does NOT warn for a documented key like queue', () => {
     const transforms = '[route]\nREGEX = (.*)\nDEST_KEY = queue\nFORMAT = indexQueue';
     const { diagnostics } = runPipeline('a log line', PLAIN_META, props, transforms, AT_FIXED_NOW);
-    expect(diagnostics.some((d) => d.message.includes('DEST_KEY'))).toBe(false);
+    expect(diagnostics.filter((d) => d.code.startsWith('dest-key-'))).toEqual([]);
   });
 });
 
@@ -87,18 +86,18 @@ describe('runPipeline — transforms references', () => {
   const lint = (props: string) => runPipeline('a log line', PLAIN_META, props, transforms, AT_FIXED_NOW).diagnostics;
 
   it('reports a stanza the list names that transforms.conf lacks, as an error at the directive', () => {
-    const missing = lint('[st]\nTRANSFORMS-t = route, nope\n').filter((d) => d.message.includes('not found'));
+    const missing = lint('[st]\nTRANSFORMS-t = route, nope\n').filter((d) => d.code === 'transform-not-found');
     expect(missing.map((d) => [d.level, d.file, d.line, d.message])).toEqual([
       ['error', 'props.conf', 2, 'Referenced transform stanza "nope" not found in transforms.conf'],
     ]);
   });
 
   it('reports neither a stanza that exists nor an empty entry in the list', () => {
-    expect(lint('[st]\nTRANSFORMS-t = route, ,\n').filter((d) => d.message.includes('not found'))).toEqual([]);
+    expect(lint('[st]\nTRANSFORMS-t = route, ,\n').filter((d) => d.code === 'transform-not-found')).toEqual([]);
   });
 
   it('reports an unreferenced stanza as a warning at that stanza, but not [default]', () => {
-    const unreferenced = lint('[st]\nTRANSFORMS-t = route\n').filter((d) => d.message.includes('never referenced'));
+    const unreferenced = lint('[st]\nTRANSFORMS-t = route\n').filter((d) => d.code === 'transform-unreferenced');
     expect(unreferenced.map((d) => [d.level, d.file, d.line, d.message])).toEqual([
       ['warning', 'transforms.conf', 8, 'Transform stanza "unused" is defined but never referenced from props.conf'],
     ]);
@@ -111,7 +110,8 @@ describe('runPipeline — transforms references', () => {
 describe('runPipeline — DEST_KEY = MetaData:Index FORMAT lint (propslab#281)', () => {
   const PLAIN_META: EventMetadata = { index: 'main', host: '', source: '', sourcetype: 'st' };
   const props = '[st]\nTRANSFORMS-t = route';
-  const prefixWarning = (diags: ValidationDiagnostic[]) => diags.filter((d) => d.message.includes('prefix'));
+  const prefixWarning = (diags: ValidationDiagnostic[]) =>
+    diags.filter((d) => d.code === 'format-prefix-missing' || d.code === 'format-has-index-prefix');
 
   it('accepts the bare index name and routes to it', () => {
     const transforms = '[route]\nREGEX = .\nDEST_KEY = _MetaData:Index\nFORMAT = security';
@@ -124,7 +124,7 @@ describe('runPipeline — DEST_KEY = MetaData:Index FORMAT lint (propslab#281)',
     const transforms = '[route]\nREGEX = .\nDEST_KEY = _MetaData:Index\nFORMAT = index::security';
     const { result, diagnostics } = runPipeline('a log line', PLAIN_META, props, transforms, AT_FIXED_NOW);
     const warning = prefixWarning(diagnostics);
-    expect(warning).toHaveLength(1);
+    expect(warning.map((d) => d.code)).toEqual(['format-has-index-prefix']);
     expect(warning[0]?.message).toContain('"index::security"');
     expect(warning[0]?.suggestion).toBe('Change FORMAT = index::security to FORMAT = security');
     expect(result.events[0]?.metadata.index).toBe('index::security');
@@ -188,7 +188,7 @@ describe('runPipeline — 1 MB input cap aligns to a line boundary (propslab#14)
     // 10,001 lines = 1,000,100 chars, so the cap lands 100 chars into the last line.
     const raw = LINE.repeat(10_001);
     const { result, diagnostics } = runPipeline(raw, META, NO_MERGE, '', AT_FIXED_NOW);
-    expect(diagnostics.some((d) => d.message.includes('truncated'))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).toContain('input-truncated');
     // Every surviving event is a whole line, not a fragment.
     expect(result.events.every((e) => e._raw === 'x'.repeat(99))).toBe(true);
   });
@@ -196,7 +196,7 @@ describe('runPipeline — 1 MB input cap aligns to a line boundary (propslab#14)
   it('keeps input under the cap intact', () => {
     const raw = LINE.repeat(10);
     const { result, diagnostics } = runPipeline(raw, META, NO_MERGE, '', AT_FIXED_NOW);
-    expect(diagnostics.some((d) => d.message.includes('truncated'))).toBe(false);
+    expect(diagnostics.map((d) => d.code)).not.toContain('input-truncated');
     expect(result.events).toHaveLength(10);
   });
 });
@@ -208,8 +208,8 @@ describe('runPipeline — per-event mode does not duplicate config diagnostics (
   const RAW = Array.from({ length: 25 }, (_, i) => `2024-01-15T10:00:0${i % 10}Z line ${i}`).join('\n');
   const PROPS = '[aws:cloudtrail]\nSHOULD_LINEMERGE = false\nKV_MODE = auto\nEVAL-broken = this is (not valid';
 
-  const brokenEvalCount = (diags: { message: string }[]) =>
-    diags.filter((d) => d.message.includes('EVAL-broken')).length;
+  const brokenEvalCount = (diags: ValidationDiagnostic[]) =>
+    diags.filter((d) => d.directiveKey === 'EVAL-broken').length;
 
   it('reports a config-level eval error once in per-event mode', () => {
     const { result, diagnostics } = runPipeline(RAW, META, PROPS, '', { perEventPipeline: true, now: FIXED_NOW });
@@ -229,14 +229,14 @@ describe('runPipeline — search-time REPORT compile failures are reported (prop
 
   it('warns when a REPORT stanza regex cannot be compiled', () => {
     const { diagnostics } = runPipeline('some line', META, PROPS, TRANSFORMS, AT_FIXED_NOW);
-    expect(diagnostics.some((d) => d.message.includes('does not compile'))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).toContain('regex-invalid');
   });
 
   it('warns once, not once per event, in per-event mode', () => {
     const raw = Array.from({ length: 12 }, (_, i) => `line ${i}`).join('\n');
     const props = '[aws:cloudtrail]\nSHOULD_LINEMERGE = false\nREPORT-r = broken';
     const { diagnostics } = runPipeline(raw, META, props, TRANSFORMS, { perEventPipeline: true, now: FIXED_NOW });
-    expect(diagnostics.filter((d) => d.message.includes('does not compile'))).toHaveLength(1);
+    expect(diagnostics.filter((d) => d.code === 'regex-invalid')).toHaveLength(1);
   });
 });
 
@@ -248,8 +248,7 @@ describe('runPipeline — an input-time sourcetype assignment is not an index-ti
   const meta: EventMetadata = { index: 'main', host: 'h', source: '/a.log', sourcetype: 'st' };
   const props = '[source::/a.log]\nsourcetype = foo\n\n[foo]\nSHOULD_LINEMERGE = false\nEXTRACT-k = k=(?<k>\\w+)\n';
   const raw = 'k=one\nk=two\n';
-  const rewriteWarning = (diags: ValidationDiagnostic[]) =>
-    diags.some((d) => d.message.includes('rewritten at index-time by a DEST_KEY = MetaData:* transform'));
+  const rewriteWarning = (diags: ValidationDiagnostic[]) => diags.some((d) => d.code === 'rewrites-not-rematched');
 
   it('batch mode does not warn about a metadata rewrite', () => {
     const { result, diagnostics } = runPipeline(raw, meta, props, '', { perEventPipeline: false, now: FIXED_NOW });
@@ -310,10 +309,8 @@ describe('runPipeline — CLONE_SOURCETYPE copies are not reported as MetaData:*
   const meta: EventMetadata = { index: 'main', host: 'h', source: '/a.log', sourcetype: 'st' };
   const props = '[st]\nSHOULD_LINEMERGE = false\nTRANSFORMS-c = copy\n';
   const transforms = '[copy]\nREGEX = .\nCLONE_SOURCETYPE = cloned\n';
-  const rewriteWarning = (diags: ValidationDiagnostic[]) =>
-    diags.some((d) => d.message.includes('rewritten at index-time by a DEST_KEY = MetaData:* transform'));
-  const cloneWarning = (diags: ValidationDiagnostic[]) =>
-    diags.filter((d) => d.message.startsWith('CLONE_SOURCETYPE copied events to sourcetype "cloned"'));
+  const rewriteWarning = (diags: ValidationDiagnostic[]) => diags.some((d) => d.code === 'rewrites-not-rematched');
+  const cloneWarning = (diags: ValidationDiagnostic[]) => diags.filter((d) => d.code === 'clones-not-rematched');
 
   it('batch mode warns about the clones once, and not as a DEST_KEY rewrite', () => {
     const { result, diagnostics } = runPipeline('a\nb', meta, props, transforms, {
@@ -352,7 +349,7 @@ describe('runPipeline — a conf of hundreds of thousands of parse errors (props
       perEventPipeline: false,
       now: FIXED_NOW,
     });
-    expect(diagnostics.filter((d) => d.message.startsWith('Malformed line'))).toHaveLength(300_000);
+    expect(diagnostics.filter((d) => d.code === 'malformed-line')).toHaveLength(300_000);
   });
 });
 
@@ -506,9 +503,7 @@ describe('runPipeline — options a caller leaves out', () => {
 
   it('reports a malformed transforms.conf line against transforms.conf', () => {
     const { diagnostics } = runPipeline('x', meta, '', 'not a setting\n', AT_FIXED_NOW);
-    expect(diagnostics.filter((d) => d.message.startsWith('Malformed line')).map((d) => d.file)).toEqual([
-      'transforms.conf',
-    ]);
+    expect(diagnostics.filter((d) => d.code === 'malformed-line').map((d) => d.file)).toEqual(['transforms.conf']);
   });
 
   // runLimits.test.ts holds where a run stops; these pin what the stop says.
@@ -525,7 +520,7 @@ describe('runPipeline — options a caller leaves out', () => {
           if (s === spent) clock = 2_000;
         },
       });
-      return diagnostics.filter((d) => d.message.startsWith('The run stopped'));
+      return diagnostics.filter((d) => d.code === 'time-budget-reached');
     } finally {
       spy.mockRestore();
     }
@@ -563,6 +558,7 @@ describe('runPipeline — the notes on stanza resolution', () => {
     const meta: EventMetadata = { index: 'main', host: 'h', source: '/a.log', sourcetype: 'st' };
     const { diagnostics } = runPipeline('x', meta, '[source::/a.log]\nsourcetype = foo\n', '', AT_FIXED_NOW);
     expect(diagnostics).toContainEqual({
+      code: 'sourcetype-assigned',
       level: 'info',
       message:
         'sourcetype assigned at input: "st" → "foo". ' +
@@ -576,6 +572,7 @@ describe('runPipeline — the notes on stanza resolution', () => {
     const meta: EventMetadata = { index: 'main', host: 'h', source: 's', sourcetype: 'orig' };
     const { diagnostics } = runPipeline('x', meta, '[orig]\nrename = renamed\n', '', AT_FIXED_NOW);
     expect(diagnostics).toContainEqual({
+      code: 'sourcetype-renamed',
       level: 'info',
       message:
         'rename: search-time processing uses sourcetype "renamed" instead of "orig". Events stay indexed as ' +
@@ -603,6 +600,7 @@ describe('runPipeline — the notes on stanza resolution', () => {
     const { diagnostics } = runPipeline('a\nb', meta, props, transforms, AT_FIXED_NOW);
     expect(diagnostics.filter((d) => d.file === 'transforms.conf' && d.level === 'warning')).toEqual([
       {
+        code: 'clones-not-rematched',
         level: 'warning',
         message:
           'CLONE_SOURCETYPE copied events to sourcetype "cloned". Their index-time SEDCMD and TRANSFORMS come ' +
@@ -612,6 +610,7 @@ describe('runPipeline — the notes on stanza resolution', () => {
         file: 'transforms.conf',
       },
       {
+        code: 'rewrites-not-rematched',
         level: 'warning',
         message:
           'One or more events had their sourcetype/host/source rewritten at index-time by a DEST_KEY = ' +
@@ -628,7 +627,7 @@ describe('runPipeline — the notes on stanza resolution', () => {
     const props = '[st]\nSHOULD_LINEMERGE = false\nTRANSFORMS-r = to_bar\n';
     const transforms = '[to_bar]\nREGEX = b\nDEST_KEY = MetaData:Sourcetype\nFORMAT = sourcetype::bar\n';
     const { diagnostics } = runPipeline('a\nb', meta, props, transforms, AT_FIXED_NOW);
-    expect(diagnostics.some((d) => d.message.startsWith('CLONE_SOURCETYPE copied'))).toBe(false);
-    expect(diagnostics.some((d) => d.message.startsWith('One or more events had'))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).not.toContain('clones-not-rematched');
+    expect(diagnostics.map((d) => d.code)).toContain('rewrites-not-rematched');
   });
 });

@@ -53,7 +53,7 @@ describe('KV_MODE — the not-valid-JSON diagnostic', () => {
     const diagnostics: ValidationDiagnostic[] = [];
     applyKvMode([event('{"a":', 3), event('{"b":', 8)], [mode('json')], runCtx(FIXED_NOW, diagnostics));
     expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0]).toMatchObject({ level: 'warning', file: 'raw', line: 3 });
+    expect(diagnostics[0]).toMatchObject({ code: 'json-invalid', level: 'warning', file: 'raw', line: 3 });
     expect(diagnostics[0]!.message).toMatch(/^KV_MODE = json: 2 events not valid JSON/);
   });
 

@@ -274,6 +274,38 @@ function createContinuation() {
   };
 }
 
+/** What is wrong with the name of a key that Splunk ignores because of its name, if anything. */
+function keyNameProblem(
+  rawKey: string,
+  className: string | undefined,
+  fileName: 'props.conf' | 'transforms.conf',
+): Pick<ValidationDiagnostic, 'code' | 'message' | 'suggestion'> | undefined {
+  // Splunk attribute names are case-sensitive, so a mis-cased name -- whether
+  // a plain attribute (`kv_mode`) or a class prefix (`extract-f`) -- is
+  // silently ignored and the default applies. `miscasedCanonical` decides
+  // both cases; the editor's linter calls the same function, so the two
+  // validators cannot drift on what counts as a case typo.
+  const canonical = miscasedCanonical(rawKey, fileName);
+  if (canonical !== undefined) {
+    return {
+      code: 'directive-miscased',
+      message: MISCASED_MESSAGE(rawKey, canonical),
+      suggestion: MISCASED_SUGGESTION(rawKey, canonical),
+    };
+  }
+  // One edit from a real attribute, such as `TIME_FROMAT`: as dead as a
+  // mis-cased key, and as silent in Splunk. A key with a class prefix is
+  // not checked: the prefix is real, and the class name is the user's.
+  if (className !== undefined) return undefined;
+  const intended = misspelledCanonical(rawKey, fileName);
+  if (intended === undefined) return undefined;
+  return {
+    code: 'directive-misspelled',
+    message: MISSPELLED_MESSAGE(rawKey, intended, fileName),
+    suggestion: MISCASED_SUGGESTION(rawKey, intended),
+  };
+}
+
 /**
  * Parse one conf file. `layer`, when given, is stamped onto every stanza,
  * directive and diagnostic produced from this text, because once the layers are
@@ -352,38 +384,9 @@ function parseLayer(text: string, fileName: 'props.conf' | 'transforms.conf', la
 
       const { directiveType, className } = parseDirectiveKey(rawKey);
 
-      // Splunk attribute names are case-sensitive, so a mis-cased name -- whether
-      // a plain attribute (`kv_mode`) or a class prefix (`extract-f`) -- is
-      // silently ignored and the default applies. `miscasedCanonical` decides
-      // both cases; the editor's linter calls the same function, so the two
-      // validators cannot drift on what counts as a case typo.
-      const canonical = miscasedCanonical(rawKey, fileName);
-      if (canonical !== undefined) {
-        errors.push({
-          level: 'warning',
-          message: MISCASED_MESSAGE(rawKey, canonical),
-          file: fileName,
-          ...from,
-          line: lineNumber,
-          directiveKey: rawKey,
-          suggestion: MISCASED_SUGGESTION(rawKey, canonical),
-        });
-      } else if (className === undefined) {
-        // One edit from a real attribute, such as `TIME_FROMAT`: as dead as a
-        // mis-cased key, and as silent in Splunk. A key with a class prefix is
-        // not checked: the prefix is real, and the class name is the user's.
-        const intended = misspelledCanonical(rawKey, fileName);
-        if (intended !== undefined) {
-          errors.push({
-            level: 'warning',
-            message: MISSPELLED_MESSAGE(rawKey, intended, fileName),
-            file: fileName,
-            ...from,
-            line: lineNumber,
-            directiveKey: rawKey,
-            suggestion: MISCASED_SUGGESTION(rawKey, intended),
-          });
-        }
+      const misnamed = keyNameProblem(rawKey, className, fileName);
+      if (misnamed) {
+        errors.push({ ...misnamed, level: 'warning', file: fileName, ...from, line: lineNumber, directiveKey: rawKey });
       }
 
       const directive: ConfDirective = {
@@ -415,6 +418,7 @@ function parseLayer(text: string, fileName: 'props.conf' | 'transforms.conf', la
     // If we reach here the line is not a comment, blank, stanza header,
     // directive, or valid continuation.
     errors.push({
+      code: 'malformed-line',
       level: 'error',
       message: `Malformed line: "${line.length > 80 ? line.slice(0, 80) + '...' : line}"`,
       file: fileName,

@@ -64,6 +64,7 @@ export function extractXmlIndexed(
   const pipeline = find('XML_INDEXED_EXTRACTIONS_PIPELINE')?.value.trim().toLowerCase();
   if (pipeline === undefined || !PIPELINES.has(pipeline)) {
     diagnostics.push({
+      code: 'xml-pipeline-missing',
       level: 'warning',
       message:
         `INDEXED_EXTRACTIONS = ${mode} extracts nothing: XML indexed extraction needs ` +
@@ -137,6 +138,7 @@ export function extractXmlIndexed(
   if (failed !== undefined) {
     const n = failures.length;
     diagnostics.push({
+      code: 'extraction-failed',
       level: 'error',
       file: 'raw',
       line: failed.line,

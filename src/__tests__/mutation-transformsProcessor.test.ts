@@ -62,7 +62,7 @@ describe('transform diagnostics fire once per stanza, and per stanza', () => {
       'index-time',
       runCtx(FIXED_NOW, d),
     );
-    const hits = d.filter((x) => x.message.includes('has no WRITE_META = true and no DEST_KEY'));
+    const hits = d.filter((x) => x.code === 'transform-no-write-meta');
     expect(hits.map((x) => x.message.match(/"(\w+)"/)?.[1])).toEqual(['t1', 't2']);
   });
 
@@ -75,7 +75,7 @@ describe('transform diagnostics fire once per stanza, and per stanza', () => {
       'index-time',
       runCtx(FIXED_NOW, d),
     );
-    const hits = d.filter((x) => x.message.includes('valid only for search-time'));
+    const hits = d.filter((x) => x.code === 'setting-inert-in-phase');
     expect(hits).toHaveLength(1);
     expect(hits[0]!.message).toContain('sets MV_ADD,');
     expect(hits[0]!.message).toContain('That attribute is valid only');
@@ -94,7 +94,7 @@ describe('transform diagnostics fire once per stanza, and per stanza', () => {
       'index-time',
       runCtx(FIXED_NOW, d),
     );
-    const hit = d.find((x) => x.message.includes('valid only for search-time'))!;
+    const hit = d.find((x) => x.code === 'setting-inert-in-phase')!;
     expect(hit.message).toContain('sets DELIMS, FIELDS,');
     expect(hit.message).toContain('Those attributes are valid only');
     expect(hit.message).toContain('ignores them here');
@@ -110,7 +110,7 @@ describe('transform diagnostics fire once per stanza, and per stanza', () => {
       'search-time',
       runCtx(FIXED_NOW, d),
     );
-    const hits = d.filter((x) => x.message.includes('referenced by a search-time REPORT-'));
+    const hits = d.filter((x) => x.code === 'setting-inert-in-phase');
     expect(hits).toHaveLength(1);
     expect(hits[0]!.message).toMatch(/sets DEST_KEY = _meta, but/);
   });
@@ -124,7 +124,7 @@ describe('transform diagnostics fire once per stanza, and per stanza', () => {
       'search-time',
       runCtx(FIXED_NOW, d),
     );
-    const hits = d.filter((x) => x.message.includes('extracts nothing. At search time FORMAT has no default'));
+    const hits = d.filter((x) => x.code === 'report-no-format');
     expect(hits.map((x) => x.message.match(/"(\w+)"/)?.[1])).toEqual(['t1', 't2']);
   });
 
@@ -137,7 +137,7 @@ describe('transform diagnostics fire once per stanza, and per stanza', () => {
       'index-time',
       runCtx(FIXED_NOW, d),
     );
-    const hits = d.filter((x) => x.message.includes('is a valid Splunk routing key but is not simulated'));
+    const hits = d.filter((x) => x.code === 'dest-key-not-simulated');
     expect(hits).toHaveLength(1);
     expect(hits[0]!.line).toBe(12);
   });
@@ -147,7 +147,7 @@ describe('the no-FORMAT warning at search time stays quiet when', () => {
   const quiet = (directives: Record<string, string>) => {
     const d: ValidationDiagnostic[] = [];
     applyTransforms([event('a=1')], [report('t')], conf(stanza('t', directives)), 'search-time', runCtx(FIXED_NOW, d));
-    return d.filter((x) => x.message.includes('At search time FORMAT has no default'));
+    return d.filter((x) => x.code === 'report-no-format');
   };
 
   it('a FORMAT is present', () => expect(quiet({ REGEX: 'a=(\\d)', FORMAT: 'a::$1' })).toEqual([]));
@@ -166,7 +166,7 @@ describe('the DEST_KEY = _raw data-loss warning', () => {
       'index-time',
       runCtx(FIXED_NOW, d),
     );
-    return d.filter((x) => x.message.includes('replaced the event and dropped'));
+    return d.filter((x) => x.code === 'raw-text-dropped');
   };
 
   it('fires above 30% loss, once, with the counts', () => {

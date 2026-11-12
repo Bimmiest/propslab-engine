@@ -58,6 +58,7 @@ export function applyCloneIndexTime(
       if (!warnedCycle.has(key)) {
         warnedCycle.add(key);
         diagnostics.push({
+          code: 'clone-loop',
           level: 'warning',
           message:
             `CLONE_SOURCETYPE loops back to sourcetype "${sourcetype}" (clone chain: ` +

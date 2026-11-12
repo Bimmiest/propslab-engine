@@ -31,7 +31,7 @@ function kv(raws: string[], mode = 'auto', diags: ValidationDiagnostic[] = []): 
   );
 }
 
-const capInfo = (diags: ValidationDiagnostic[]) => diags.filter((d) => d.message.includes('[kv] maxchars'));
+const capInfo = (diags: ValidationDiagnostic[]) => diags.filter((d) => d.code === 'kv-maxchars-reached');
 
 describe('KV_MODE = auto reads only the first 10240 characters of _raw', () => {
   it('does not extract a pair that starts after the cap, and cuts a value that runs across it', () => {

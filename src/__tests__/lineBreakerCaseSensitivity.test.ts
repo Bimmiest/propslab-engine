@@ -20,7 +20,7 @@ describe('lineBreaker — directive keys are case-sensitive (propslab#119)', () 
       AT_FIXED_NOW,
     );
 
-    expect(diagnostics.some((d) => d.message.includes('"line_breaker" is ignored'))).toBe(true);
+    expect(diagnostics.map((d) => [d.code, d.directiveKey])).toContainEqual(['directive-miscased', 'line_breaker']);
     // Splunk ignores the attribute entirely, so the default breaker applies and
     // the whole input stays one event.
     expect(result.events.map((e) => e._raw)).toEqual(['aXbXc']);

@@ -18,7 +18,7 @@ function diagnosticsFor(props: string, transforms = '') {
   }).diagnostics;
 }
 
-const messagesFor = (props: string, transforms = '') => diagnosticsFor(props, transforms).map((d) => d.message);
+const codesFor = (props: string, transforms = '') => diagnosticsFor(props, transforms).map((d) => d.code);
 
 describe('propslab#177 — a transforms setting that is inert in its phase', () => {
   it('flags a search-time-only setting in a TRANSFORMS- stanza', () => {
@@ -26,7 +26,7 @@ describe('propslab#177 — a transforms setting that is inert in its phase', () 
       (x) => x.directiveKey === 'MV_ADD',
     );
     expect(d?.level).toBe('warning');
-    expect(d?.message).toContain('does nothing here');
+    expect(d?.code).toBe('setting-inert-in-phase');
     expect(d?.message).toContain('TRANSFORMS-');
     expect(d?.file).toBe('transforms.conf');
   });
@@ -35,34 +35,36 @@ describe('propslab#177 — a transforms setting that is inert in its phase', () 
     const d = diagnosticsFor('REPORT-x = t1\n', '[t1]\nREGEX = (?<a>\\w+)\nREPEAT_MATCH = true\n').find(
       (x) => x.directiveKey === 'REPEAT_MATCH',
     );
+    expect(d?.code).toBe('setting-inert-in-phase');
     expect(d?.message).toContain('REPORT-');
-    expect(d?.message).toContain('index-time');
   });
 
   it('says nothing when the setting is live for that phase', () => {
-    const msgs = messagesFor('REPORT-x = t1\n', '[t1]\nREGEX = (\\w+)\nFORMAT = a::$1\nMV_ADD = true\n');
-    expect(msgs.filter((m) => m.includes('does nothing here'))).toEqual([]);
+    const codes = codesFor('REPORT-x = t1\n', '[t1]\nREGEX = (\\w+)\nFORMAT = a::$1\nMV_ADD = true\n');
+    expect(codes).not.toContain('setting-inert-in-phase');
   });
 
   it('stays quiet for a stanza reached from both, where every setting is live somewhere', () => {
-    const msgs = messagesFor(
+    const inert = diagnosticsFor(
       'TRANSFORMS-a = t1\nREPORT-b = t1\n',
       '[t1]\nREGEX = (\\w+)\nFORMAT = a::$1\nMV_ADD = true\nREPEAT_MATCH = true\n',
-    );
-    expect(msgs.filter((m) => m.includes('does nothing here'))).toEqual([]);
+    ).filter((d) => d.code === 'setting-inert-in-phase');
+    // The lint names each directive. The index-time pass still reports the
+    // stanza for its TRANSFORMS- use, with no directive.
+    expect(inert.map((d) => d.directiveKey)).toEqual([undefined]);
   });
 
   it('stays quiet for a stanza props.conf never references', () => {
-    const msgs = messagesFor('', '[orphan]\nREGEX = (\\w+)\nMV_ADD = true\n');
-    expect(msgs.filter((m) => m.includes('does nothing here'))).toEqual([]);
+    const codes = codesFor('', '[orphan]\nREGEX = (\\w+)\nMV_ADD = true\n');
+    expect(codes).not.toContain('setting-inert-in-phase');
   });
 
   it('flags REPEAT_MATCH alongside DEST_KEY = _raw, which the spec calls out separately', () => {
     const d = diagnosticsFor(
       'TRANSFORMS-x = t1\n',
       '[t1]\nREGEX = (\\w+)\nDEST_KEY = _raw\nFORMAT = x\nREPEAT_MATCH = true\n',
-    ).find((x) => x.message.includes('ignored when DEST_KEY = _raw'));
-    expect(d).toBeDefined();
+    ).find((x) => x.code === 'repeat-match-ignored');
+    expect(d?.directiveKey).toBe('REPEAT_MATCH');
   });
 });
 
@@ -70,29 +72,25 @@ describe('propslab#179 — a value that is not the documented type', () => {
   it('flags a boolean that is not a boolean literal', () => {
     const d = diagnosticsFor('SHOULD_LINEMERGE = yes please\n').find((x) => x.directiveKey === 'SHOULD_LINEMERGE');
     expect(d?.level).toBe('warning');
-    expect(d?.message).toContain('takes a boolean');
+    expect(d?.code).toBe('value-not-boolean');
   });
 
   it('accepts every boolean spelling Splunk does', () => {
     // y/n/on/off: the engine and the linter share one boolean reader, so the
     // linter accepts every spelling the engine honours.
     for (const v of ['true', 'False', '1', '0', 't', 'f', 'yes', 'no', 'y', 'n', 'on', 'off']) {
-      const msgs = messagesFor(`SHOULD_LINEMERGE = ${v}\n`);
-      expect(
-        msgs.filter((m) => m.includes('takes a boolean')),
-        `for ${v}`,
-      ).toEqual([]);
+      expect(codesFor(`SHOULD_LINEMERGE = ${v}\n`), `for ${v}`).not.toContain('value-not-boolean');
     }
   });
 
   it('flags a non-numeric integer', () => {
     const d = diagnosticsFor('TRUNCATE = lots\n').find((x) => x.directiveKey === 'TRUNCATE');
-    expect(d?.message).toContain('takes an integer');
+    expect(d?.code).toBe('value-not-integer');
   });
 
   it('flags a negative where the spec says non-negative', () => {
     const d = diagnosticsFor('TRUNCATE = -1\n').find((x) => x.directiveKey === 'TRUNCATE');
-    expect(d?.message).toContain('cannot be negative');
+    expect(d?.code).toBe('value-negative');
   });
 
   // Doc-derived: props.conf.spec documents -1 as disabling the lookahead
@@ -100,7 +98,7 @@ describe('propslab#179 — a value that is not the documented type', () => {
   it('accepts MAX_TIMESTAMP_LOOKAHEAD = -1, which the spec documents as "no limit"', () => {
     const lint = (v: string) =>
       diagnosticsFor(`MAX_TIMESTAMP_LOOKAHEAD = ${v}\n`).filter(
-        (x) => x.directiveKey === 'MAX_TIMESTAMP_LOOKAHEAD' && x.message.includes('cannot be negative'),
+        (x) => x.directiveKey === 'MAX_TIMESTAMP_LOOKAHEAD' && x.code === 'value-negative',
       );
     expect(lint('-1')).toEqual([]);
     expect(lint('-2')).toHaveLength(1);
@@ -108,28 +106,26 @@ describe('propslab#179 — a value that is not the documented type', () => {
 
   it('flags a value outside a documented enum, and lists the valid ones', () => {
     const d = diagnosticsFor('KV_MODE = XLM\n').find((x) => x.directiveKey === 'KV_MODE');
-    expect(d?.message).toContain('does not accept');
+    expect(d?.code).toBe('value-not-in-enum');
     expect(d?.message).toContain('auto_escaped');
   });
 
   it('accepts the one enum member that carries an argument', () => {
-    const msgs = messagesFor('KV_MODE = multi:mystanza\n');
-    expect(msgs.filter((m) => m.includes('does not accept'))).toEqual([]);
+    expect(codesFor('KV_MODE = multi:mystanza\n')).not.toContain('value-not-in-enum');
   });
 
   it('treats an empty value as a reset rather than a type error', () => {
-    const msgs = messagesFor('TRUNCATE =\n');
-    expect(msgs.filter((m) => m.includes('takes an integer'))).toEqual([]);
+    expect(codesFor('TRUNCATE =\n')).not.toContain('value-not-integer');
   });
 
   it('says nothing about a correct config', () => {
-    const msgs = messagesFor('SHOULD_LINEMERGE = false\nTRUNCATE = 10000\nKV_MODE = auto\n');
-    expect(msgs.filter((m) => /takes a|does not accept|cannot be negative/.test(m))).toEqual([]);
+    const codes = codesFor('SHOULD_LINEMERGE = false\nTRUNCATE = 10000\nKV_MODE = auto\n');
+    expect(codes.filter((c) => c.startsWith('value-'))).toEqual([]);
   });
 
   it('checks transforms.conf too', () => {
     const d = diagnosticsFor('REPORT-x = t1\n', '[t1]\nREGEX = (\\w+)\nFORMAT = a::$1\nMV_ADD = maybe\n').find(
-      (x) => x.directiveKey === 'MV_ADD' && x.message.includes('takes a boolean'),
+      (x) => x.directiveKey === 'MV_ADD' && x.code === 'value-not-boolean',
     );
     expect(d).toBeDefined();
   });

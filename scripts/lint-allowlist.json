@@ -1,13 +1,7 @@
 {
   "$comment": "The lint findings in code that was written before a rule was adopted, by file and by rule, as counted on the day the rule arrived: { \"src/a.ts\": { \"<rule>\": <count> } }. eslint.config.js turns each listed rule off for each listed file, and CI's lint-allowlist-check lints those files with the rules on again and fails when a count differs. Higher is new code, which gets no exception. Lower is a fix, which lowers the count here in the same change. The list only gets shorter (docs/code-style.md).",
   "files": {
-    "src/__tests__/confParser.test.ts": {
-      "no-restricted-syntax": 2
-    },
     "src/__tests__/destKeyRouter.test.ts": {
-      "no-restricted-syntax": 1
-    },
-    "src/__tests__/directiveValues.test.ts": {
       "no-restricted-syntax": 1
     },
     "src/__tests__/evalBuiltinFidelity.test.ts": {
@@ -17,22 +11,16 @@
       "no-restricted-syntax": 2
     },
     "src/__tests__/evalSyntax.test.ts": {
-      "no-restricted-syntax": 2
+      "no-restricted-syntax": 1
     },
     "src/__tests__/indexedExtractions.test.ts": {
       "no-restricted-syntax": 1
     },
-    "src/__tests__/ingestEval.test.ts": {
+    "src/__tests__/kvMode.test.ts": {
       "no-restricted-syntax": 1
     },
-    "src/__tests__/kvMode.test.ts": {
-      "no-restricted-syntax": 3
-    },
     "src/__tests__/lineBreaker.test.ts": {
-      "no-restricted-syntax": 6
-    },
-    "src/__tests__/mutation-fieldExtractor.test.ts": {
-      "no-restricted-syntax": 3
+      "no-restricted-syntax": 1
     },
     "src/__tests__/mutation-kvMode.test.ts": {
       "no-restricted-syntax": 3
@@ -43,12 +31,6 @@
     "src/__tests__/mutation-transformsProcessor.test.ts": {
       "no-restricted-syntax": 10
     },
-    "src/__tests__/pipeline.test.ts": {
-      "no-restricted-syntax": 2
-    },
-    "src/__tests__/runContext.test.ts": {
-      "no-restricted-syntax": 1
-    },
     "src/__tests__/runLimits.test.ts": {
       "max-params": 1
     },
@@ -56,7 +38,7 @@
       "no-restricted-syntax": 2
     },
     "src/__tests__/sedCmdDiagnostics.test.ts": {
-      "no-restricted-syntax": 2
+      "no-restricted-syntax": 1
     },
     "src/__tests__/timestampProperties.test.ts": {
       "max-params": 1

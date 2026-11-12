@@ -70,7 +70,12 @@ function safeProcessor(
   } catch (err) {
     if (err instanceof RegexDeadlineError) return stopped(name, events, ctx, file);
     if (shape === 'batch' || events.length <= 1) {
-      diagnostics.push({ level: 'error', message: `Processor "${name}" failed: ${errorText(err)}`, file });
+      diagnostics.push({
+        code: 'processor-failed',
+        level: 'error',
+        message: `Processor "${name}" failed: ${errorText(err)}`,
+        file,
+      });
       return events; // Return unmodified events on failure
     }
   }
@@ -90,6 +95,7 @@ function safeProcessor(
   if (first !== undefined) {
     const n = failures.length;
     diagnostics.push({
+      code: 'processor-failed',
       level: 'error',
       file: 'raw',
       line: first.line,
@@ -107,6 +113,7 @@ function stopped(
   file: ValidationDiagnostic['file'],
 ): SplunkEvent[] {
   ctx.diagnostics.report('maxRunMs', {
+    code: 'time-budget-reached',
     level: 'error',
     message:
       `The run stopped at stage "${name}" because it used its time budget of ` +
@@ -133,6 +140,7 @@ function capInput(rawData: string, limits: RunLimits, diagnostics: ValidationDia
   const lastBreak = rawData[max] === '\n' ? max : capped.lastIndexOf('\n');
   const truncatedRaw = lastBreak > 0 ? capped.slice(0, lastBreak) : capped;
   diagnostics.push({
+    code: 'input-truncated',
     level: 'warning',
     message:
       `Input truncated to ${truncatedRaw.length.toLocaleString()} characters for performance ` +
@@ -177,6 +185,7 @@ function resolveDirectives(
 
   if (resolved.assignedSourcetype) {
     diagnostics.push({
+      code: 'sourcetype-assigned',
       level: 'info',
       message:
         `sourcetype assigned at input: "${metadata.sourcetype}" → "${resolved.assignedSourcetype}". ` +
@@ -196,6 +205,7 @@ function resolveDirectives(
 
   const searchTimeStanzas = matchStanzas(propsConf.stanzas, { ...effectiveMetadata, sourcetype: renamedSourcetype });
   diagnostics.push({
+    code: 'sourcetype-renamed',
     level: 'info',
     message:
       `rename: search-time processing uses sourcetype "${renamedSourcetype}" instead of ` +
@@ -442,6 +452,7 @@ function warnBatchMetadataRewrites(
   ];
   if (clonedSourcetypes.length > 0) {
     diagnostics.push({
+      code: 'clones-not-rematched',
       level: 'warning',
       message:
         `CLONE_SOURCETYPE copied events to sourcetype ${clonedSourcetypes.map((st) => `"${st}"`).join(', ')}. ` +
@@ -453,6 +464,7 @@ function warnBatchMetadataRewrites(
   }
   if (rewroteMetadata) {
     diagnostics.push({
+      code: 'rewrites-not-rematched',
       level: 'warning',
       message:
         'One or more events had their sourcetype/host/source rewritten at index-time by a DEST_KEY = MetaData:* transform or an INGEST_EVAL assignment. ' +

@@ -33,10 +33,8 @@ const UNMERGED = '[st]\nSHOULD_LINEMERGE = false\n';
 const run = (raw: string, props: string, limits: Partial<RunLimits>, options: Partial<PipelineOptions> = {}) =>
   runPipeline(raw, META, props, '', { perEventPipeline: false, now: NOW, limits, ...options });
 
-const truncationWarnings = (diags: ValidationDiagnostic[]) =>
-  diags.filter((d) => d.message.startsWith('Input truncated'));
-const capWarnings = (diags: ValidationDiagnostic[]) =>
-  diags.filter((d) => d.message.startsWith('Line breaking stopped'));
+const truncationWarnings = (diags: ValidationDiagnostic[]) => diags.filter((d) => d.code === 'input-truncated');
+const capWarnings = (diags: ValidationDiagnostic[]) => diags.filter((d) => d.code === 'event-limit-reached');
 
 describe('RunLimits defaults (propslab#479)', () => {
   it('caps events in the low tens of thousands, above the 20,000-event perf budget', () => {
@@ -56,7 +54,7 @@ describe('RunLimits defaults (propslab#479)', () => {
 });
 
 describe('maxRunMs (propslab#560)', () => {
-  const stops = (diags: ValidationDiagnostic[]) => diags.filter((d) => d.message.startsWith('The run stopped'));
+  const stops = (diags: ValidationDiagnostic[]) => diags.filter((d) => d.code === 'time-budget-reached');
 
   /**
    * Run with a 1 s budget on a clock that jumps 2 s when `stage` starts, so
@@ -146,7 +144,7 @@ describe('maxRunMs (propslab#560)', () => {
 
   it('reports a MATCH_LIMIT or DEPTH_LIMIT above the cap, which no run budget can interrupt', () => {
     const capNotes = (props: string) =>
-      run('one', props, {}).diagnostics.filter((d) => d.message.includes('The preview stops a match at'));
+      run('one', props, {}).diagnostics.filter((d) => d.code === 'regex-limit-capped');
     const notes = capNotes(`${UNMERGED}MATCH_LIMIT = 0\nDEPTH_LIMIT = 20000000\n`);
     expect(notes.map((d) => [d.level, d.directiveKey])).toEqual([
       ['info', 'MATCH_LIMIT'],
@@ -173,6 +171,7 @@ describe('maxRawChars (propslab#478)', () => {
     expect(result.events.map((e) => e._raw)).toEqual(['ab', 'cd']);
     expect(truncationWarnings(diagnostics)).toEqual([
       {
+        code: 'input-truncated',
         level: 'warning',
         file: 'props.conf',
         message:
@@ -211,6 +210,7 @@ describe('maxEvents (propslab#479)', () => {
     expect(result.events.every((e) => e._raw === 'x')).toBe(true);
     expect(capWarnings(diagnostics)).toEqual([
       {
+        code: 'event-limit-reached',
         level: 'warning',
         file: 'raw',
         line: 1,

@@ -250,7 +250,7 @@ describe('parseConf — diagnostics name their layer (propslab#115)', () => {
       ],
       'props.conf',
     );
-    const error = parsed.errors.find((e) => e.message.includes('Malformed'))!;
+    const error = parsed.errors.find((e) => e.code === 'malformed-line')!;
     expect(error.layer).toBe('local');
     expect(error.line).toBe(2);
   });
@@ -303,7 +303,7 @@ describe('runPipeline — accepts layered confs (propslab#115)', () => {
       '',
       AT_FIXED_NOW,
     );
-    const missing = diagnostics.find((d) => d.message.includes('not found in transforms.conf'))!;
+    const missing = diagnostics.find((d) => d.code === 'transform-not-found')!;
     expect(missing.layer).toBe('local');
     expect(missing.line).toBe(2);
   });

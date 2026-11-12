@@ -82,7 +82,7 @@ describe('applyIndexedExtractions — JSON', () => {
     expect(events[0]!.fields['ok']).toBe('1');
     expect(events[1]!.fields).toEqual({});
     expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0]).toMatchObject({ level: 'warning', file: 'raw', line: 3 });
+    expect(diagnostics[0]).toMatchObject({ code: 'json-invalid', level: 'warning', file: 'raw', line: 3 });
     expect(diagnostics[0]!.message).toMatch(/INDEXED_EXTRACTIONS = json: 2 events not valid JSON/);
   });
 
@@ -505,7 +505,7 @@ describe('applyIndexedExtractions — PREAMBLE_REGEX (propslab#184)', () => {
       [dir('csv'), dirOf('PREAMBLE_REGEX', '(')],
       runCtx(FIXED_NOW, diagnostics),
     );
-    expect(diagnostics.some((d) => d.message.includes('PREAMBLE_REGEX'))).toBe(true);
+    expect(diagnostics.map((d) => [d.code, d.directiveKey])).toContainEqual(['regex-invalid', 'PREAMBLE_REGEX']);
   });
 });
 
@@ -576,7 +576,7 @@ describe('applyIndexedExtractions — TIMESTAMP_FIELDS (propslab#184)', () => {
       [dir('csv'), dirOf('TIMESTAMP_FIELDS', 'ts'), dirOf('TIME_FORMAT', '%Y-%m-%d'), dirOf('TZ', 'UTC')],
       runCtx(new Date('2020-01-01T00:00:00Z'), diagnostics),
     );
-    expect(diagnostics.filter((d) => d.message.includes('so it was not used'))).toHaveLength(1);
+    expect(diagnostics.filter((d) => d.code === 'timestamp-out-of-bounds')).toHaveLength(1);
   });
 });
 
@@ -734,7 +734,7 @@ describe('TIMESTAMP_FIELDS beyond the delimited formats, and its fallback (props
       '',
       { perEventPipeline: false, captureOffsets: false, now: Date.parse('2020-01-01T00:00:00Z') },
     );
-    expect(diagnostics.filter((d) => d.message.includes('so it was not used'))).toHaveLength(1);
+    expect(diagnostics.filter((d) => d.code === 'timestamp-out-of-bounds')).toHaveLength(1);
   });
 
   // Without TIMESTAMP_FIELDS, w3c reads its timestamp from the date and time

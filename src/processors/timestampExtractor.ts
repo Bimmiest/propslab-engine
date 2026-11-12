@@ -195,6 +195,7 @@ function warnInvalidTzAlias(
 ): void {
   if (!diagnostics || invalid.length === 0) return;
   diagnostics.push({
+    code: 'tz-alias-invalid',
     level: 'warning',
     message:
       `TZ_ALIAS ${invalid.map((p) => `"${p}"`).join(', ')} is not in the form ` +
@@ -221,6 +222,7 @@ function unresolvedTzReporter(
     if (reported.has(value)) return;
     reported.add(value);
     diagnostics.push({
+      code: 'timezone-unresolved',
       level: 'warning',
       message: `Timezone "${value}" could not be resolved to an offset and was treated as UTC. Use a numeric offset (e.g. -0500) or a supported abbreviation for an accurate _time.`,
       file: 'props.conf',
@@ -243,6 +245,7 @@ function warnBrokenPrefix(
   if (!diagnostics || pattern === undefined) return;
   const why = validateRegex(pattern) ?? 'invalid regex';
   diagnostics.push({
+    code: 'regex-invalid',
     level: 'error',
     message:
       `TIME_PREFIX (${pattern}) could not be compiled: ${why}. It was treated as never matching, ` +
@@ -493,6 +496,7 @@ class TimestampBatch {
       this.reportedBounds.add(rejection);
       const anchor = this.boundsAnchor;
       this.diagnostics.push({
+        code: 'timestamp-out-of-bounds',
         level: 'warning',
         message: `Timestamp ${date.toISOString()} is ${rejection}, so it was not used. Check TIME_FORMAT, TZ, and the sanity bounds (MAX_DAYS_AGO, MAX_DAYS_HENCE, MAX_DIFF_SECS_AGO, MAX_DIFF_SECS_HENCE).`,
         file: 'props.conf',

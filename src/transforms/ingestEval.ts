@@ -122,6 +122,7 @@ function assignTime(
   }
   const message = epochOutOfRangeMessage('INGEST_EVAL _time', epoch);
   diagnostics.report(transformsMessageKey(message), {
+    code: 'epoch-out-of-range',
     level: 'warning',
     message,
     file: 'transforms.conf',
@@ -136,6 +137,7 @@ function reportStub(fn: string, dir: ConfDirective, diagnostics: DiagnosticsColl
   const message = `${fn}() is not fully simulated — results may differ from real Splunk`;
   diagnostics.once(transformsMessageKey(message));
   diagnostics.push({
+    code: 'eval-function-not-simulated',
     level: 'warning',
     message,
     file: 'transforms.conf',
@@ -145,8 +147,14 @@ function reportStub(fn: string, dir: ConfDirective, diagnostics: DiagnosticsColl
 }
 
 /** A regex argument that did not compile or stopped at a limit, once per message per run. */
-function reportRegexWarning(message: string, dir: ConfDirective, diagnostics: DiagnosticsCollector): void {
+function reportRegexWarning(
+  code: 'regex-invalid' | 'regex-limit-reached',
+  message: string,
+  dir: ConfDirective,
+  diagnostics: DiagnosticsCollector,
+): void {
   diagnostics.report(transformsMessageKey(message), {
+    code,
     level: 'warning',
     message,
     file: 'transforms.conf',
@@ -234,6 +242,7 @@ export function applyIngestEval(
           },
           onRegexError: (fn, pattern) => {
             reportRegexWarning(
+              'regex-invalid',
               `INGEST_EVAL ${fieldName}: ${regexFailureMessage(fn, pattern)}`,
               ingestEvalDir,
               diagnostics,
@@ -241,6 +250,7 @@ export function applyIngestEval(
           },
           onRegexLimit: (fn, pattern, error) => {
             reportRegexWarning(
+              'regex-limit-reached',
               `INGEST_EVAL ${fieldName}: ${regexLimitMessage(fn, pattern, error)}`,
               ingestEvalDir,
               diagnostics,
@@ -292,6 +302,7 @@ export function applyIngestEval(
       } catch (err) {
         if (err instanceof RegexDeadlineError) throw err;
         diagnostics.report(errorKey(ingestEvalDir, fieldName), {
+          code: 'eval-error',
           level: 'error',
           message: `INGEST_EVAL ${fieldName}: ${err instanceof Error ? err.message : String(err)}`,
           file: 'transforms.conf',
