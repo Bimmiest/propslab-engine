@@ -1,7 +1,7 @@
 {
   "name": "propslab-engine",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Simulates Splunk's props.conf and transforms.conf processing of raw data, in a browser, a web worker or Node.",
   "license": "MIT",
   "repository": {
@@ -33,6 +33,7 @@
     "!src/**/__tests__/**",
     "!src/**/*.test.ts",
     "!src/test/**",
+    "scripts/generate-cim-models.js",
     "pcre2.wasm.sha256",
     "LICENSE",
     "NOTICE",
