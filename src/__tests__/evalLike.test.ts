@@ -2,11 +2,11 @@
 // evalLike.test.ts
 // like()'s wildcard translation: a run of `%` is one `.*`, so `%%` matches
 // like `%` does; and `%` and `_` match newlines, with no match before a final
-// newline (#447).
+// newline (propslab#447).
 //
 // Doc-derived: like(TEXT, PATTERN) is true when TEXT matches PATTERN, with `%`
 // for any run of characters and `_` for exactly one. The assertions are narrow.
-// The newline behaviour cites #447, where the documentation is silent.
+// The newline behaviour cites propslab#447, where the documentation is silent.
 // ---------------------------------------------------------------------------
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
@@ -16,7 +16,7 @@ import { evaluateExpression } from '../processors/eval/evaluator';
 import { runPipeline } from '../pipeline';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 // Replaced per test by `refuse` below; otherwise the real guard.
 vi.mock('../utils/splunkRegex', async (importOriginal) => {
@@ -50,7 +50,7 @@ afterEach(() => {
   vi.mocked(splunkRegex.safeRegex).mockReset();
 });
 
-describe('like() with consecutive % (#303)', () => {
+describe('like() with consecutive % (propslab#303)', () => {
   it.each([
     ['%%', 'anything', 'y'],
     ['%%', '', 'y'],
@@ -71,7 +71,7 @@ describe('like() with consecutive % (#303)', () => {
   });
 });
 
-describe('like() reports a pattern the guard refuses (#303)', () => {
+describe('like() reports a pattern the guard refuses (propslab#303)', () => {
   it('warns once, as replace()/match()/mvfind() do, and evaluates to false', () => {
     // Nothing like() builds after the collapse is refused by today's guard, so
     // the refusal is forced: this pins that a future, stricter guard cannot
@@ -88,7 +88,7 @@ describe('like() reports a pattern the guard refuses (#303)', () => {
     expect(out[0]!.fields['r']).toBe('false');
     expect(diagnostics).toHaveLength(1);
     expect(diagnostics[0]).toMatchObject({ level: 'warning', directiveKey: 'EVAL-r', line: 3 });
-    // `(?s)^…\z` since #447; the regex like() built was `^a.*$` before.
+    // `(?s)^…\z` since propslab#447; the regex like() built was `^a.*$` before.
     expect(diagnostics[0]?.message).toContain('like() pattern "(?s)^a.*\\z"');
     expect(diagnostics[0]?.message).toContain('evaluated to false');
   });
@@ -108,7 +108,7 @@ describe('like() reports a pattern the guard refuses (#303)', () => {
   });
 });
 
-describe('like() and LIKE on text with newlines (#447)', () => {
+describe('like() and LIKE on text with newlines (propslab#447)', () => {
   const value = (expr: string, s: string) => evaluateExpression(expr, event({ s }), undefined, FIXED_NOW);
 
   it.each([

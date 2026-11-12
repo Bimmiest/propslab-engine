@@ -13,7 +13,7 @@ describe('isCommentOnly', () => {
     expect(isCommentOnly(file, code, code.replace('return', '/* inline */ return'))).toBe(true);
   });
 
-  it('is true when only layout changed, and false when a reformat adds a token (#571)', () => {
+  it('is true when only layout changed, and false when a reformat adds a token (propslab#571)', () => {
     const before = 'export function f(a: number, b: number) { return a + b; }\n';
     const after = 'export function f(a: number, b: number) {\n  return a + b;\n}\n';
     expect(isCommentOnly(file, before, after)).toBe(true);
@@ -42,7 +42,7 @@ describe('isCommentOnly', () => {
     expect(isCommentOnly(file, disabled, disabled.replace('all', 'ArithmeticOperator'))).toBe(false);
   });
 
-  it('is false when a Stryker directive moved, its text unchanged (#571)', () => {
+  it('is false when a Stryker directive moved, its text unchanged (propslab#571)', () => {
     const two = 'export const a = 1;\nexport const b = 2;\n';
     const onA = `// Stryker disable next-line all\n${two}`;
     const onB = two.replace('export const b', '// Stryker disable next-line all\nexport const b');

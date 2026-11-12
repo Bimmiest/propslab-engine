@@ -52,7 +52,7 @@ describe('runPipeline — DEST_KEY validation (SEM-11)', () => {
     expect(diagnostics.some((d) => d.message.includes('not a recognised Splunk DEST_KEY'))).toBe(true);
   });
 
-  it('an unknown DEST_KEY is warned about once, and writes no field (#477)', () => {
+  it('an unknown DEST_KEY is warned about once, and writes no field (propslab#477)', () => {
     const transforms = '[route]\nREGEX = (.*)\nDEST_KEY = made_up_key\nFORMAT = $1';
     const { result, diagnostics } = runPipeline('a log line', PLAIN_META, props, transforms, AT_FIXED_NOW);
     const about = diagnostics.filter((d) => d.message.includes('made_up_key'));
@@ -108,7 +108,7 @@ describe('runPipeline — transforms references', () => {
 // Doc-derived (transforms.conf.spec, DEST_KEY / FORMAT): `_MetaData:Index`
 // takes the bare index name, and only Host/Source/Sourcetype need a
 // `<name>::` prefix, so the lint must not ask for `index::`.
-describe('runPipeline — DEST_KEY = MetaData:Index FORMAT lint (#281)', () => {
+describe('runPipeline — DEST_KEY = MetaData:Index FORMAT lint (propslab#281)', () => {
   const PLAIN_META: EventMetadata = { index: 'main', host: '', source: '', sourcetype: 'st' };
   const props = '[st]\nTRANSFORMS-t = route';
   const prefixWarning = (diags: ValidationDiagnostic[]) => diags.filter((d) => d.message.includes('prefix'));
@@ -179,7 +179,7 @@ describe('runPipeline — INGEST_EVAL is scoped to referencing stanzas (SEM-2)',
   });
 });
 
-describe('runPipeline — 1 MB input cap aligns to a line boundary (#14)', () => {
+describe('runPipeline — 1 MB input cap aligns to a line boundary (propslab#14)', () => {
   const LINE = 'x'.repeat(99) + '\n'; // 100 chars per line
   // One event per line, so a mid-line cut would be visible as a short event.
   const NO_MERGE = '[aws:cloudtrail]\nSHOULD_LINEMERGE = false';
@@ -201,7 +201,7 @@ describe('runPipeline — 1 MB input cap aligns to a line boundary (#14)', () =>
   });
 });
 
-describe('runPipeline — per-event mode does not duplicate config diagnostics (#13)', () => {
+describe('runPipeline — per-event mode does not duplicate config diagnostics (propslab#13)', () => {
   // An unreferenced transform stanza is a config-level warning: it describes the
   // configuration, not any one event, so it must be reported once however many
   // events are processed.
@@ -223,7 +223,7 @@ describe('runPipeline — per-event mode does not duplicate config diagnostics (
   });
 });
 
-describe('runPipeline — search-time REPORT compile failures are reported (#75.1)', () => {
+describe('runPipeline — search-time REPORT compile failures are reported (propslab#75.1)', () => {
   const PROPS = '[aws:cloudtrail]\nREPORT-r = broken';
   const TRANSFORMS = '[broken]\nREGEX = (a+\nFORMAT = f::$1';
 
@@ -240,7 +240,7 @@ describe('runPipeline — search-time REPORT compile failures are reported (#75.
   });
 });
 
-describe('runPipeline — an input-time sourcetype assignment is not an index-time rewrite (#310)', () => {
+describe('runPipeline — an input-time sourcetype assignment is not an index-time rewrite (propslab#310)', () => {
   // Doc-derived: props.conf.spec describes `sourcetype = <string>` in a
   // [source::] stanza as assigning the sourcetype at input time, before any
   // TRANSFORMS run — so it must not be reported as a DEST_KEY = MetaData:*
@@ -276,7 +276,7 @@ describe('runPipeline — an input-time sourcetype assignment is not an index-ti
   });
 });
 
-describe('runPipeline — inputMetadata is the metadata the events were broken with (#330)', () => {
+describe('runPipeline — inputMetadata is the metadata the events were broken with (propslab#330)', () => {
   // Doc-derived: props.conf.spec — `sourcetype = <string>` in a [source::]
   // stanza assigns the sourcetype at input time, to every event. The UI badges
   // an event "Metadata Modified" when it differs from inputMetadata, so the
@@ -302,7 +302,7 @@ describe('runPipeline — inputMetadata is the metadata the events were broken w
   });
 });
 
-describe('runPipeline — CLONE_SOURCETYPE copies are not reported as MetaData:* rewrites (#330)', () => {
+describe('runPipeline — CLONE_SOURCETYPE copies are not reported as MetaData:* rewrites (propslab#330)', () => {
   // Doc-derived: transforms.conf.spec — CLONE_SOURCETYPE duplicates the event
   // under a new sourcetype; no DEST_KEY = MetaData:* transform is involved, so
   // the batch-mode warning must not name one. The copies still need search-time
@@ -345,7 +345,7 @@ describe('runPipeline — CLONE_SOURCETYPE copies are not reported as MetaData:*
   });
 });
 
-describe('runPipeline — a conf of hundreds of thousands of parse errors (#517)', () => {
+describe('runPipeline — a conf of hundreds of thousands of parse errors (propslab#517)', () => {
   it('reports them all rather than overflowing the stack', () => {
     // Pushing the parse errors with a spread passed each as an argument.
     const { diagnostics } = runPipeline('x\n', META, 'x\n'.repeat(300_000), '', {
@@ -356,7 +356,7 @@ describe('runPipeline — a conf of hundreds of thousands of parse errors (#517)
   });
 });
 
-describe('runPipeline — per-event search time keeps an index-time sourcetype (#466)', () => {
+describe('runPipeline — per-event search time keeps an index-time sourcetype (propslab#466)', () => {
   // Doc-derived: props.conf.spec describes `sourcetype =` in a [source::]
   // stanza as an input-time assignment, and transforms.conf.spec has
   // DEST_KEY = MetaData:Sourcetype and CLONE_SOURCETYPE give the event a new
@@ -410,7 +410,7 @@ describe('runPipeline — per-event search time keeps an index-time sourcetype (
   });
 });
 
-describe('runPipeline — a splunkd.log TIME_FORMAT with %l (#578)', () => {
+describe('runPipeline — a splunkd.log TIME_FORMAT with %l (propslab#578)', () => {
   // Splunk's default [splunkd] stanza is `TIME_FORMAT = %m-%d-%Y %H:%M:%S.%l %z`,
   // and its source stanza turns date-based line merging on. %l was read as a
   // 12-hour clock, so no line had a date, every record merged into one event,
@@ -446,7 +446,7 @@ MAX_TIMESTAMP_LOOKAHEAD = 128`;
   });
 });
 
-describe('runPipeline — the rename target on the result (#611)', () => {
+describe('runPipeline — the rename target on the result (propslab#611)', () => {
   const meta: EventMetadata = { index: 'main', host: 'h', source: 's', sourcetype: 'orig' };
 
   it('names the sourcetype search-time settings come from when a matched stanza renames', () => {
@@ -467,7 +467,7 @@ describe('runPipeline — the rename target on the result (#611)', () => {
   });
 });
 
-describe('runPipeline — $0 in FORMAT for a metadata DEST_KEY (#620)', () => {
+describe('runPipeline — $0 in FORMAT for a metadata DEST_KEY (propslab#620)', () => {
   const meta: EventMetadata = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
 
   it('extends the host, which holds its host:: prefix', () => {

@@ -3,7 +3,7 @@ import { applyTransforms } from '../processors/transformsProcessor';
 import { runPipeline } from '../pipeline';
 import type { SplunkEvent, ConfDirective, ConfStanza, ParsedConf, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string): SplunkEvent {
   return makeEvent(raw);
@@ -88,7 +88,7 @@ describe('applyTransforms — unknown DEST_KEY warning (SEM-11)', () => {
 
   // The one warning about an unknown key is the config-time lint's ("has no
   // routing effect"); the run-time stage used to add a second that said the
-  // preview treats it as a field name (#477).
+  // preview treats it as a field name (propslab#477).
   it('does not warn at run time for a key outside the documented set, and writes no field', () => {
     const diags: ValidationDiagnostic[] = [];
     const conf = transformsConf('route', { REGEX: '(.*)', FORMAT: '$1', DEST_KEY: 'MetaData:Bogus' });
@@ -279,7 +279,7 @@ describe('applyTransforms — INGEST_EVAL interleaving (SEM-2)', () => {
   });
 });
 
-describe('applyTransforms — DEST_KEY is index-time only (#57)', () => {
+describe('applyTransforms — DEST_KEY is index-time only (propslab#57)', () => {
   const reportDir = (stanzaName: string): ConfDirective[] => [
     { key: 'REPORT-x', value: stanzaName, line: 1, directiveType: 'REPORT', className: 'x' },
   ];
@@ -350,7 +350,7 @@ describe('applyTransforms — DEST_KEY is index-time only (#57)', () => {
   });
 });
 
-describe('applyTransforms — SOURCE_KEY reads pipeline metadata (#53)', () => {
+describe('applyTransforms — SOURCE_KEY reads pipeline metadata (propslab#53)', () => {
   it('matches the canonical sourcetype-override transform', () => {
     const conf = transformsConf('force_sourcetype', {
       SOURCE_KEY: 'MetaData:Source',
@@ -416,7 +416,7 @@ describe('applyTransforms — SOURCE_KEY reads pipeline metadata (#53)', () => {
     expect(out.fields['tier_copy']).toBe('gold');
   });
 
-  // #437: the simulator keeps queue routing in _meta._queue; that is not text
+  // propslab#437: the simulator keeps queue routing in _meta._queue; that is not text
   // Splunk puts in _meta, so SOURCE_KEY = _meta must not see it.
   it('does not expose the internal queue slot when reading _meta', () => {
     const ev = { ...event('x'), _meta: { tier: 'gold', _queue: 'indexQueue' } };
@@ -507,7 +507,7 @@ describe('applyTransforms — search-time-only attributes reached index-time', (
 
 const metadata = { index: 'main', host: 'h', source: 's', sourcetype: 'my_app' };
 
-describe('#87 — CLONE_SOURCETYPE', () => {
+describe('propslab#87 — CLONE_SOURCETYPE', () => {
   const props = '[my_app]\nTRANSFORMS-clone = cloner\n';
   const transforms = '[cloner]\nREGEX = user=(\\w+)\nCLONE_SOURCETYPE = my_app_masked\n';
 
@@ -556,7 +556,7 @@ describe('#87 — CLONE_SOURCETYPE', () => {
   // Doc-derived (transforms.conf.spec, CLONE_SOURCETYPE): "The duplicated
   // events receive index-time transformations and sed commands for all
   // transforms that match its new host, source, or source type."
-  describe('index-time processing of the clone (#282)', () => {
+  describe('index-time processing of the clone (propslab#282)', () => {
     const cloneProps = '[orig]\nTRANSFORMS-clone = do_clone\n\n[masked]\nSEDCMD-mask = s/\\d{4}-\\d{4}/XXXX-XXXX/g\n';
     const cloneTransforms = '[do_clone]\nREGEX = .\nCLONE_SOURCETYPE = masked\n';
     const runOrig = (p: string, t: string) =>
@@ -608,7 +608,7 @@ describe('#87 — CLONE_SOURCETYPE', () => {
   });
 });
 
-describe('applyTransforms — the step describes what the transform did (#346)', () => {
+describe('applyTransforms — the step describes what the transform did (propslab#346)', () => {
   // Trace content only, not a Splunk behaviour claim.
   const reportDir = (name: string): ConfDirective[] => [
     { key: 'REPORT-x', value: name, line: 1, directiveType: 'REPORT', className: 'x' },
@@ -651,7 +651,7 @@ describe('applyTransforms — the step describes what the transform did (#346)',
 
 // Doc-derived (transforms.conf.spec): REPEAT_MATCH is documented for index-time
 // extraction into _meta, and indexed fields are multivalue.
-describe('applyTransforms — DEST_KEY=_meta keeps every match and value (#359)', () => {
+describe('applyTransforms — DEST_KEY=_meta keeps every match and value (propslab#359)', () => {
   it('adds one pair per match under REPEAT_MATCH', () => {
     const conf = transformsConf('nums', {
       REGEX: 'n=(\\d+)',
@@ -673,7 +673,7 @@ describe('applyTransforms — DEST_KEY=_meta keeps every match and value (#359)'
 
 // Doc-derived (transforms.conf.spec FORMAT): `$N` and `${name}` are substituted
 // from the match; text a capture brings in is data, not another reference.
-describe('applyTransforms — FORMAT is expanded in one pass (#365)', () => {
+describe('applyTransforms — FORMAT is expanded in one pass (propslab#365)', () => {
   it('does not re-expand ${name} text that came from a capture', () => {
     const conf = transformsConf('f', { REGEX: '(?<a>\\S+) (\\S+)', FORMAT: 'f::$2', WRITE_META: 'true' });
     const e = applyTransforms([event('x ${a}')], transformsDir('f'), conf, 'index-time', runCtx(FIXED_NOW))[0]!;
@@ -687,10 +687,10 @@ describe('applyTransforms — FORMAT is expanded in one pass (#365)', () => {
   });
 });
 
-// #450: KEEP_EMPTY_VALS decides an empty capture's fate for a REGEX-based
+// propslab#450: KEEP_EMPTY_VALS decides an empty capture's fate for a REGEX-based
 // REPORT, but a DELIMS-based one drops the empty value under both settings,
 // and so does EXTRACT, which KEEP_EMPTY_VALS does not reach.
-describe('#450 — an empty value at search time', () => {
+describe('propslab#450 — an empty value at search time', () => {
   const raw = '2026-01-15T10:00:00Z;a=1;b=;c=3\n';
   /** The fields named in the event: a, b and c, leaving out the timestamp's and punct. */
   const searchTime = (props: string, transforms = '') => {
@@ -740,10 +740,10 @@ describe('#450 — an empty value at search time', () => {
   });
 });
 
-// #451: DEST_KEY = _meta without $0 replaces _meta, so an indexed field an
+// propslab#451: DEST_KEY = _meta without $0 replaces _meta, so an indexed field an
 // earlier WRITE_META transform wrote is gone; with `$0` at the start of FORMAT
 // both survive. punct, which is not written through _meta, is unaffected.
-describe('#451 — DEST_KEY = _meta replaces what came before it', () => {
+describe('propslab#451 — DEST_KEY = _meta replaces what came before it', () => {
   const zone = stanza('t_zone', { REGEX: 'zone (\\w+)', FORMAT: 'zone::$1', WRITE_META: 'true' });
   const tier = (format: string, extra: Record<string, string> = {}) =>
     stanza('t_tier', { REGEX: 'tier (\\w+)', FORMAT: format, DEST_KEY: '_meta', ...extra });
@@ -877,7 +877,7 @@ describe('#451 — DEST_KEY = _meta replaces what came before it', () => {
 // to define any global settings … If an attribute is defined at both the global
 // level and in a specific stanza, the value in the specific stanza takes
 // precedence"). Settings written above the first stanza header are global too.
-describe('transforms.conf [default] applies to every transform (#615)', () => {
+describe('transforms.conf [default] applies to every transform (propslab#615)', () => {
   const meta = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
   const props = '[st]\nREPORT-a = kv\nKV_MODE = none';
   const kv = '[kv]\nREGEX = (\\S+)=(\\S+)\nFORMAT = $1::$2';
@@ -905,7 +905,7 @@ describe('transforms.conf [default] applies to every transform (#615)', () => {
 // instead looks up an already indexed field … SOURCE_KEY = fields:name1,name2,
 // name3 causes MATCH to be run against a string comprising of all three values,
 // separated by space characters").
-describe('SOURCE_KEY = field:<name> and fields:<a>,<b> (#617)', () => {
+describe('SOURCE_KEY = field:<name> and fields:<a>,<b> (propslab#617)', () => {
   const meta = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
   const run = (raw: string, list: string, transforms: string) =>
     runPipeline(raw, meta, `[st]\nTRANSFORMS-a = ${list}\nKV_MODE = none`, transforms, {

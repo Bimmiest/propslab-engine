@@ -67,7 +67,7 @@ const SINGLE_VALUE_DEST_KEYS = new Set([
 /**
  * A REGEX or FORMAT value as Splunk reads it: an index-time transform keeps
  * trailing whitespace, a search-time one drops it. This follows a capture on
- * Splunk 10.4.0, not the spec, which is silent (ADR 0021). The parser keeps
+ * Splunk 10.4.0, not the spec, which is silent (propslab ADR 0021). The parser keeps
  * trailing whitespace, as a conf file does. Leading whitespace was not
  * captured and is dropped in both phases, as before.
  */
@@ -99,7 +99,7 @@ function getCompiledRegex(transformStanza: ConfStanza, pattern: string): SplunkR
  * transforms.conf.spec: "$0 represents the DEST_KEY value before Splunk
  * software performs the REGEX". A built-in key reads as `SOURCE_KEY` reads it,
  * prefix included (`host::web01`, `indexQueue`), so the two cannot disagree
- * about what a key holds (#620); any other key is a field.
+ * about what a key holds (propslab#620); any other key is a field.
  */
 function resolvePriorDestValue(event: SplunkEvent, destKey: string | undefined): string | undefined {
   if (!destKey) return undefined;
@@ -120,7 +120,7 @@ function resolveSourceValue(event: SplunkEvent, sourceKeyDir?: ConfDirective): s
   if (builtin !== undefined) return builtin;
   // transforms.conf.spec: `field:<name>` reads an already indexed field, and
   // `fields:<a>,<b>,<c>` runs against "all three values, separated by space
-  // characters" (#617). A field with no value is left out.
+  // characters" (propslab#617). A field with no value is left out.
   const named = /^fields?:(.*)$/s.exec(sourceKey);
   if (named) {
     return (named[1] ?? '')
@@ -188,7 +188,7 @@ function readRegexSettings(transformStanza: ConfStanza, phase: Phase): RegexSett
     // KEEP_EMPTY_VALS (transforms.conf.spec): "Controls whether Splunk software
     // keeps field/value pairs when the value is an empty string", default
     // false, so at search time an empty capture makes no field unless it is
-    // true (#450). Like MV_ADD it is search-time only; an index-time
+    // true (propslab#450). Like MV_ADD it is search-time only; an index-time
     // extraction is not filtered by it and writes the empty value.
     dropEmpty: phase === 'search-time' && !flag('KEEP_EMPTY_VALS'),
   };

@@ -35,7 +35,7 @@ describe('buildPunct', () => {
   });
 });
 
-describe('ANNOTATE_PUNCT in the pipeline (#185)', () => {
+describe('ANNOTATE_PUNCT in the pipeline (propslab#185)', () => {
   it('generates punct by default, with no configuration at all', () => {
     const events = run('SHOULD_LINEMERGE = false\n', '2026-01-15T10:00:00Z user=alice\n');
     expect(events[0]?.fields['punct']).toBe('--::_=');

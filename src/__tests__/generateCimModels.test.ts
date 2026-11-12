@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { CIM_MODELS, CIM_VERSION } from '../engine';
+import { CIM_MODELS, CIM_VERSION } from '../cim/cimModelsData';
 
 /**
- * The CIM generator (#518).
+ * The CIM generator (propslab#518).
  *
  * `scripts/generate-cim-models.js` needs the Splunk CIM add-on, which is a
  * Splunkbase download behind a login and under Splunk's licence, so CI cannot
@@ -45,12 +45,12 @@ interface Generator {
 
 const scripts = import.meta.glob<Generator>('/scripts/generate-cim-models.js', { eager: true });
 const { INCLUDE, locate, build, render } = scripts['/scripts/generate-cim-models.js']!;
-const committedFiles = import.meta.glob<string>('/src/engine/cim/cimModelsData.ts', {
+const committedFiles = import.meta.glob<string>('/src/cim/cimModelsData.ts', {
   query: '?raw',
   import: 'default',
   eager: true,
 });
-const committed = committedFiles['/src/engine/cim/cimModelsData.ts']!;
+const committed = committedFiles['/src/cim/cimModelsData.ts']!;
 
 /** A directory beside this file, as the path the script's fs calls want. */
 const fixture = (name: string): string => {

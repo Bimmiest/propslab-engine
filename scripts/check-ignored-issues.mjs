@@ -17,10 +17,10 @@
 // no imports, so it needs no build step and no dependency to load here.
 // ---------------------------------------------------------------------------
 
-import { DIRECTIVE_SUPPORT } from '../src/engine/directiveSupport.ts';
+import { DIRECTIVE_SUPPORT } from '../src/directiveSupport.ts';
 import { classifyIssue, ignoredDirectives } from './lib/ignoredIssues.mjs';
 
-const REPO = process.env.GITHUB_REPOSITORY ?? 'Bimmiest/propslab';
+const REPO = process.env.GITHUB_REPOSITORY ?? 'Bimmiest/propslab-engine';
 const token = process.env.GITHUB_TOKEN;
 
 const tracked = ignoredDirectives(DIRECTIVE_SUPPORT);

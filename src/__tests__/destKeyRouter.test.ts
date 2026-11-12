@@ -3,7 +3,7 @@ import { applyDestKey } from '../transforms/destKeyRouter';
 import { runPipeline } from '../pipeline';
 import type { SplunkEvent } from '../types';
 import type { TransformResult } from '../transforms/regexTransform';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 import { AT_FIXED_NOW } from './runCtx';
 
 function baseEvent(): SplunkEvent {
@@ -120,17 +120,17 @@ describe('applyDestKey — _meta (SEM-11)', () => {
     expect(event._meta['n']).toBe('5');
   });
 
-  it('keeps every value of a repeated key, since indexed fields are multivalue (#359)', () => {
+  it('keeps every value of a repeated key, since indexed fields are multivalue (propslab#359)', () => {
     const event = applyDestKey(baseEvent(), result('_meta', 'tag::a tag::b'));
     expect(event._meta['tag']).toEqual(['a', 'b']);
     // A second write appends only under WRITE_META. This test used to append
-    // without it; #451 corrected that, since DEST_KEY = _meta replaces _meta.
+    // without it; propslab#451 corrected that, since DEST_KEY = _meta replaces _meta.
     const again = applyDestKey(event, result('_meta', 'tag::c'), { writeMeta: true });
     expect(again._meta['tag']).toEqual(['a', 'b', 'c']);
     expect(event._meta['tag']).toEqual(['a', 'b']); // the input event is not mutated
   });
 
-  it('never writes a _queue:: pair into the single-valued routing slot (#478)', () => {
+  it('never writes a _queue:: pair into the single-valued routing slot (propslab#478)', () => {
     // Only DEST_KEY = queue routes; `_queue` stays a string (types.ts), so a
     // `=== 'nullQueue'` check downstream still reads it.
     const queued = applyDestKey(baseEvent(), result('queue', 'nullQueue'));
@@ -139,7 +139,7 @@ describe('applyDestKey — _meta (SEM-11)', () => {
     expect(applyDestKey(baseEvent(), result('_meta', '_queue::indexQueue'))._meta).toEqual({});
   });
 
-  it('keeps _queue a string through the pipeline when a _meta FORMAT names it (#478)', () => {
+  it('keeps _queue a string through the pipeline when a _meta FORMAT names it (propslab#478)', () => {
     const props = '[syslog]\nSHOULD_LINEMERGE = false\nTRANSFORMS-q = drop, meta\n';
     const transforms = [
       '[drop]',
@@ -164,8 +164,8 @@ describe('applyDestKey — _meta (SEM-11)', () => {
 // recommended) you should also add $0 to the start of your FORMAT setting";
 // Getting Data In: "Each matching transform can overwrite _meta, so use
 // WRITE_META = true to append _meta." Without WRITE_META the FORMAT's pairs
-// replace _meta (#451).
-describe('applyDestKey — DEST_KEY = _meta replaces _meta (#451)', () => {
+// replace _meta (propslab#451).
+describe('applyDestKey — DEST_KEY = _meta replaces _meta (propslab#451)', () => {
   const withMeta = (meta: SplunkEvent['_meta'], fields: SplunkEvent['fields'] = {}) => ({
     ...baseEvent(),
     _meta: meta,
@@ -210,7 +210,7 @@ describe('applyDestKey — DEST_KEY = _meta replaces _meta (#451)', () => {
   });
 });
 
-describe('applyDestKey — WRITE_META writes its fields to _meta (#451)', () => {
+describe('applyDestKey — WRITE_META writes its fields to _meta (propslab#451)', () => {
   const extracted = (fields: TransformResult['fields']): TransformResult => ({ fields, matched: true });
 
   it('appends each field, every value of a multivalue one, to _meta and adds it to the event', () => {
@@ -228,7 +228,7 @@ describe('applyDestKey — WRITE_META writes its fields to _meta (#451)', () => 
   });
 });
 
-describe('applyDestKey — unsimulated routing keys are not written as fields (#75.3)', () => {
+describe('applyDestKey — unsimulated routing keys are not written as fields (propslab#75.3)', () => {
   it('does not invent a field for _TCP_ROUTING', () => {
     const out = applyDestKey(baseEvent(), result('_TCP_ROUTING', 'my_group'));
     expect(out.fields['_TCP_ROUTING']).toBeUndefined();
@@ -241,7 +241,7 @@ describe('applyDestKey — unsimulated routing keys are not written as fields (#
 
   // Doc-derived: transforms.conf.spec lists the DEST_KEY values Splunk accepts,
   // and gives an unlisted key no effect. Writing the value into a field named
-  // after the key would show a field Splunk never creates (#477). The extracted
+  // after the key would show a field Splunk never creates (propslab#477). The extracted
   // fields of the transform still apply.
   it('leaves the event alone for a key outside the documented set', () => {
     const before = baseEvent();
@@ -258,7 +258,7 @@ describe('applyDestKey — unsimulated routing keys are not written as fields (#
   });
 });
 
-describe('applyDestKey — _time out of the Date range (#417)', () => {
+describe('applyDestKey — _time out of the Date range (propslab#417)', () => {
   const at = new Date('2026-01-02T03:04:05Z');
 
   it.each(['100000000000000', '1e20', '-1e300', '1e400'])('keeps the previous _time for %s', (value) => {

@@ -19,7 +19,7 @@ import { applyIndexedExtractions } from '../processors/indexedExtractions';
 import { runPipeline } from '../pipeline';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string): SplunkEvent {
   return makeEvent(raw);
@@ -45,7 +45,7 @@ const WINEVT =
   "<EventData><Data Name='SubjectUserName'>alice</Data><Data Name='LogonType'>3</Data></EventData>" +
   '</Event>';
 
-describe('INDEXED_EXTRACTIONS = xml and KV_MODE = xml share one walk (#483)', () => {
+describe('INDEXED_EXTRACTIONS = xml and KV_MODE = xml share one walk (propslab#483)', () => {
   const docs = [
     '<event><user>alice</user><src ip="10.0.0.1"/></event>',
     '<Event><EventData><Data Name="TargetUser">bob</Data><Data Name="">v</Data></EventData></Event>',
@@ -67,7 +67,7 @@ describe('INDEXED_EXTRACTIONS = xml and KV_MODE = xml share one walk (#483)', ()
   });
 });
 
-describe('INDEXED_EXTRACTIONS xml family — naming (#271)', () => {
+describe('INDEXED_EXTRACTIONS xml family — naming (propslab#271)', () => {
   it('xml names leaves by dotted path from the root, as KV_MODE = xml does', () => {
     const f = fieldsOf('<event><user>alice</user><src ip="10.0.0.1"/></event>', xmlDirs('xml'));
     expect(f['event.user']).toBe('alice');
@@ -106,7 +106,7 @@ describe('INDEXED_EXTRACTIONS xml family — naming (#271)', () => {
   });
 });
 
-describe('XML_INDEXED_EXTRACTIONS_PIPELINE (#271)', () => {
+describe('XML_INDEXED_EXTRACTIONS_PIPELINE (propslab#271)', () => {
   it('is required: without it the XML values extract nothing, and say why', () => {
     const diagnostics: ValidationDiagnostic[] = [];
     const out = applyIndexedExtractions(
@@ -137,7 +137,7 @@ describe('XML_INDEXED_EXTRACTIONS_PIPELINE (#271)', () => {
   });
 });
 
-describe('XML_IE_INCLUDE / XML_IE_EXCLUDE (#271)', () => {
+describe('XML_IE_INCLUDE / XML_IE_EXCLUDE (propslab#271)', () => {
   const raw =
     '<e><ProcessName>a.exe</ProcessName><ParentProcessName>b.exe</ParentProcessName><EventID>1</EventID><User>x</User></e>';
 
@@ -157,7 +157,7 @@ describe('XML_IE_INCLUDE / XML_IE_EXCLUDE (#271)', () => {
   });
 });
 
-describe('XML_IE_INCLUDE_MV / XML_IE_EXCLUDE_MV (#271)', () => {
+describe('XML_IE_INCLUDE_MV / XML_IE_EXCLUDE_MV (propslab#271)', () => {
   const raw = '<r><ip>1</ip><ip>2</ip><port>80</port><port>443</port></r>';
 
   it('lets a field outside INCLUDE_MV keep only its first value', () => {
@@ -173,7 +173,7 @@ describe('XML_IE_INCLUDE_MV / XML_IE_EXCLUDE_MV (#271)', () => {
   });
 });
 
-describe('XML_IE_EXCLUDE_VALS (#271)', () => {
+describe('XML_IE_EXCLUDE_VALS (propslab#271)', () => {
   it('skips a value matching an entry', () => {
     const f = fieldsOf('<r><a>-</a><b>ok</b></r>', xmlDirs('xmlkv', d('XML_IE_EXCLUDE_VALS', '-')));
     expect(f['a']).toBeUndefined();
@@ -195,10 +195,10 @@ describe('XML_IE_EXCLUDE_VALS (#271)', () => {
     expect(f['c']).toBe('kept');
   });
 
-  it('tests a many-star entry against a long value with a bounded number of searches (#344)', () => {
+  it('tests a many-star entry against a long value with a bounded number of searches (propslab#344)', () => {
     // The value comes from the event, so the matcher's cost is the event's to
     // choose. Compiled to a backtracking regex this took seconds at 200 chars.
-    // Operations, not milliseconds (#507). The linear matcher (wildcardMatch.ts)
+    // Operations, not milliseconds (propslab#507). The linear matcher (wildcardMatch.ts)
     // searches for each middle segment once, so the entries add a handful of
     // indexOf calls however long the value is. Compared with the same event
     // and no entries, that handful is at least one (the entries did go through
@@ -231,7 +231,7 @@ describe('XML_IE_EXCLUDE_VALS (#271)', () => {
   });
 });
 
-describe('XML_IE_SKIP_XML_ENCODED_VALS (#271)', () => {
+describe('XML_IE_SKIP_XML_ENCODED_VALS (propslab#271)', () => {
   const raw = "<Event><EventData><Data Name='Cmd'>a &amp; b</Data><Data Name='User'>alice</Data></EventData></Event>";
 
   it('leaves an XML-encoded value out by default for xmlkv-winevt', () => {
@@ -255,7 +255,7 @@ describe('XML_IE_SKIP_XML_ENCODED_VALS (#271)', () => {
   });
 });
 
-describe('XML_IE_MAX_EXTRACTED_VALUE_SIZE (#271)', () => {
+describe('XML_IE_MAX_EXTRACTED_VALUE_SIZE (propslab#271)', () => {
   it('leaves a value over the default 1000 bytes out', () => {
     const f = fieldsOf(`<r><big>${'x'.repeat(1001)}</big><ok>${'y'.repeat(1000)}</ok></r>`, xmlDirs('xmlkv'));
     expect(f['big']).toBeUndefined();
@@ -288,7 +288,7 @@ describe('XML_IE_MAX_EXTRACTED_VALUE_SIZE (#271)', () => {
   });
 });
 
-describe('extraction_cutoff (#271)', () => {
+describe('extraction_cutoff (propslab#271)', () => {
   it('extracts only what is complete within the first N bytes', () => {
     const raw = '<r><a>1</a><b>2</b></r>';
     // `<r><a>1</a>` is 11 bytes: `a` ends inside the cutoff, `b` does not.
@@ -326,7 +326,7 @@ describe('extraction_cutoff (#271)', () => {
   });
 });
 
-describe('INDEXED_EXTRACTIONS = xml through the pipeline (#271)', () => {
+describe('INDEXED_EXTRACTIONS = xml through the pipeline (propslab#271)', () => {
   it('extracts at index time, with a trace entry', () => {
     const { result } = runPipeline(
       '<event><user>alice</user></event>\n',
@@ -341,7 +341,7 @@ describe('INDEXED_EXTRACTIONS = xml through the pipeline (#271)', () => {
   });
 });
 
-describe('the XML attributes through the pipeline (#271)', () => {
+describe('the XML attributes through the pipeline (propslab#271)', () => {
   /** Fields of the one event `raw` becomes, written as `mode` with `body` after it. */
   const fieldsOf = (raw: string, mode: string, body: string) =>
     runPipeline(
@@ -397,7 +397,7 @@ describe('the XML attributes through the pipeline (#271)', () => {
   });
 });
 
-describe('INDEXED_EXTRACTIONS xml family — line merging (#271)', () => {
+describe('INDEXED_EXTRACTIONS xml family — line merging (propslab#271)', () => {
   // Doc-derived. csv/tsv/psv/w3c/json turn line merging off by default because
   // each record is one line; an XML record is a document that spans lines, so
   // the XML modes keep the ordinary default and a BREAK_ONLY_BEFORE frames it.

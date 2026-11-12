@@ -165,7 +165,7 @@ function warnMatched(
 ): void {
   const { diagnostics } = run;
   // The fields or the DEST_KEY value come from part of the matches, and
-  // nothing else on the event says so (#874).
+  // nothing else on the event says so (propslab#874).
   if (result.limitHit !== undefined) {
     diagnostics.report(warnKey(run, 'scanLimit', stanzaName), {
       level: 'warning',
@@ -323,7 +323,7 @@ function applyMatch(
 
 /**
  * The fields a matched stanza wrote, split at search time into the new ones
- * and the ones that the event had before (#900). At index time
+ * and the ones that the event had before (propslab#900). At index time
  * `fieldsModified` is for a `_raw` rewrite that changed an extracted value
  * (attributeRawMutations), so every field stays in `fieldsAdded`.
  */
@@ -380,7 +380,7 @@ function runRegexStanza(
  * directives (and any written above the first header) in front of its own.
  * Every .conf file applies its `[default]` settings to all its stanzas, and a
  * stanza's own setting wins, which putting them first gives under the readers'
- * last-definition rule (#615). Without a default stanza the stanzas are
+ * last-definition rule (propslab#615). Without a default stanza the stanzas are
  * returned as parsed. Built once per run: the regex cache is keyed by stanza.
  */
 function stanzasWithDefaults(conf: ParsedConf): Map<string, TransformStanza> {

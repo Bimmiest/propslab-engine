@@ -1,13 +1,13 @@
 // ---------------------------------------------------------------------------
 // runLimits.test.ts
 // The bounds on one run's work (`RunLimits`, runContext.ts), through
-// `runPipeline`, which takes them as `PipelineOptions.limits` (#478, #479):
+// `runPipeline`, which takes them as `PipelineOptions.limits` (propslab#478, propslab#479):
 //
 //   - maxRawChars: input past it is cut back to the last complete line;
 //   - maxEvents: line breaking stops there and says so;
 //   - explanationsPerDirective: missed events a directive's no-match is
 //     analysed for;
-//   - maxRunMs: the stages stop at the stage that spends it (#560), and
+//   - maxRunMs: the stages stop at the stage that spends it (propslab#560), and
 //     MATCH_LIMIT and DEPTH_LIMIT are capped so that one match cannot outlast it.
 //
 // Examples pin the edges; a fast-check property per limit shows the bound
@@ -24,7 +24,7 @@ import { splitSegments } from '../processors/lineBreaker';
 import { DEFAULT_LIMITS, type RunLimits } from '../runContext';
 import type { EventMetadata, PipelineOptions, ValidationDiagnostic } from '../types';
 import type { RunStage } from '../runStages';
-import { fcSeed } from '../../test/fcSeed';
+import { fcSeed } from '../test/fcSeed';
 
 const META: EventMetadata = { index: 'main', host: 'h', source: '/log', sourcetype: 'st' };
 const NOW = Date.UTC(2026, 8, 1);
@@ -38,7 +38,7 @@ const truncationWarnings = (diags: ValidationDiagnostic[]) =>
 const capWarnings = (diags: ValidationDiagnostic[]) =>
   diags.filter((d) => d.message.startsWith('Line breaking stopped'));
 
-describe('RunLimits defaults (#479)', () => {
+describe('RunLimits defaults (propslab#479)', () => {
   it('caps events in the low tens of thousands, above the 20,000-event perf budget', () => {
     expect(DEFAULT_LIMITS.maxEvents).toBe(25_000);
     expect(DEFAULT_LIMITS.maxRawChars).toBe(1_000_000);
@@ -55,7 +55,7 @@ describe('RunLimits defaults (#479)', () => {
   });
 });
 
-describe('maxRunMs (#560)', () => {
+describe('maxRunMs (propslab#560)', () => {
   const stops = (diags: ValidationDiagnostic[]) => diags.filter((d) => d.message.startsWith('The run stopped'));
 
   /**
@@ -158,7 +158,7 @@ describe('maxRunMs (#560)', () => {
   });
 });
 
-describe('maxRawChars (#478)', () => {
+describe('maxRawChars (propslab#478)', () => {
   it('keeps input at or under the cap untouched, with no warning', () => {
     const { result, diagnostics } = run('ab\ncd', UNMERGED, { maxRawChars: 5 });
     expect(result.originalRaw).toBe('ab\ncd');
@@ -200,7 +200,7 @@ describe('maxRawChars (#478)', () => {
   });
 });
 
-describe('maxEvents (#479)', () => {
+describe('maxEvents (propslab#479)', () => {
   it('stops LINE_BREAKER = () over a large input at the cap, and says where', () => {
     // Every character becomes an event: 200,000 characters would be 200,000
     // events without the cap.
@@ -263,7 +263,7 @@ describe('maxEvents (#479)', () => {
   });
 });
 
-describe('splitSegments maxSegments (#479)', () => {
+describe('splitSegments maxSegments (propslab#479)', () => {
   it('stops at the requested count and leaves the rest of the input unsplit', () => {
     const texts = (max?: number) => splitSegments('a\nb\nc', '(\\n)', [], undefined, max).map((s) => s.text);
     expect(texts(2)).toEqual(['a', 'b']);
@@ -286,7 +286,7 @@ describe('explanationsPerDirective', () => {
   });
 });
 
-describe('every RunLimits entry bounds the run (#479)', () => {
+describe('every RunLimits entry bounds the run (propslab#479)', () => {
   fc.configureGlobal({ seed: fcSeed(479), numRuns: 100 });
 
   const line = fc.string({ unit: fc.constantFrom('a', 'b', ' ', '=', '1'), maxLength: 6 });

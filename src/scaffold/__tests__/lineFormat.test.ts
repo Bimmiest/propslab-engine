@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // lineFormat.test.ts
 // detectLineFormat's suggestions for each format, whole, and the thresholds
-// that decide between them (#758). Each suggestion is asserted entire, as the
+// that decide between them (propslab#758). Each suggestion is asserted entire, as the
 // Scaffold shows it: key, value, confidence, evidence and default.
 // ---------------------------------------------------------------------------
 
@@ -189,7 +189,7 @@ describe('detectLineFormat — indented continuation lines', () => {
   });
 });
 
-describe('detectLineFormat — CEF and LEEF headers (#758)', () => {
+describe('detectLineFormat — CEF and LEEF headers (propslab#758)', () => {
   const FIELD = String.raw`(?:\\.|[^\\|])*`;
   const CEF_REGEX =
     String.raw`CEF:(?<cef_version>[\d.]+)` +

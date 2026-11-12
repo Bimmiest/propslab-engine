@@ -81,15 +81,15 @@ const onString =
 
 /**
  * A math function's result. A function that is undefined at its argument is
- * NULL rather than NaN: sqrt(-1) and round(1.5, 400) (#446). An overflow is
- * not: exp(1000) is the number Infinity, as `1e308 * 10` is (#446). pow() does
+ * NULL rather than NaN: sqrt(-1) and round(1.5, 400) (propslab#446). An overflow is
+ * not: exp(1000) is the number Infinity, as `1e308 * 10` is (propslab#446). pow() does
  * not go through this; see its own note.
  */
 const defined = (n: number): EvalValue => (Number.isNaN(n) ? null : n);
 
 /**
  * The natural logarithm, undefined (NaN) for zero as for a negative number:
- * ln(0) and log(0) are NULL, where JS answers -Infinity (#446).
+ * ln(0) and log(0) are NULL, where JS answers -Infinity (propslab#446).
  */
 const logOf = (n: number): number => (n > 0 ? Math.log(n) : NaN);
 
@@ -104,7 +104,7 @@ const onNumber =
 /**
  * A multivalue result. No values is NULL, never an empty multivalue, so an
  * EVAL of mvappend(), mvdedup(), mvsort() or mvzip() over missing fields
- * writes no field and isnull() holds afterwards (#446).
+ * writes no field and isnull() holds afterwards (propslab#446).
  */
 const mvResult = (values: string[]): EvalValue => (values.length > 0 ? values : null);
 
@@ -123,10 +123,10 @@ function substr(args: EvalValue[]): EvalValue {
   // not read as "no characters".
   if (args[1] === null || args[2] === null) return null;
   // Positions count characters (code points), as len() does, not UTF-16
-  // units: substr("😀abc", 2) is "abc", not half of the emoji and "abc" (#446).
+  // units: substr("😀abc", 2) is "abc", not half of the emoji and "abc" (propslab#446).
   const chars = Array.from(s);
   const start = toNum(args[1]);
-  // Checked against Splunk (#397): a start of 0 reads as 1, and a negative
+  // Checked against Splunk (propslab#397): a start of 0 reads as 1, and a negative
   // start that reaches back past the first character is NULL, not clamped.
   if (start < -chars.length) return null;
   const startIdx = start > 0 ? start - 1 : start < 0 ? chars.length + start : 0;
@@ -149,7 +149,7 @@ const DEFAULT_TRIM_CHARS = ' \t\n\r';
  *
  * Both X and Y are read as characters (code points), so a character outside
  * the BMP in Y cannot strip half of a different one that shares its leading
- * surrogate (#446).
+ * surrogate (propslab#446).
  */
 function trimFrom(sides: 'left' | 'right' | 'both'): Builtin {
   return (args) => {
@@ -173,7 +173,7 @@ function trimFrom(sides: 'left' | 'right' | 'both'): Builtin {
  * split(X, ""): X cut into its UTF-8 bytes, not its characters. An ASCII
  * character is one byte and stays itself; every byte of any other character
  * becomes a value of its own, shown as U+FFFD, so split("😀ab", "") has six
- * values (#446).
+ * values (propslab#446).
  */
 function splitBytes(s: string): EvalValue {
   return mvResult(Array.from(utf8.encode(s), (byte) => (byte < 0x80 ? String.fromCharCode(byte) : '\uFFFD')));
@@ -240,7 +240,7 @@ function tonumber(args: EvalValue[]): EvalValue {
 
 function formatDuration(val: number): string {
   // A non-finite value has no whole hours or minutes, and its seconds are the
-  // value itself: tostring(exp(1000), "duration") is "00:00:Infinity" (#446).
+  // value itself: tostring(exp(1000), "duration") is "00:00:Infinity" (propslab#446).
   if (!Number.isFinite(val)) return `00:00:${val}`;
   const pad = (n: number) => String(n).padStart(2, '0');
   const total = Math.floor(Math.abs(val));
@@ -255,7 +255,7 @@ function formatDuration(val: number): string {
 
 /**
  * "commas" for a number with no digits to group. Its text is grouped in threes
- * from the end as if it were digits: "In,fin,ity" and "-In,fin,ity" (#446).
+ * from the end as if it were digits: "In,fin,ity" and "-In,fin,ity" (propslab#446).
  * Those, and "NaN", are the only texts it is given.
  */
 function groupTextInThrees(text: string): string {
@@ -264,10 +264,10 @@ function groupTextInThrees(text: string): string {
 
 /**
  * tostring(X, "hex") and tostring(X, "binary"), for an integer only: a number
- * with a fraction is NULL (#446). Hex is upper case after a 0x prefix, as the
+ * with a fraction is NULL (propslab#446). Hex is upper case after a 0x prefix, as the
  * Search Reference's tostring(15,"hex") → "0xF" shows, and a negative number
- * is written as its 64-bit two's complement (#446). Binary has no prefix, as
- * its tostring(9,"binary") → "1001" shows, and is NULL for a negative (#446).
+ * is written as its 64-bit two's complement (propslab#446). Binary has no prefix, as
+ * its tostring(9,"binary") → "1001" shows, and is NULL for a negative (propslab#446).
  */
 function integerString(val: number, format: 'hex' | 'binary'): EvalValue {
   if (!Number.isInteger(val)) return null;
@@ -342,14 +342,14 @@ const MATH_BUILTINS: Record<string, Builtin> = {
     const base = numArg(args[0]);
     const exp = numArg(args[1]);
     // Whatever floating point gives, as arithmetic does: pow(0, -1) is
-    // Infinity and pow(-8, 0.5) is NaN, numbers rather than NULL (#446).
+    // Infinity and pow(-8, 0.5) is NaN, numbers rather than NULL (propslab#446).
     return base === null || exp === null ? null : Math.pow(base, exp);
   },
   log: (args) => {
     const val = numArg(args[0]);
     const base = args[1] !== undefined ? numArg(args[1]) : 10;
     // A value or a base of zero or below is NULL; base 1 divides by ln(1),
-    // which is 0, so log(8, 1) is Infinity (#446).
+    // which is 0, so log(8, 1) is Infinity (propslab#446).
     return val === null || base === null ? null : defined(logOf(val) / logOf(base));
   },
   ln: onNumber(logOf),
@@ -403,7 +403,7 @@ const MULTIVALUE_BUILTINS: Record<string, Builtin> = {
   },
   mvindex,
   mvfilter: stub('mvfilter', (args) => mvResult(toMv(args[0]))),
-  // A NULL argument adds no values: mvappend(missing, "a") is "a" (#446).
+  // A NULL argument adds no values: mvappend(missing, "a") is "a" (propslab#446).
   mvappend: (args) => mvResult(args.flatMap(toMv)),
   mvdedup: (args) => mvResult([...new Set(toMv(args[0]))]),
   mvfind: (args, ctx) => {
@@ -454,7 +454,7 @@ function like(args: EvalValue[], ctx: EvalCtx): EvalValue {
   // `%` and `_` match a newline too, so `%ERROR%` finds ERROR anywhere in a
   // multi-line event, and the match must run to the very end of the text: `\z`,
   // because `$` also matches before a final newline, and like("abc\n", "abc")
-  // is false (#447). Splunk's like() is case-sensitive. Compiled through
+  // is false (propslab#447). Splunk's like() is case-sensitive. Compiled through
   // evalRegex so that a pattern that fails is reported like
   // replace()/match()/mvfind() are, rather than failing without a word; the
   // message quotes the regex like() built, since that is what failed to compile.
@@ -559,7 +559,7 @@ const NUMBER_RESULT = new Set([
  * that always produces one, and dynamic for the rest. The branching and
  * multivalue functions pass an operand through (if, case, coalesce, nullif,
  * validate, mvindex, mvappend, ...), so their result keeps whatever that
- * operand was, as does an unsimulated function, which is NULL anyway (#522).
+ * operand was, as does an unsimulated function, which is NULL anyway (propslab#522).
  */
 export function resultType(fn: string): StaticType {
   if (TEXT_RESULT.has(fn)) return 'string';
@@ -575,7 +575,7 @@ export function builtinNames(): string[] {
  * The Splunk eval functions that have no builtin here, from the function list
  * in the Search Reference, "Evaluation functions". A call to one is NULL with
  * a warning. A name that is in neither this set nor the builtins is not an eval
- * function, and Splunk fails the expression (#876).
+ * function, and Splunk fails the expression (propslab#876).
  */
 const UNSIMULATED_FUNCTIONS: ReadonlySet<string> = new Set([
   // Comparison, conversion and statistical

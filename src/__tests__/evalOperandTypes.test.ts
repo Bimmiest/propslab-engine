@@ -1,4 +1,4 @@
-// How `+` and the comparison operators read their operands (#522, #446).
+// How `+` and the comparison operators read their operands (propslab#522, propslab#446).
 //
 // Splunk types an operand statically where it can: a string literal, a `.`
 // concatenation and a function that always produces text are text; a number
@@ -10,7 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import { evaluateExpression } from '../processors/eval/evaluator';
 import { runPipeline } from '../pipeline';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 import { FIXED_NOW } from './runCtx';
 
 /** Extracted fields, as the comparisons below name them. */

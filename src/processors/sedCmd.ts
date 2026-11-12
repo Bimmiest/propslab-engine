@@ -342,7 +342,7 @@ export function applySedCommands(events: SplunkEvent[], directives: ConfDirectiv
 
       if (raw !== before) {
         // A global scan that stopped at a limit replaced only the matches
-        // before it, and a part-masked event looks like a masked one (#874).
+        // before it, and a part-masked event looks like a masked one (propslab#874).
         const limitHit = cmd.pattern?.lastError;
         if (limitHit !== undefined) {
           const { directive } = cmd;
@@ -381,7 +381,7 @@ export function applySedCommands(events: SplunkEvent[], directives: ConfDirectiv
               : cmd.pattern?.test(before)
                 ? // Unchanged `_raw` does not mean no match: the replacement can equal the
                   // text it replaced, and a partial-match analysis would send the user to
-                  // debug a correct pattern (#875).
+                  // debug a correct pattern (propslab#875).
                   { kind: 'replacement-identical' }
                 : cmd.pattern
                   ? explainNoMatch(cmd.pattern.source, before, ctx.explanations.take(noOpDirectiveKey(site)))

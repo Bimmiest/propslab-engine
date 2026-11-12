@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { applySedCommands, parseSedExpression, sedPattern } from '../processors/sedCmd';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string): SplunkEvent {
   return makeEvent(raw);
@@ -100,7 +100,7 @@ describe('sedPattern', () => {
     expect(sedPattern('y/abc/xyz/')).toBeNull();
     expect(sedPattern('not sed')).toBeNull();
     expect(sedPattern('s/unclosed')).toBeNull();
-    // The replacement must be closed too (#477): parseSedExpression ignores this.
+    // The replacement must be closed too (propslab#477): parseSedExpression ignores this.
     expect(sedPattern('s/a/b')).toBeNull();
     expect(sedPattern('')).toBeNull();
   });
@@ -113,7 +113,7 @@ describe('sedPattern', () => {
   });
 });
 
-// Each command is attributed under its own class name (#511: the parsed command
+// Each command is attributed under its own class name (propslab#511: the parsed command
 // used to carry an empty className that the caller then overwrote).
 describe('applySedCommands — trace attribution', () => {
   it('names each trace step after the SEDCMD class that changed the event', () => {
@@ -208,7 +208,7 @@ describe('applySedCommands — what it records', () => {
     ]);
   });
 
-  it('says a pattern matched when the replacement wrote the same text back (#875)', () => {
+  it('says a pattern matched when the replacement wrote the same text back (propslab#875)', () => {
     const e = applySedCommands([event('id=7')], [sedDir('same', 's/id=(\\d)/id=\\1/')], runCtx(FIXED_NOW))[0]!;
     expect(e._raw).toBe('id=7');
     expect(e.noOps?.map((n) => n.reason)).toEqual([{ kind: 'replacement-identical' }]);

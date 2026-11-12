@@ -8,7 +8,7 @@
 // Apache, RFC 2822, 12-hour, compact and day-of-year dates, fractions of every
 // width from 1 to 9 digits, and the zone as `Z`, `±HH:MM` or `±HHMM`, attached
 // or after a space. Each space of a layout can be a run of spaces, and the
-// text can carry more whitespace than the format names (#872). Instants
+// text can carry more whitespace than the format names (propslab#872). Instants
 // cluster on year boundaries and 29 February as well as spreading over years
 // 1–9999. Reading the text back must give the instant, truncated to what the
 // fraction carries, at millisecond precision.
@@ -31,8 +31,8 @@ import { recognizeTimestamp } from '../processors/timestampRecognizer';
 import { extractTimestamps } from '../processors/timestampExtractor';
 import type { SplunkEvent } from '../types';
 import { runCtx } from './runCtx';
-import { fcSeed } from '../../test/fcSeed';
-import { makeEvent } from '../../test/makeEvent';
+import { fcSeed } from '../test/fcSeed';
+import { makeEvent } from '../test/makeEvent';
 
 fc.configureGlobal({ seed: fcSeed(5721), numRuns: 200 });
 

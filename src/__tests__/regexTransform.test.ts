@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { applyRegexTransform } from '../transforms/regexTransform';
 import type { SplunkEvent, ConfStanza } from '../types';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string, fields: Record<string, string> = {}): SplunkEvent {
   return makeEvent(raw, { fields });
@@ -44,7 +44,7 @@ describe('applyRegexTransform — zero-length match guard', () => {
   });
 });
 
-describe('applyRegexTransform — repeated keys are last-wins (#59.2)', () => {
+describe('applyRegexTransform — repeated keys are last-wins (propslab#59.2)', () => {
   it('uses the last REGEX when a stanza repeats it', () => {
     const s = stanza('t', {});
     s.directives = [
@@ -69,7 +69,7 @@ describe('applyRegexTransform — repeated keys are last-wins (#59.2)', () => {
   });
 });
 
-describe('applyRegexTransform — _KEY_/_VAL_ dynamic KV (#61.1)', () => {
+describe('applyRegexTransform — _KEY_/_VAL_ dynamic KV (propslab#61.1)', () => {
   it('maps a _KEY_n group to the field name and _VAL_n to its value', () => {
     const s = stanza('kv', {
       REGEX: '(?<_KEY_1>\\w+)=(?<_VAL_1>\\w+)',
@@ -94,7 +94,7 @@ describe('applyRegexTransform — _KEY_/_VAL_ dynamic KV (#61.1)', () => {
   });
 });
 
-describe('applyRegexTransform — default index-time FORMAT (#61.2)', () => {
+describe('applyRegexTransform — default index-time FORMAT (propslab#61.2)', () => {
   it('defaults FORMAT to <stanza-name>::$1 for numbered groups without a FORMAT', () => {
     const s = stanza('myextract', {
       REGEX: '^(\\w+)',
@@ -470,7 +470,7 @@ describe('applyRegexTransform — DEST_KEY single-value metadata slots', () => {
   });
 });
 
-describe('applyRegexTransform — FORMAT is tokenized before capture substitution (#52)', () => {
+describe('applyRegexTransform — FORMAT is tokenized before capture substitution (propslab#52)', () => {
   it('keeps a captured value containing spaces as one value', () => {
     const r = applyRegexTransform(
       event('msg=disk full'),
@@ -573,7 +573,7 @@ describe('applyRegexTransform — CLEAN_KEYS', () => {
   });
 });
 
-describe('#175 — $0 in a FORMAT pair names nothing', () => {
+describe('propslab#175 — $0 in a FORMAT pair names nothing', () => {
   it('creates no field for a pair whose value is $0', () => {
     const r = applyRegexTransform(
       event('2026-01-15T10:00:00Z code=503'),
@@ -597,7 +597,7 @@ describe('#175 — $0 in a FORMAT pair names nothing', () => {
   });
 });
 
-describe('#174 — MV_ADD in the FORMAT-pairs path', () => {
+describe('propslab#174 — MV_ADD in the FORMAT-pairs path', () => {
   it('keeps only the first match at search time by default', () => {
     const r = applyRegexTransform(
       event('label=a label=b label=c'),
@@ -634,7 +634,7 @@ describe('#174 — MV_ADD in the FORMAT-pairs path', () => {
 // once unless it is set. At search time the setting is inert, and the
 // extractor keeps matching across the event, which MV_ADD's description ("when
 // it finds a field which already exists") presupposes.
-describe('#285 — REPEAT_MATCH gates repeated matching at index time only', () => {
+describe('propslab#285 — REPEAT_MATCH gates repeated matching at index time only', () => {
   it('runs a FORMAT-pairs REGEX once at index time without REPEAT_MATCH', () => {
     const r = applyRegexTransform(
       event('label=a label=b'),
@@ -660,7 +660,7 @@ describe('#285 — REPEAT_MATCH gates repeated matching at index time only', () 
 // Doc-derived (transforms.conf.spec, CLEAN_KEYS: default true, applies to keys
 // extracted at search time). A _KEY_n group names the field from the data, the
 // same way a FORMAT `$1::$2` does, so it gets the same cleaning.
-describe('#285 — CLEAN_KEYS applies to _KEY_n names', () => {
+describe('propslab#285 — CLEAN_KEYS applies to _KEY_n names', () => {
   const kv = (extra: Record<string, string> = {}) =>
     stanza('kv', { REGEX: '(?<_KEY_1>[\\w-]+)=(?<_VAL_1>\\w+)', ...extra });
 
@@ -677,7 +677,7 @@ describe('#285 — CLEAN_KEYS applies to _KEY_n names', () => {
 
 // Doc-derived: MV_ADD with named groups at search time sees the same matches as
 // the FORMAT path does, so the two agree.
-describe('#285 — MV_ADD agrees between named groups and FORMAT', () => {
+describe('propslab#285 — MV_ADD agrees between named groups and FORMAT', () => {
   it('accumulates named groups and FORMAT pairs alike', () => {
     const named = searchTime(event('n=1 n=2'), stanza('t', { REGEX: 'n=(?<n>\\d+)', MV_ADD: 'true' }));
     const format = searchTime(event('n=1 n=2'), stanza('t', { REGEX: 'n=(\\d+)', FORMAT: 'n::$1', MV_ADD: 'true' }));
@@ -689,7 +689,7 @@ describe('#285 — MV_ADD agrees between named groups and FORMAT', () => {
 // Doc-derived (transforms.conf.spec, REPEAT_MATCH: the REGEX is run repeatedly,
 // each match writing the field), for index-time named groups and FORMAT pairs
 // alike.
-describe('#303 — index-time REPEAT_MATCH agrees between named groups and FORMAT', () => {
+describe('propslab#303 — index-time REPEAT_MATCH agrees between named groups and FORMAT', () => {
   const indexTime = (s: ConfStanza) => applyRegexTransform(event('n=1 n=2 n=3'), s, undefined, 'index-time');
 
   it('collects every match from named groups, as FORMAT does', () => {
@@ -714,7 +714,7 @@ describe('#303 — index-time REPEAT_MATCH agrees between named groups and FORMA
   });
 });
 
-describe('applyRegexTransform — LOOKAHEAD (#183)', () => {
+describe('applyRegexTransform — LOOKAHEAD (propslab#183)', () => {
   it('does not match beyond the LOOKAHEAD window at index time', () => {
     const s = stanza('t', { REGEX: 'needle', DEST_KEY: 'queue', FORMAT: 'nullQueue', LOOKAHEAD: '10' });
     expect(applyRegexTransform(event('x'.repeat(20) + 'needle'), s).matched).toBe(false);
@@ -738,7 +738,7 @@ describe('applyRegexTransform — LOOKAHEAD (#183)', () => {
   });
 });
 
-describe('applyRegexTransform — DEFAULT_VALUE (#183)', () => {
+describe('applyRegexTransform — DEFAULT_VALUE (propslab#183)', () => {
   const directives = {
     REGEX: 'zone=(\\w+)',
     DEST_KEY: 'MetaData:Sourcetype',
@@ -774,9 +774,9 @@ describe('applyRegexTransform — DEFAULT_VALUE (#183)', () => {
   });
 });
 
-// #450: at search time an empty value makes no field unless KEEP_EMPTY_VALS =
+// propslab#450: at search time an empty value makes no field unless KEEP_EMPTY_VALS =
 // true, in every way a REGEX can name one; a DELIMS stanza drops it either way.
-describe('#450 — KEEP_EMPTY_VALS', () => {
+describe('propslab#450 — KEEP_EMPTY_VALS', () => {
   const raw = 'a=1;b=;c=3';
   const keep = (directives: Record<string, string>, value?: string) =>
     stanza('kev', value === undefined ? directives : { ...directives, KEEP_EMPTY_VALS: value });
@@ -829,8 +829,8 @@ describe('#450 — KEEP_EMPTY_VALS', () => {
 
 // Doc-derived (transforms.conf.spec, DEST_KEY): "$0 represents the DEST_KEY
 // value before Splunk software performs the REGEX (in other words, _meta)"
-// (#451).
-describe('#451 — $0 with DEST_KEY = _meta', () => {
+// (propslab#451).
+describe('propslab#451 — $0 with DEST_KEY = _meta', () => {
   const withMeta = (raw: string, meta: SplunkEvent['_meta']) => ({ ...event(raw), _meta: meta });
 
   it('stands for the indexed fields written so far, as key::value pairs', () => {

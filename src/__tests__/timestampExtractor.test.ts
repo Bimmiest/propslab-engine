@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { extractTimestamps, resolveLookahead } from '../processors/timestampExtractor';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string): SplunkEvent {
   return makeEvent(raw);
@@ -143,7 +143,7 @@ describe('extractTimestamps — auto recognition (no TIME_FORMAT)', () => {
 });
 
 // Out-of-range fields are a parse failure, not a silent Date rollover.
-describe('extractTimestamps — range validation (#12)', () => {
+describe('extractTimestamps — range validation (propslab#12)', () => {
   const fmt = dir('TIME_FORMAT', '%Y-%m-%d %H:%M:%S');
 
   it('rejects an impossible day (Feb 30) instead of rolling into March', () => {
@@ -185,7 +185,7 @@ describe('extractTimestamps — range validation (#12)', () => {
 // is silent — whether the table also rewrites the stanza's own TZ — is asserted
 // as "it does not", which is the reading the spec's wording ("timezone strings
 // extracted from events") supports.
-describe('extractTimestamps — TZ_ALIAS (#227)', () => {
+describe('extractTimestamps — TZ_ALIAS (propslab#227)', () => {
   const fmt = dir('TIME_FORMAT', '%Y-%m-%d %H:%M:%S %Z');
 
   it('resolves an aliased abbreviation to the offset the table names', () => {
@@ -288,7 +288,7 @@ describe('extractTimestamps — TZ_ALIAS (#227)', () => {
 });
 
 // An unresolvable timezone is treated as UTC, with a warning.
-describe('extractTimestamps — timezone resolution (#12)', () => {
+describe('extractTimestamps — timezone resolution (propslab#12)', () => {
   const fmt = dir('TIME_FORMAT', '%Y-%m-%d %H:%M:%S');
 
   it('warns when the TZ cannot be resolved and falls back to UTC', () => {
@@ -304,7 +304,7 @@ describe('extractTimestamps — timezone resolution (#12)', () => {
     expect(diags.some((d) => d.level === 'warning' && /Middle\/Earth/.test(d.message))).toBe(true);
   });
 
-  it('resolves an IANA zone name against its real offset, without warning (#159)', () => {
+  it('resolves an IANA zone name against its real offset, without warning (propslab#159)', () => {
     const diags: ValidationDiagnostic[] = [];
     // London is BST (+01:00) in July, so 10:00 local is 09:00Z.
     const e = extractTimestamps(
@@ -316,7 +316,7 @@ describe('extractTimestamps — timezone resolution (#12)', () => {
     expect(diags).toHaveLength(0);
   });
 
-  it('reads TZ = CET as the zoneinfo zone, in summer time in July (#470)', () => {
+  it('reads TZ = CET as the zoneinfo zone, in summer time in July (propslab#470)', () => {
     // Doc-derived: TZ is a zoneinfo name, and zoneinfo's CET observes DST, as
     // Europe/Paris does: 10:00 on 1 July is 08:00Z, not the fixed +01:00's 09:00Z.
     const diags: ValidationDiagnostic[] = [];
@@ -352,7 +352,7 @@ describe('extractTimestamps — timezone resolution (#12)', () => {
   });
 });
 
-describe('#163 — an event with no timestamp inherits the previous one', () => {
+describe('propslab#163 — an event with no timestamp inherits the previous one', () => {
   const fmt = dir('TIME_FORMAT', '%Y-%m-%d %H:%M:%S');
 
   it('inherits from the preceding event', () => {
@@ -399,7 +399,7 @@ describe('#163 — an event with no timestamp inherits the previous one', () => 
   });
 });
 
-describe('#85 — DATETIME_CONFIG', () => {
+describe('propslab#85 — DATETIME_CONFIG', () => {
   const fmt = dir('TIME_FORMAT', '%Y-%m-%d %H:%M:%S');
 
   it('CURRENT stamps index time and ignores the date in the event', () => {
@@ -440,7 +440,7 @@ describe('#85 — DATETIME_CONFIG', () => {
   });
 });
 
-describe('#85 — timestamp sanity bounds', () => {
+describe('propslab#85 — timestamp sanity bounds', () => {
   const fmt = dir('TIME_FORMAT', '%Y-%m-%d %H:%M:%S');
 
   it('accepts a timestamp inside the default bounds', () => {
@@ -486,7 +486,7 @@ describe('#85 — timestamp sanity bounds', () => {
     expect(out[1]!.processingTrace.at(-1)?.description).toContain('MAX_DIFF_SECS_AGO');
   });
 
-  it('keeps newest-first logs in their own times (#286)', () => {
+  it('keeps newest-first logs in their own times (propslab#286)', () => {
     const out = extractTimestamps(
       [event('2026-08-03 12:00:00 c'), event('2026-08-03 09:00:00 b'), event('2026-08-03 06:00:00 a')],
       [fmt],
@@ -568,7 +568,7 @@ describe('#85 — timestamp sanity bounds', () => {
   });
 });
 
-describe('#85 — MAX_DIFF_SECS_HENCE', () => {
+describe('propslab#85 — MAX_DIFF_SECS_HENCE', () => {
   const fmt = dir('TIME_FORMAT', '%Y-%m-%d %H:%M:%S');
 
   // The spec's same-format exemption, which it words identically for HENCE and
@@ -606,7 +606,7 @@ describe('#85 — MAX_DIFF_SECS_HENCE', () => {
   });
 });
 
-describe('#286 — MAX_TIMESTAMP_LOOKAHEAD = 0 / -1 disables the limit', () => {
+describe('propslab#286 — MAX_TIMESTAMP_LOOKAHEAD = 0 / -1 disables the limit', () => {
   // Doc-derived: props.conf.spec says 0 or -1 disables the length constraint,
   // rather than falling back to the 128-character default.
   const raw = `${'x'.repeat(200)} 2026-08-03 10:00:00`;
@@ -632,7 +632,7 @@ describe('#286 — MAX_TIMESTAMP_LOOKAHEAD = 0 / -1 disables the limit', () => {
   });
 });
 
-describe('#286 — a TIME_PREFIX that does not compile', () => {
+describe('propslab#286 — a TIME_PREFIX that does not compile', () => {
   // Doc-derived: TIME_PREFIX "cannot be found" means no timestamp is extracted.
   // A prefix that cannot even be compiled is not dropped: scanning from offset 0
   // would read a timestamp from exactly where the prefix said not to.
@@ -650,7 +650,7 @@ describe('#286 — a TIME_PREFIX that does not compile', () => {
     expect(errors[0]?.message).toContain('ts=(');
   });
 
-  it("gives PCRE's reason, and does not refuse a pattern for backtracking (#368)", () => {
+  it("gives PCRE's reason, and does not refuse a pattern for backtracking (propslab#368)", () => {
     const diagnostics: ValidationDiagnostic[] = [];
     extractTimestamps([event('x')], [dir('TIME_PREFIX', '(?<=a+)b')], runCtx(NOW, diagnostics));
     expect(diagnostics.find((d) => d.directiveKey === 'TIME_PREFIX')?.message).toMatch(/lookbehind/);
@@ -660,7 +660,7 @@ describe('#286 — a TIME_PREFIX that does not compile', () => {
   });
 });
 
-describe('extractTimestamps — auto-recognition keeps the zone (#353)', () => {
+describe('extractTimestamps — auto-recognition keeps the zone (propslab#353)', () => {
   // Doc-derived: ISO 8601 allows any number of fraction digits before the
   // offset, and a zone written in the event places it ahead of TZ, which
   // props.conf.spec applies only to timestamps without one.
@@ -692,7 +692,7 @@ describe('extractTimestamps — auto-recognition keeps the zone (#353)', () => {
 });
 
 // The Timestamp tab underlines the text each event's `_time` came from and
-// names its format, without TIME_FORMAT to re-derive them from (#898).
+// names its format, without TIME_FORMAT to re-derive them from (propslab#898).
 describe('extractTimestamps — what the trace records of the read', () => {
   const step = (e: SplunkEvent) => e.processingTrace.filter((s) => s.processor === 'timestampExtractor').at(-1);
 

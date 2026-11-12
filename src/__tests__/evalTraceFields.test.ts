@@ -2,7 +2,7 @@
 // evalTraceFields.test.ts
 // What the trace step of a search-time stage says it did to each field: added
 // (new), modified (the event had it before) or removed. A no-op is not in the
-// step (ADR 0010), and an unknown eval function fails the expression.
+// step (propslab ADR 0010), and an unknown eval function fails the expression.
 // ---------------------------------------------------------------------------
 
 import { describe, it, expect } from 'vitest';
@@ -12,7 +12,7 @@ import { SAMPLE_CONFIGS } from '../sampleData';
 import { unsimulatedNames, builtinNames } from '../processors/eval/builtins';
 import type { ConfDirective, EventMetadata, SplunkEvent, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW, AT_FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 const evalDir = (field: string, expr: string, line = 1): ConfDirective => ({
   key: `EVAL-${field}`,
@@ -31,7 +31,7 @@ const evalSteps = (e: SplunkEvent) => e.processingTrace.filter((s) => s.processo
 
 const META: EventMetadata = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
 
-describe('EVAL — a null result is not in the trace (#876)', () => {
+describe('EVAL — a null result is not in the trace (propslab#876)', () => {
   it('adds no step when every expression is null, and lists each in noOps', () => {
     const e = runEval({}, [evalDir('x', 'null()', 3), evalDir('y', 'len(missing)', 4)]);
     expect(evalSteps(e)).toEqual([]);
@@ -64,7 +64,7 @@ describe('EVAL — a null result is not in the trace (#876)', () => {
     expect(e.noOps).toBeUndefined();
   });
 
-  it('agrees with noOps through runPipeline (the reproduction in #876)', () => {
+  it('agrees with noOps through runPipeline (the reproduction in propslab#876)', () => {
     const { result, diagnostics } = runPipeline(
       'hello\n',
       META,
@@ -83,7 +83,7 @@ describe('EVAL — a null result is not in the trace (#876)', () => {
   });
 });
 
-describe('EVAL — a field the event had before is modified, not added (#900)', () => {
+describe('EVAL — a field the event had before is modified, not added (propslab#900)', () => {
   it('splits written fields by whether the event had them', () => {
     const e = runEval({ action: 'allow' }, [
       evalDir('action', 'if(action=="allow", "allowed", "blocked")'),
@@ -126,7 +126,7 @@ describe('EVAL — a field the event had before is modified, not added (#900)', 
   });
 });
 
-describe('the other search-time steps — written-over fields are modified (#900)', () => {
+describe('the other search-time steps — written-over fields are modified (propslab#900)', () => {
   it('REPORT: a field an earlier extraction set is modified', () => {
     const props = '[st]\nEXTRACT-a = ^(?<word>\\w+)\nREPORT-b = again\n';
     const transforms = '[again]\nREGEX = (?<word>\\w+)$\n';
@@ -156,7 +156,7 @@ describe('the other search-time steps — written-over fields are modified (#900
   });
 });
 
-describe('eval — an unknown function name fails the expression (#876)', () => {
+describe('eval — an unknown function name fails the expression (propslab#876)', () => {
   it('is an error that names the function, and writes no field', () => {
     const diagnostics: ValidationDiagnostic[] = [];
     const e = runEval({ x: 'old' }, [evalDir('x', 'lenn(x)')], diagnostics);

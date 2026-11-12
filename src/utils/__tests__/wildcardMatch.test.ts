@@ -11,7 +11,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import fc from 'fast-check';
 import { compileWildcard } from '../wildcardMatch';
-import { fcSeed } from '../../../test/fcSeed';
+import { fcSeed } from '../../test/fcSeed';
 
 /** The regex compilation, kept here only as the parity reference. */
 function reference(pattern: string): RegExp {
@@ -78,8 +78,8 @@ describe('compileWildcard', () => {
     );
   });
 
-  it('does a bounded amount of work on patterns that made the regex backtrack exponentially (#344)', () => {
-    // Operations, not milliseconds (#507): a stopwatch assertion is a coin flip
+  it('does a bounded amount of work on patterns that made the regex backtrack exponentially (propslab#344)', () => {
+    // Operations, not milliseconds (propslab#507): a stopwatch assertion is a coin flip
     // on a loaded runner. The linear-time claim is that each middle segment is
     // searched for once, leftmost, after the previous one — so the matcher makes
     // at most one indexOf per segment, however long the input is. A backtracking

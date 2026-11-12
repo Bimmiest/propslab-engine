@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Regenerates src/engine/cim/cimModelsData.ts from Splunk's CIM add-on.
+// Regenerates src/cim/cimModelsData.ts from Splunk's CIM add-on.
 //
 // Usage:
 //   1. Download "Splunk Common Information Model (CIM)" from Splunkbase
@@ -24,7 +24,7 @@ import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const OUTPUT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'src/engine/cim/cimModelsData.ts');
+const OUTPUT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'src/cim/cimModelsData.ts');
 
 // The curated layer: which CIM root datasets the toolkit presents, and how they
 // are labelled. Everything else about an entry — fields, split, tags — is read
@@ -351,7 +351,7 @@ function render(entries, version) {
   out.push('// is not vendored here and is not needed to build, test, or run the app.');
   out.push('//');
   out.push('// Regenerate with `node scripts/generate-cim-models.js <path-to-Splunk_SA_CIM>`');
-  out.push('// rather than editing by hand. How each entry is derived (see #37 — hand-written');
+  out.push('// rather than editing by hand. How each entry is derived (see propslab#37 — hand-written');
   out.push("// lists had drifted and listed fields several models don't define):");
   out.push('//');
   out.push('//   * One entry per CIM *root dataset* (a dataset whose parent is BaseEvent or');

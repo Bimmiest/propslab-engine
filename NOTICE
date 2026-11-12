@@ -1,4 +1,4 @@
-Propslab
+propslab-engine
 Copyright (c) 2026 Bimmiest
 
 This project is licensed under the MIT License (see LICENSE). That license
@@ -13,7 +13,7 @@ Splunk, Splunk Enterprise, and Splunkbase are trademarks or registered
 trademarks of Splunk Inc. in the United States and other countries. Cisco is a
 trademark of Cisco Systems, Inc.
 
-Propslab is an independent project and is not affiliated with, endorsed by, or
+propslab-engine is an independent project and is not affiliated with, endorsed by, or
 sponsored by Splunk Inc. or Cisco Systems, Inc. These marks appear in this
 repository only to identify the software whose behaviour is being simulated and
 the configuration file formats being parsed, which is descriptive use. No claim
@@ -23,7 +23,7 @@ of ownership or association is made or implied.
 Splunk Common Information Model (CIM) add-on
 --------------------------------------------------------------------------
 
-src/engine/cim/cimModelsData.ts contains CIM dataset names, field names, and
+src/cim/cimModelsData.ts contains CIM dataset names, field names, and
 tag constraints derived from the Splunk Common Information Model add-on
 (Splunk_SA_CIM), distributed by Splunk Inc. on Splunkbase under Splunk's own
 licence terms:
@@ -31,7 +31,7 @@ licence terms:
     https://splunkbase.splunk.com/app/1621
 
 The add-on is not vendored, redistributed, or fetched by this repository. It is
-not required to build, test, or run Propslab. Generation from it
+not required to build, test, or run this engine. Generation from it
 (scripts/generate-cim-models.js) is a manual, occasional step run by a
 maintainer against their own separately obtained copy, and nothing in the build
 or install path invokes it.
@@ -47,8 +47,8 @@ data models remain with Splunk Inc.
 Configuration directive documentation
 --------------------------------------------------------------------------
 
-src/engine/directiveRegistry.ts describes the props.conf and transforms.conf
-attributes this simulator recognises. Those descriptions are written for this
+src/directiveRegistry.ts and src/registry/ describe the props.conf and transforms.conf
+attributes this engine recognises. Those descriptions are written for this
 project. Where they restate what an attribute does, they describe documented,
 observable behaviour of the software; they are not copied from Splunk's
 documentation or from the .spec files that ship with Splunk Enterprise, and
@@ -58,7 +58,7 @@ those files are not reproduced here.
 PCRE2
 --------------------------------------------------------------------------
 
-The app and the MCP server ship and run pcre2.wasm, which is PCRE2 compiled to
+The engine runs pcre2.wasm, and its consumers ship it. It is PCRE2 compiled to
 WebAssembly. It comes from the pcre2-wasm-utf16 package, a dependency of this
 project maintained in its own repository:
 

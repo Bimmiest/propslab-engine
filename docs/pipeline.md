@@ -4,15 +4,15 @@ type: explanation
 
 # How the simulation runs
 
-This file describes how Propslab runs a simulation: the path of the input, the order of the stages, stanza precedence and the eval expression engine. [architecture.md](architecture.md) describes the internals for contributors.
+This file describes how the engine runs a simulation: the path of the input, the order of the stages, stanza precedence and the eval expression engine. [api.md](api.md) describes how to call it.
 
 ## From the input to the output
 
-The input has four parts: the raw log, the metadata, `props.conf` and `transforms.conf`. All of the input goes through one Zustand store. `useProcessingPipeline` debounces each change for 300 ms. Then it posts a request to a Web Worker, which runs the full simulation, and it writes the result back to the store. A 5 s watchdog stops a worker that hangs. When the worker starts again, the watchdog sends the last request that had no answer.
+The input has four parts: the raw log, the metadata, `props.conf` and `transforms.conf`. `runPipeline` parses the two confs, matches the stanzas that apply to the metadata, and runs the stages below in order. It returns the events, the diagnostics, and a trace of what each stage did to each event. The engine holds no state between two runs: the same input and the same `now` give the same result. A consumer that runs patterns that it did not write runs the engine in a thread that it can stop ([api.md](api.md)).
 
 `safeProcessor()` wraps each processor. If a processor fails, `safeProcessor()` records a diagnostic, and the pipeline does not crash. Only the events that the processor failed on go through that stage without change. Some stages read across events, for example line breaking and timestamp extraction. If one of these stages fails, all of the events go through it without change.
 
-[adr/](adr/README.md) records the design decisions and the reasons for them.
+[propslab's ADRs](https://github.com/Bimmiest/propslab/blob/main/docs/adr/README.md) record the design decisions that came with the engine, and [adr/](adr/README.md) the decisions made here.
 
 ## Order of the stages
 
@@ -34,17 +34,17 @@ The pipeline runs its stages in the order that Splunk uses.
 
 ## Stanza precedence
 
-The order of precedence is `[source::<pattern>]` > `[host::<pattern>]` > `[<sourcetype>]` > `[default]`. Within one type, `priority` decides. If two stanzas have the same priority, the name that is first in ASCII order wins. A more specific pattern gets no preference ([#443](https://github.com/Bimmiest/propslab/issues/443)). The directives from all of the stanzas that match merge in the order of precedence.
+The order of precedence is `[source::<pattern>]` > `[host::<pattern>]` > `[<sourcetype>]` > `[default]`. Within one type, `priority` decides. If two stanzas have the same priority, the name that is first in ASCII order wins. A more specific pattern gets no preference ([propslab#443](https://github.com/Bimmiest/propslab/issues/443)). The directives from all of the stanzas that match merge in the order of precedence.
 
 A `host::` pattern is a PCRE regular expression. It matches against the whole host name. The match ignores case, unless the pattern contains `(?-i)`.
 
-A `source::` pattern that contains `*` or `...` is also a regular expression, and case is significant. Propslab compares a `source::` pattern without `*` or `...` with the source exactly as written. Such a pattern matches nothing if it contains `|` ([#442](https://github.com/Bimmiest/propslab/issues/442)). In the regular expression, `...` matches anything, `*` matches anything except a path separator, and `.` matches a period.
+A `source::` pattern that contains `*` or `...` is also a regular expression, and case is significant. The engine compares a `source::` pattern without `*` or `...` with the source exactly as written. Such a pattern matches nothing if it contains `|` ([propslab#442](https://github.com/Bimmiest/propslab/issues/442)). In the regular expression, `...` matches anything, `*` matches anything except a path separator, and `.` matches a period.
 
-The engine also accepts layered conf input (`default/` + `local/`), and it returns the full override provenance. These are the two halves of what `btool … --debug` prints. This is engine API only, and the UI of the app does not give access to it. [engine.md](engine.md) describes it.
+The engine also accepts layered conf input (`default/` + `local/`), and it returns the full override provenance. These are the two halves of what `btool … --debug` prints. [api.md](api.md) describes it.
 
 ## Eval expression engine
 
-[`src/engine/processors/eval/`](../src/engine/processors/eval/) has a full tokenizer and a recursive-descent parser. The files are `tokenizer.ts`, `parser.ts` and `evaluator.ts`, and `builtins.ts` holds the function library.
+[`src/processors/eval/`](../src/processors/eval/) has a full tokenizer and a recursive-descent parser. The files are `tokenizer.ts`, `parser.ts` and `evaluator.ts`, and `builtins.ts` holds the function library.
 
 **Operators:** `+`, `-`, `*`, `/`, `%`, `.` (concat), `==`, `=`, `!=`, `<`, `>`, `<=`, `>=`, `AND`, `OR`, `NOT`, `IN`, `NOT IN`.
 
@@ -63,6 +63,6 @@ The engine also accepts layered conf input (`default/` + `local/`), and it retur
 
 For each event, the engine evaluates all of the expressions before it applies any of them. This agrees with the semantics of Splunk.
 
-The EVAL step in the trace puts a field that the event did not have in `fieldsAdded`, and a field that the event had in `fieldsModified`. A null result removes a field that the event had (`fieldsRemoved`). When the event did not have the field, a null result is a no-op: it is in `noOps`, and it is not in the step. REPORT, KV_MODE and FIELDALIAS use `fieldsModified` in the same way ([#900](https://github.com/Bimmiest/propslab/issues/900)).
+The EVAL step in the trace puts a field that the event did not have in `fieldsAdded`, and a field that the event had in `fieldsModified`. A null result removes a field that the event had (`fieldsRemoved`). When the event did not have the field, a null result is a no-op: it is in `noOps`, and it is not in the step. REPORT, KV_MODE and FIELDALIAS use `fieldsModified` in the same way ([propslab#900](https://github.com/Bimmiest/propslab/issues/900)).
 
 [fidelity.md](fidelity.md#stubbed-eval-functions) names the eval functions that are stubs.

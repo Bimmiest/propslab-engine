@@ -1,0 +1,29 @@
+{
+  // The options every project here shares. Each project sets its own target,
+  // lib and types.
+  //
+  // `bundler` resolution, not the template's NodeNext: the package ships its
+  // source, and its imports carry no extension. Each consumer resolves them
+  // with its own bundler or tsc. NodeNext would put `.ts` on every import, and
+  // a consumer whose tsc does not set allowImportingTsExtensions refuses that
+  // in a dependency (docs/code-style.md, "In this repository").
+  "compilerOptions": {
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  }
+}

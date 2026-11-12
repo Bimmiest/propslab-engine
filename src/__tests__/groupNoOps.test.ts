@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------
 // groupNoOps.test.ts
-// One row per directive, with the number of events it missed (#772).
+// One row per directive, with the number of events it missed (propslab#772).
 // ---------------------------------------------------------------------------
 
 import { describe, it, expect } from 'vitest';
 import { groupNoOps } from '../groupNoOps';
 import type { DirectiveNoOp, SplunkEvent } from '../types';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(noOps: DirectiveNoOp[]): SplunkEvent {
   return makeEvent('raw', { noOps });
@@ -67,7 +67,7 @@ describe('groupNoOps', () => {
     expect(groupNoOps([event([])])).toEqual([]);
   });
 
-  it('counts events past the explanation limit apart from the reasons (#452)', () => {
+  it('counts events past the explanation limit apart from the reasons (propslab#452)', () => {
     // Fifty analysed misses and 450 past the cap: the headline must stay the
     // real reason, not "not analysed", however many there are of the latter.
     const groups = groupNoOps([event([noMatch]), event([notExplained]), event([notExplained])]);

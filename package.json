@@ -1,0 +1,73 @@
+{
+  "name": "propslab-engine",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Simulates Splunk's props.conf and transforms.conf processing of raw data, in a browser, a web worker or Node.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bimmiest/propslab-engine.git"
+  },
+  "homepage": "https://github.com/Bimmiest/propslab-engine#readme",
+  "bugs": {
+    "url": "https://github.com/Bimmiest/propslab-engine/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=26.0.0",
+      "onFail": "error"
+    }
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./pcre2.wasm.sha256": "./pcre2.wasm.sha256"
+  },
+  "files": [
+    "src",
+    "!src/**/__tests__/**",
+    "!src/**/*.test.ts",
+    "!src/test/**",
+    "pcre2.wasm.sha256",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{ts,mts,js,mjs}\"",
+    "format:check": "prettier --check \"**/*.{ts,mts,js,mjs}\"",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "test:mutation": "stryker run",
+    "test:mutation:canary": "stryker run --mutate src/utils/wildcardMatch.ts --reporters json && node scripts/check-mutation-canary.mjs"
+  },
+  "dependencies": {
+    "pcre2-wasm-utf16": "github:Bimmiest/pcre2-wasm-utf16#8651a3023bf1f0a683f67203adce2c73a33f03e6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@stryker-mutator/core": "^10.1.1",
+    "@stryker-mutator/vitest-runner": "^10.1.1",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
+    "@vitest/eslint-plugin": "^1.6.28",
+    "eslint": "^10.14.0",
+    "eslint-plugin-import-x": "^4.17.1",
+    "fast-check": "^4.10.2",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
+  }
+}

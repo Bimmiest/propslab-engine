@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // jsonNumbers.test.ts
-// A JSON number's field value is the number as the event wrote it (#448), by
+// A JSON number's field value is the number as the event wrote it (propslab#448), by
 // every route the engine extracts JSON, through runPipeline.
 //
 // Not doc-derived: props.conf.spec does not say how a number is rendered. A JS
@@ -42,7 +42,7 @@ const AS_WRITTEN = {
   'items{}.n': '0.10',
 };
 
-describe('JSON numbers keep their text through the pipeline (#448)', () => {
+describe('JSON numbers keep their text through the pipeline (propslab#448)', () => {
   it('KV_MODE = json', () => {
     expect(fieldsOf(EVENT, 'KV_MODE = json\n')).toMatchObject(AS_WRITTEN);
   });

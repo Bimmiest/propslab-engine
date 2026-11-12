@@ -6,7 +6,7 @@
 // One test covers both, because the code tokens leave out layout as well as
 // comments. A Prettier comparison used to sit beside it, but CI holds every
 // file to Prettier, so both sides were already its output and it could only
-// say "yes" for text that had not changed (#571). The cost: a Prettier upgrade
+// say "yes" for text that had not changed (propslab#571). The cost: a Prettier upgrade
 // that adds a token, a semicolon or a parenthesis, makes the files it touches
 // count as changed, and they are mutated once.
 
@@ -25,7 +25,7 @@ const STRYKER_DIRECTIVE = /\bStryker\s+(?:disable|restore)\b[^\n]*/gi;
  * inside a string, template or regex literal is never mistaken for a comment.
  *
  * Stryker directives are the exception: each is a token where it stands, since
- * it governs the code after it, so moving one is a change to the code (#571).
+ * it governs the code after it, so moving one is a change to the code (propslab#571).
  *
  * @param {string} filePath
  * @param {string} text

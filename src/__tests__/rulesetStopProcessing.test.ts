@@ -31,7 +31,7 @@ const TAGGERS = [
   '[tag_c]\nINGEST_EVAL = tag="c"',
 ].join('\n\n');
 
-describe('RULESET-<class> (#275)', () => {
+describe('RULESET-<class> (propslab#275)', () => {
   it('counts as a reference for the config lint, and a missing stanza is an error', () => {
     const r = run('x', '[st]\nRULESET-r = tag_a, nope\n', TAGGERS);
     const messages = r.diagnostics.map((d) => d.message);
@@ -82,7 +82,7 @@ describe('RULESET-<class> (#275)', () => {
   });
 });
 
-describe('STOP_PROCESSING_IF (#275)', () => {
+describe('STOP_PROCESSING_IF (propslab#275)', () => {
   const STOPPER = '[stop]\nSTOP_PROCESSING_IF = match(_raw, "halt")\n';
 
   it('skips every rule after it in the same ruleset when true', () => {
@@ -143,7 +143,7 @@ describe('STOP_PROCESSING_IF (#275)', () => {
   });
 
   it.each([false, true])(
-    'perEventPipeline=%s: reports each problem once across many events and their clones (#452)',
+    'perEventPipeline=%s: reports each problem once across many events and their clones (propslab#452)',
     (perEventPipeline) => {
       // md5() is reported first by an INGEST_EVAL; STOP_PROCESSING_IF's
       // warning reads the same, so it is not repeated either.
@@ -182,7 +182,7 @@ describe('STOP_PROCESSING_IF (#275)', () => {
   });
 });
 
-describe('ROUTE_EVENTS_OLDER_THAN (#275)', () => {
+describe('ROUTE_EVENTS_OLDER_THAN (propslab#275)', () => {
   const props = (age: string) =>
     `[st]\nSHOULD_LINEMERGE = false\nTIME_FORMAT = %Y-%m-%dT%H:%M:%SZ\nROUTE_EVENTS_OLDER_THAN = ${age}\n`;
   // Ten days and one day before NOW.
@@ -210,7 +210,7 @@ describe('ROUTE_EVENTS_OLDER_THAN (#275)', () => {
     expect(route).toBeLessThan(trace.indexOf('INGEST_EVAL'));
   });
 
-  it('judges the _time TIMESTAMP_FIELDS gives a structured event (#557)', () => {
+  it('judges the _time TIMESTAMP_FIELDS gives a structured event (propslab#557)', () => {
     const csv = 'date,time,msg\n2025-01-01,10:00:00,old row\n';
     const r = run(
       csv,

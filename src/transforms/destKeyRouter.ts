@@ -43,7 +43,7 @@ function withMetaFields(meta: SplunkEvent['_meta'], fields: TransformResult['fie
 /**
  * DEST_KEY = _meta without WRITE_META: the FORMAT's pairs become the whole of
  * `_meta`, so the indexed fields earlier transforms wrote are gone unless FORMAT
- * carries them over with `$0` (#451). transforms.conf.spec: "If DEST_KEY = _meta
+ * carries them over with `$0` (propslab#451). transforms.conf.spec: "If DEST_KEY = _meta
  * (not recommended) you should also add $0 to the start of your FORMAT
  * setting"; Getting Data In: "Each matching transform can overwrite _meta, so
  * use WRITE_META = true to append _meta."

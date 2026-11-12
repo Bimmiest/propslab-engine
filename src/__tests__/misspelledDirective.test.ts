@@ -33,7 +33,7 @@ describe('isOneEditApart', () => {
   });
 });
 
-describe('misspelledCanonical (#899)', () => {
+describe('misspelledCanonical (propslab#899)', () => {
   it.each([
     ['TIME_FROMAT', 'props.conf', 'TIME_FORMAT'],
     ['TRUNCTE', 'props.conf', 'TRUNCATE'],
@@ -91,7 +91,7 @@ describe('misspelledCanonical (#899)', () => {
   });
 });
 
-describe('parseConf reports a misspelled key (#899)', () => {
+describe('parseConf reports a misspelled key (propslab#899)', () => {
   it('warns on the line, with the attribute in the message and the suggestion', () => {
     const { errors } = parseConf('[st]\nTIME_FORMAT = %Y\nTIME_FROMAT = %Y\n', 'props.conf');
     expect(errors).toEqual([

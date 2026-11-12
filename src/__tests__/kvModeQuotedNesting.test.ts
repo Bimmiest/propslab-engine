@@ -2,15 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { applyKvMode } from '../processors/kvMode';
 import type { ConfDirective, SplunkEvent } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
-import { expectLinearWork } from '../../test/scanWork';
+import { makeEvent } from '../test/makeEvent';
+import { expectLinearWork } from '../test/scanWork';
 
 const ev = (raw: string): SplunkEvent => makeEvent(raw);
 const kv = (mode: string): ConfDirective[] => [{ key: 'KV_MODE', value: mode, line: 1, directiveType: 'KV_MODE' }];
 
 // Quoted values of either style are consumed whole, so no pass mines a
 // key=value from inside a quoted value of the other style.
-describe('KV_MODE auto — quoted passes do not mine inside each other (#123)', () => {
+describe('KV_MODE auto — quoted passes do not mine inside each other (propslab#123)', () => {
   it('does not extract a single-quoted pair from inside a double-quoted value', () => {
     const r = applyKvMode([ev(`msg="an x='inner' thing" a=1`)], kv('auto'), runCtx(FIXED_NOW))[0]!;
     expect(r.fields['msg']).toBe("an x='inner' thing");
@@ -47,10 +47,10 @@ describe('KV_MODE auto — quoted passes do not mine inside each other (#123)', 
   });
 });
 
-describe('KV_MODE auto — long events (#427)', () => {
+describe('KV_MODE auto — long events (propslab#427)', () => {
   it('blanks quoted spans in linear time', () => {
     // 32k quoted pairs, each hiding a bare pair, about 490 KB. Rebuilding the
-    // blanked copy per pair took 7.5 s here. Counted, not timed (#507): the
+    // blanked copy per pair took 7.5 s here. Counted, not timed (propslab#507): the
     // length copied by slices and joins must not much more than double when
     // the number of pairs does.
     const eventOf = (pairs: number) =>
@@ -63,7 +63,7 @@ describe('KV_MODE auto — long events (#427)', () => {
     const r = applyKvMode([ev(raw)], kv('auto'), runCtx(FIXED_NOW))[0]!;
     expect(r.fields['k5']).toBe('v x5=5');
     expect(r.fields).not.toHaveProperty('x5');
-    // Until #451 this asserted k31999 and tail too. They lie past the first
+    // Until propslab#451 this asserted k31999 and tail too. They lie past the first
     // 10240 characters, which is all automatic KV reads (limits.conf [kv]
     // maxchars), so they are counted as not extracted instead. A pass over the
     // whole event finds them, and it blanks the quoted spans as well: the

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { applyEvalExpressions } from '../processors/evalProcessor';
 import type { ConfDirective, SplunkEvent, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 const ev = (): SplunkEvent => makeEvent('x', { fields: { n: '3.14159' } });
 const evalDir = (expr: string): ConfDirective => ({
@@ -21,7 +21,7 @@ function warningsFor(expr: string): ValidationDiagnostic[] {
 
 // sigfig() and exact() return their argument unrounded, so they warn like every
 // other unsimulated builtin: their output most resembles a correct answer.
-describe('eval — every unsimulated builtin warns (#127)', () => {
+describe('eval — every unsimulated builtin warns (propslab#127)', () => {
   it.each(['sigfig', 'exact'])('%s() warns', (fn) => {
     const diagnostics = warningsFor(`${fn}(n)`);
     expect(diagnostics.some((d) => d.message.startsWith(`${fn}() is not fully simulated`))).toBe(true);

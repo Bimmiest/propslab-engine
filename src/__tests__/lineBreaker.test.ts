@@ -68,8 +68,8 @@ describe('breakLines — SHOULD_LINEMERGE defaults', () => {
 // Doc-derived (props.conf.spec, BREAK_ONLY_BEFORE_DATE: "when using
 // DATETIME_CONFIG = CURRENT or NONE, this setting is not meaningful, as
 // timestamps are not identified"). No line has a date then, so the default
-// line merging joins dated lines into one event (#610).
-describe('#610 — DATETIME_CONFIG = CURRENT or NONE finds no dates to break before', () => {
+// line merging joins dated lines into one event (propslab#610).
+describe('propslab#610 — DATETIME_CONFIG = CURRENT or NONE finds no dates to break before', () => {
   const raw = '2026-01-15T10:00:00Z a\n2026-01-15T10:00:01Z b\n';
 
   it.each(['CURRENT', 'NONE', 'current', 'CURRENT '])('merges dated lines under DATETIME_CONFIG = "%s"', (value) => {
@@ -101,7 +101,7 @@ describe('#610 — DATETIME_CONFIG = CURRENT or NONE finds no dates to break bef
 // Doc-derived (props.conf.spec, BREAK_ONLY_BEFORE_DATE: "creates a new event
 // only if it encounters a new line with a date", recognised the way timestamps
 // are — within MAX_TIMESTAMP_LOOKAHEAD).
-describe('#287 — BREAK_ONLY_BEFORE_DATE finds a date anywhere in the lookahead window', () => {
+describe('propslab#287 — BREAK_ONLY_BEFORE_DATE finds a date anywhere in the lookahead window', () => {
   const raws = (raw: string, extra: ConfDirective[] = []) =>
     breakLines(raw, extra, META, runCtx(FIXED_NOW)).map((e) => e._raw);
 
@@ -216,7 +216,7 @@ describe('breakLines — custom LINE_BREAKER', () => {
 // capturing group [is] the end of the previous line" and its end "the start of
 // the next line" — so an empty group breaks WITHOUT removing anything, and a
 // break at the very start of the current event ends no event at all.
-describe('#283 — zero-width LINE_BREAKER captures', () => {
+describe('propslab#283 — zero-width LINE_BREAKER captures', () => {
   it('breaks before each lookahead match, keeping every character', () => {
     const events = breakLines(
       'a\nbcd\nbxy',
@@ -263,7 +263,7 @@ describe('#283 — zero-width LINE_BREAKER captures', () => {
   });
 });
 
-describe('breakLines — uncompilable break patterns are reported (#75.2)', () => {
+describe('breakLines — uncompilable break patterns are reported (propslab#75.2)', () => {
   it('warns when BREAK_ONLY_BEFORE cannot be compiled', () => {
     const diags: ValidationDiagnostic[] = [];
     breakLines('a\nb\nc', [dir('BREAK_ONLY_BEFORE', '(a+')], META, runCtx(FIXED_NOW, diags));
@@ -291,7 +291,7 @@ describe('breakLines — uncompilable break patterns are reported (#75.2)', () =
   });
 });
 
-describe('#172 — a LINE_BREAKER with no capture group', () => {
+describe('propslab#172 — a LINE_BREAKER with no capture group', () => {
   it('falls back to breaking on newlines, leaving the delimiter as its own event', () => {
     const raw = '2026-01-15T10:00:00Z one\n-----\n2026-01-15T10:00:01Z two\n';
     const events = breakLines(
@@ -330,7 +330,7 @@ describe('#172 — a LINE_BREAKER with no capture group', () => {
   });
 });
 
-describe('#559 — an empty LINE_BREAKER resets to the default', () => {
+describe('propslab#559 — an empty LINE_BREAKER resets to the default', () => {
   // An empty assignment resets a setting to its default (directiveValues.ts).
   it.each(['', '   '])('breaks on newlines with no warning for LINE_BREAKER = "%s"', (value) => {
     const diags: ValidationDiagnostic[] = [];
@@ -345,7 +345,7 @@ describe('#559 — an empty LINE_BREAKER resets to the default', () => {
   });
 });
 
-describe('#472 — a LINE_BREAKER that does not compile', () => {
+describe('propslab#472 — a LINE_BREAKER that does not compile', () => {
   // Doc-derived: props.conf.spec says LINE_BREAKER is a regular expression, and
   // a regular expression that is not valid PCRE cannot name a break. The
   // simulator breaks on newlines then; the point of these tests is the message.
@@ -375,12 +375,12 @@ describe('#472 — a LINE_BREAKER that does not compile', () => {
     expect(lb[0]!.message).not.toContain('does not compile');
   });
 
-  it('is resolved before splitting, which refuses a pattern that does not compile (#561)', () => {
+  it('is resolved before splitting, which refuses a pattern that does not compile (propslab#561)', () => {
     expect(() => splitSegments('a\nb', '([\\r\\n]+', [])).toThrow(/needs a pattern that compiles/);
   });
 });
 
-describe('#161 — MUST_BREAK_AFTER does not license merging', () => {
+describe('propslab#161 — MUST_BREAK_AFTER does not license merging', () => {
   it('breaks every line when it is the only rule in force', () => {
     const raw = '2026-01-15T10:00:00Z alpha\nmiddle\nEND\n2026-01-15T10:00:01Z beta\nmiddle\nEND\n';
     const events = breakLines(
@@ -404,7 +404,7 @@ describe('#161 — MUST_BREAK_AFTER does not license merging', () => {
   });
 });
 
-describe('breakLines — MUST_NOT_BREAK_BEFORE / MUST_NOT_BREAK_AFTER (#190)', () => {
+describe('breakLines — MUST_NOT_BREAK_BEFORE / MUST_NOT_BREAK_AFTER (propslab#190)', () => {
   it('does not defeat the MAX_EVENTS cap', () => {
     const raw = Array.from({ length: 6 }, (_, i) => `line${i}`).join('\n');
     const events = breakLines(
@@ -474,7 +474,7 @@ describe('breakLines — MUST_NOT_BREAK_BEFORE / MUST_NOT_BREAK_AFTER (#190)', (
   });
 });
 
-describe('breakLines — LINE_BREAKER capture groups counted on the translated pattern (#311)', () => {
+describe('breakLines — LINE_BREAKER capture groups counted on the translated pattern (propslab#311)', () => {
   // Doc-derived: props.conf.spec reads LINE_BREAKER as a PCRE whose first
   // capturing group is the break. `(?i)` is PCRE's inline case-insensitive
   // flag, which JS only accepts once translated, so the group must be counted
@@ -504,7 +504,7 @@ describe('breakLines — LINE_BREAKER capture groups counted on the translated p
   });
 });
 
-describe('breakLines — lineNumbers.end measured on the original input (#317)', () => {
+describe('breakLines — lineNumbers.end measured on the original input (propslab#317)', () => {
   // Doc-derived: the default LINE_BREAKER `([\r\n]+)` discards the whole run of
   // line endings it matches, so a merged event's `_raw` is shorter than the
   // stretch of input it came from. The reported line range describes the input.
@@ -531,7 +531,7 @@ describe('breakLines — lineNumbers.end measured on the original input (#317)',
   // newline ends the event's last line; it does not start another.
   const dashes = [dir('LINE_BREAKER', '(---)'), dir('SHOULD_LINEMERGE', 'false')];
 
-  it('ends a segment that keeps its trailing \\n on that line, not the next (#331)', () => {
+  it('ends a segment that keeps its trailing \\n on that line, not the next (propslab#331)', () => {
     const events = breakLines('a\n---b\n---c', dashes, META, runCtx(FIXED_NOW));
     expect(events.map((e) => e._raw)).toEqual(['a\n', 'b\n', 'c']);
     expect(events.map((e) => e.lineNumbers)).toEqual([
@@ -541,7 +541,7 @@ describe('breakLines — lineNumbers.end measured on the original input (#317)',
     ]);
   });
 
-  it('ends a CRLF-terminated segment on its own line (#331)', () => {
+  it('ends a CRLF-terminated segment on its own line (propslab#331)', () => {
     const events = breakLines('a\r\n---b\r\n---c', dashes, META, runCtx(FIXED_NOW));
     expect(events.map((e) => e.lineNumbers)).toEqual([
       { start: 1, end: 1 },
@@ -550,14 +550,14 @@ describe('breakLines — lineNumbers.end measured on the original input (#317)',
     ]);
   });
 
-  it('still spans every line of a multi-line segment ending in \\n (#331)', () => {
+  it('still spans every line of a multi-line segment ending in \\n (propslab#331)', () => {
     const events = breakLines('a\nb\n---c', dashes, META, runCtx(FIXED_NOW));
     expect(events[0]!.lineNumbers).toEqual({ start: 1, end: 2 });
     expect(events[1]!.lineNumbers).toEqual({ start: 3, end: 3 });
   });
 });
 
-describe('breakLines — the SHOULD_LINEMERGE default INDEXED_EXTRACTIONS implies (#322)', () => {
+describe('breakLines — the SHOULD_LINEMERGE default INDEXED_EXTRACTIONS implies (propslab#322)', () => {
   // Doc-derived: structured INDEXED_EXTRACTIONS formats are one record per
   // line, while the XML modes keep ordinary line merging. breakLines is
   // the only place this default is decided, so it must hold with no pipeline
@@ -579,7 +579,7 @@ describe('breakLines — the SHOULD_LINEMERGE default INDEXED_EXTRACTIONS implie
   });
 });
 
-describe('breakLines — BREAK_ONLY_BEFORE_DATE honours the stanza timestamp settings (#352)', () => {
+describe('breakLines — BREAK_ONLY_BEFORE_DATE honours the stanza timestamp settings (propslab#352)', () => {
   // Doc-derived: props.conf.spec says BREAK_ONLY_BEFORE_DATE starts an event
   // "only if it encounters a new line with a date", and that the setting is not
   // meaningful when DATETIME_CONFIG stops timestamps being identified — so the
@@ -635,7 +635,7 @@ describe('breakLines — BREAK_ONLY_BEFORE_DATE honours the stanza timestamp set
   });
 });
 
-describe('#872 — a TIME_FORMAT with a run of spaces, over a long run of whitespace', () => {
+describe('propslab#872 — a TIME_FORMAT with a run of spaces, over a long run of whitespace', () => {
   // Each space of the format was its own \s+, so twelve of them over 120
   // spaces backtracked for hours, in the line breaker and in the extractor.
   it('breaks before each dated line and reads its _time', () => {

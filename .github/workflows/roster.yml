@@ -48,7 +48,7 @@ jobs:
         run: node scripts/check-ignored-issues.mjs
 
   # A failed scheduled run opens an issue, or comments on the open one
-  # (#889). See environment.yml's `report` job.
+  # (propslab#889).
   report:
     needs: [ignored-issues]
     if: failure() && github.event_name == 'schedule'

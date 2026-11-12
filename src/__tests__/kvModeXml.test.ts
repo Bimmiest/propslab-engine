@@ -12,7 +12,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { runPipeline } from '../pipeline';
 import type { EventMetadata } from '../types';
-import { expectLinearWork } from '../../test/scanWork';
+import { expectLinearWork } from '../test/scanWork';
 import { FIXED_NOW } from './runCtx';
 
 const metadata: EventMetadata = {
@@ -65,7 +65,7 @@ describe('KV_MODE = xml', () => {
     expect(Object.keys(fields).some((k) => k.includes('_root_'))).toBe(false);
   });
 
-  it('extracts with no DOMParser anywhere (#280)', () => {
+  it('extracts with no DOMParser anywhere (propslab#280)', () => {
     // Under `node` there is none to begin with; the stub keeps the point made
     // even if this file is ever moved to an environment that has one.
     expect('DOMParser' in globalThis).toBe(false);
@@ -123,7 +123,7 @@ describe('KV_MODE = xml', () => {
   });
 });
 
-describe('KV_MODE = xml — an empty Name attribute (#483)', () => {
+describe('KV_MODE = xml — an empty Name attribute (propslab#483)', () => {
   // A Name attribute names the leaf it sits on only when it says something: an
   // empty one names nothing, so the leaf keeps its dotted path rather than
   // becoming a field called "" (INDEXED_EXTRACTIONS = xml already did this).
@@ -138,12 +138,12 @@ describe('KV_MODE = xml — an empty Name attribute (#483)', () => {
   });
 });
 
-describe('KV_MODE = xml — an event with very many elements (#480)', () => {
+describe('KV_MODE = xml — an event with very many elements (propslab#480)', () => {
   // The default TRUNCATE = 10000 hides this; 0 lifts it. Distinct element names
   // were checked against a growing list, which took seconds at this size.
   const props = 'SHOULD_LINEMERGE = false\nTRUNCATE = 0\nKV_MODE = xml\n';
 
-  // Counted, not timed (#507): the length scanned by array and string built-ins
+  // Counted, not timed (propslab#507): the length scanned by array and string built-ins
   // must not much more than double when the event's size does. A check of each
   // new name against a growing list adds the whole list every time.
   const elements = (n: number) => {

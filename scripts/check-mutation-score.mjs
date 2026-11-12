@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // check-mutation-score.mjs
 //
-// The floor for the weekly mutation run in shards (#851). Each shard runs with
+// The floor for the weekly mutation run in shards (propslab#851). Each shard runs with
 // MUTATION_SHARD=1, so Stryker applies no floor to one shard alone. This reads
 // the report of each shard, scores their files together, and fails when the
 // combined score is below `thresholds.break` in stryker.config.mjs. It writes a

@@ -62,7 +62,7 @@ export function detectLineFormat(rawData: string, lines: string[]): ScaffoldSugg
   }
 
   // CEF and LEEF, before the delimiter check: their headers are pipe-separated,
-  // and as PSV the first data line would become the header row (#758).
+  // and as PSV the first data line would become the header row (propslab#758).
   const header = headerFormatSuggestions(nonBlank);
   if (header) return header;
 

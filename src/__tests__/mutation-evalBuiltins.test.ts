@@ -1,4 +1,4 @@
-// Tests written against mutants that survived `npm run test:mutation` (#370).
+// Tests written against mutants that survived `npm run test:mutation` (propslab#370).
 // Each pins an eval builtin's documented result for inputs the suite never
 // tried: the NULL-in/NULL-out rule on every string and math function, the
 // boundaries of substr() and mvindex(), and the trim family's custom sets.
@@ -8,7 +8,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { evaluateExpression } from '../processors/eval/evaluator';
 import type { SplunkEvent } from '../types';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(fields: Record<string, string | string[]> = {}): SplunkEvent {
   return makeEvent('raw', { fields });
@@ -48,7 +48,7 @@ describe('NULL in, NULL out', () => {
     'abs("x")',
     'sqrt("x")',
     'null()',
-    // A NULL second or third argument is NULL too (#481), not "" or 0.
+    // A NULL second or third argument is NULL too (propslab#481), not "" or 0.
     'split("a,b", missing)',
     'substr("abc", 1, missing)',
     'substr("abc", missing)',
@@ -164,7 +164,7 @@ describe('type functions', () => {
   });
 
   it.each([
-    // Upper case since #446, which corrected the old lower-case reading: the
+    // Upper case since propslab#446, which corrected the old lower-case reading: the
     // Search Reference's own example is tostring(15,"hex") → "0xF".
     ['tostring(255, "hex")', '0xFF'],
     ['tostring(1234567.891, "commas")', '1,234,567.89'],

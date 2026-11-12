@@ -1,4 +1,4 @@
-// Tests written against mutants that survived `npm run test:mutation` (#370).
+// Tests written against mutants that survived `npm run test:mutation` (propslab#370).
 // Each pins a line-breaking behaviour the suite ran but never asserted: how a
 // multi-line segment counts against MAX_EVENTS, the MUST_NOT_BREAK_AFTER span
 // once it starts mid-input, the line numbers of each event, and the summary

@@ -1,4 +1,4 @@
-// The engine's public API (ADR 0023). Code outside src/engine imports only
+// The engine's public API (propslab ADR 0023). Code outside src/engine imports only
 // from this file: the app, the MCP server, and propslab-sb and propslab-ent.
 // A name that is not here is internal and can change without notice. To add
 // one, export it here; to remove or rename one, search the consumers first.

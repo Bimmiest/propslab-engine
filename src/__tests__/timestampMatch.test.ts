@@ -5,7 +5,7 @@ import { extractTimestamps } from '../processors/timestampExtractor';
 import { runPipeline } from '../pipeline';
 import type { ConfDirective, SplunkEvent, ValidationDiagnostic } from '../types';
 import { runCtx } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function config(overrides: Partial<TimeConfig> = {}): TimeConfig {
   return { timePrefix: null, timeFormat: null, maxLookahead: 128, tz: null, ...overrides };
@@ -119,7 +119,7 @@ describe('probeTimestamps — batch', () => {
  * parsed with the same TZ_ALIAS and `now`. Each case runs both over the same
  * input and compares them, rather than pinning either one.
  */
-describe('probeTimestamp agrees with extractTimestamps (#313)', () => {
+describe('probeTimestamp agrees with extractTimestamps (propslab#313)', () => {
   const NOW = new Date('2026-08-04T00:00:00.000Z');
 
   function event(raw: string): SplunkEvent {
@@ -194,7 +194,7 @@ describe('probeTimestamp agrees with extractTimestamps (#313)', () => {
     expect(new Date(probe.match!.parsedTimeMs!).toISOString()).toBe('2026-08-03T07:00:00.000Z');
   });
 
-  it('reads an empty TIME_PREFIX as unset, and both sides agree (#328)', () => {
+  it('reads an empty TIME_PREFIX as unset, and both sides agree (propslab#328)', () => {
     // Doc-derived: props.conf.spec gives no meaning to an empty TIME_PREFIX, and
     // an empty setting is an unset one — as this engine already reads an empty
     // TIME_FORMAT, TZ or ROUTE_EVENTS_OLDER_THAN, so the extractor and the
@@ -211,7 +211,7 @@ describe('probeTimestamp agrees with extractTimestamps (#313)', () => {
     }
   });
 
-  it('reports no compile error for an empty TIME_PREFIX (#328)', () => {
+  it('reports no compile error for an empty TIME_PREFIX (propslab#328)', () => {
     const diagnostics: ValidationDiagnostic[] = [];
     extractTimestamps(
       [event('2026-08-03 10:00:00 msg')],
@@ -240,7 +240,7 @@ describe('probeTimestamp agrees with extractTimestamps (#313)', () => {
  * final `_raw` may no longer hold the prefix `_time` was read from. These run the
  * whole pipeline, so the ordering is the pipeline's and not the test's.
  */
-describe('probing what the extractor read, after _raw is rewritten (#328)', () => {
+describe('probing what the extractor read, after _raw is rewritten (propslab#328)', () => {
   const NOW = Date.parse('2026-01-16T00:00:00.000Z');
   const METADATA = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
   const PROPS = [

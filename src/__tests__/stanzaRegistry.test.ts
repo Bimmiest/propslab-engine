@@ -64,7 +64,7 @@ describe('STANZA_KINDS', () => {
 });
 
 // The parser reads the stanza type and its pattern from classifyStanza, so the
-// engine and the editor's hover cannot disagree about what a header is (#511).
+// engine and the editor's hover cannot disagree about what a header is (propslab#511).
 describe('parseConf classifies headers through classifyStanza', () => {
   it.each([
     ['default', 'default', undefined, undefined],

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Deeply nested XML (#428). The reader accepts any depth, so the walkers over
+// Deeply nested XML (propslab#428). The reader accepts any depth, so the walkers over
 // its tree must too, and one event that still fails must not cost the rest
 // of the batch its fields.
 // ---------------------------------------------------------------------------
@@ -43,7 +43,7 @@ function run(raw: string, props: string) {
   return { events: result.events, diagnostics };
 }
 
-describe('KV_MODE = xml on deep nesting (#428)', () => {
+describe('KV_MODE = xml on deep nesting (propslab#428)', () => {
   it(`extracts the leaf of a ${DEPTH}-deep document`, () => {
     const result = run(`${deep}\n${normal}`, 'KV_MODE = xml\n');
     expect(result.diagnostics.filter((d) => d.level === 'error')).toEqual([]);
@@ -62,7 +62,7 @@ describe('KV_MODE = xml on deep nesting (#428)', () => {
   });
 });
 
-describe('INDEXED_EXTRACTIONS = xml on deep nesting (#428)', () => {
+describe('INDEXED_EXTRACTIONS = xml on deep nesting (propslab#428)', () => {
   const props =
     'INDEXED_EXTRACTIONS = xml\nXML_INDEXED_EXTRACTIONS_PIPELINE = typing\n' +
     'extraction_cutoff = 1000000\nKV_MODE = none\n';

@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // mutation-targets.mjs
 //
-// The files a pull request's mutation run mutates (#571), as two lines for
+// The files a pull request's mutation run mutates (propslab#571), as two lines for
 // $GITHUB_OUTPUT:
 //
 //   changed=<the mutable source files the PR added or modified>

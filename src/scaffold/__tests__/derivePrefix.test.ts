@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { derivePrefix } from '../analyzers/timestamp';
 
-// The regex derivePrefix used before it became a backward scan (#427). Kept
+// The regex derivePrefix used before it became a backward scan (propslab#427). Kept
 // here as the reference its results must still equal.
 function reference(before: string): string {
   if (!before) return '';
@@ -12,7 +12,7 @@ function reference(before: string): string {
   return '';
 }
 
-describe('derivePrefix (#427)', () => {
+describe('derivePrefix (propslab#427)', () => {
   it('returns the trailing key boundary or punctuation delimiter', () => {
     expect(derivePrefix('id=5 time=')).toBe('time=');
     expect(derivePrefix('{"ts": "')).toBe('"ts": "');
@@ -40,7 +40,7 @@ describe('derivePrefix (#427)', () => {
   });
 
   it('stays linear on a long run of word characters', () => {
-    // No stopwatch (#507). The anchored regex this replaced retried from every
+    // No stopwatch (propslab#507). The anchored regex this replaced retried from every
     // start position, so its cost was quadratic and lived inside one regex
     // call, which nothing can count. The input is sized instead so that the
     // quadratic version cannot finish inside the test's own timeout (a million

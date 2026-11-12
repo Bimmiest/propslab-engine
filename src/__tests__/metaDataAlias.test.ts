@@ -1,7 +1,7 @@
 // The `_MetaData:X` alias of `MetaData:X` is read in four places: the value a
 // SOURCE_KEY reads, the `$0` of a DEST_KEY, the single-valued-slot rule of a
 // FORMAT write, and the router that applies the write. All four go through
-// `normaliseDestKey` (#511), so the alias must behave identically in each.
+// `normaliseDestKey` (propslab#511), so the alias must behave identically in each.
 //
 // Doc-derived (transforms.conf.spec, DEST_KEY / SOURCE_KEY): "_MetaData:Index"
 // and "MetaData:Index" name the same key; the underscore-prefixed form is the
@@ -12,7 +12,7 @@ import { applyDestKey } from '../transforms/destKeyRouter';
 import { normaliseDestKey } from '../transforms/destKeys';
 import { getSourceKeyValue } from '../utils/metadataFields';
 import type { ConfStanza } from '../types';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 const KEYS = [
   { key: 'Host', read: 'host::h', write: 'host::new', field: 'host', written: 'new' },
@@ -59,7 +59,7 @@ describe('the _MetaData: alias reads the same as MetaData: at every site', () =>
       expect(getSourceKeyValue(ev, `MetaData:${key}`)).toBe(read);
     });
 
-    // `$0` reads the slot as SOURCE_KEY does, prefix included (#620).
+    // `$0` reads the slot as SOURCE_KEY does, prefix included (propslab#620).
     it('$0 in FORMAT is the slot before the REGEX ran', () => {
       const r = applyRegexTransform(
         makeEvent('v=1'),

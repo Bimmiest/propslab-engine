@@ -31,7 +31,7 @@ function noOpsFor(raw: string, props: string, transforms = ''): DirectiveNoOp[] 
 
 const RAW = '2024-01-15 10:00:00 user=alice action=login\n';
 
-describe('#84 — no-op explanations reach the caller', () => {
+describe('propslab#84 — no-op explanations reach the caller', () => {
   it('says nothing when every directive fired', () => {
     const noOps = noOpsFor(RAW, '[my_app]\nEXTRACT-user = user=(?<user>\\w+)\n');
     expect(noOps).toEqual([]);
@@ -80,13 +80,13 @@ describe('#84 — no-op explanations reach the caller', () => {
     expect(noOps[0]?.phase).toBe('index-time');
   });
 
-  it('says a SEDCMD matched when its replacement equals the matched text (#875)', () => {
+  it('says a SEDCMD matched when its replacement equals the matched text (propslab#875)', () => {
     const noOps = noOpsFor('password=****\n', '[my_app]\nSEDCMD-mask = s/password=\\S+/password=****/\n');
     expect(noOps).toHaveLength(1);
     expect(noOps[0]?.reason).toEqual({ kind: 'replacement-identical' });
   });
 
-  it('keeps no-match for a SEDCMD whose pattern does not match, beside one that does (#875)', () => {
+  it('keeps no-match for a SEDCMD whose pattern does not match, beside one that does (propslab#875)', () => {
     const noOps = noOpsFor(
       'password=****\n',
       '[my_app]\nSEDCMD-a = s/password=\\S+/password=****/\nSEDCMD-b = s/token=\\S+/x/\n',
@@ -141,7 +141,7 @@ describe('#84 — no-op explanations reach the caller', () => {
   });
 });
 
-describe('#415 — explaining no-ops stays cheap at volume', () => {
+describe('propslab#415 — explaining no-ops stays cheap at volume', () => {
   it('runs 500 events past 16 mostly non-matching EXTRACTs without recompiling', () => {
     // Each explanation probes one truncated pattern per atom. Through the
     // pipeline's own 256-entry cache those probes evicted the EXTRACTs
@@ -181,7 +181,7 @@ describe('#415 — explaining no-ops stays cheap at volume', () => {
   }, 30_000);
 });
 
-describe('#452 — explanations are capped per directive per run', () => {
+describe('propslab#452 — explanations are capped per directive per run', () => {
   const lines = (n: number) => Array.from({ length: n }, (_, i) => `user=u${i} action=login`).join('\n');
   const LIMIT = 50;
 

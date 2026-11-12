@@ -3,7 +3,7 @@ import { applyFieldAliases } from '../processors/fieldAlias';
 import { applyEvalExpressions } from '../processors/evalProcessor';
 import type { ConfDirective, SplunkEvent } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 const ev = (fields: Record<string, string | string[]> = {}): SplunkEvent =>
   makeEvent('raw text', { fields, metadata: { index: 'main', host: 'h1', source: 's', sourcetype: 'st' } });
@@ -17,7 +17,7 @@ const dir = (key: string, value: string, directiveType: string, className: strin
 
 // Alias pairs are carried as data on the step, not parsed out of `description`,
 // a display string.
-describe('FIELDALIAS — the step carries its alias pairs as data (#128)', () => {
+describe('FIELDALIAS — the step carries its alias pairs as data (propslab#128)', () => {
   it('records target/source structurally', () => {
     const r = applyFieldAliases(
       [ev({ src_ip: '10.0.0.1' })],
@@ -65,7 +65,7 @@ describe('FIELDALIAS — the step carries its alias pairs as data (#128)', () =>
 
 // EVAL expressions are carried on the step as they ran — after stanza scoping
 // and continuations — not recovered from raw props.conf.
-describe('EVAL — the step carries the expression behind each field (#129)', () => {
+describe('EVAL — the step carries the expression behind each field (propslab#129)', () => {
   it('maps each computed field to its expression', () => {
     const r = applyEvalExpressions(
       [ev({ bytes: '2048' })],

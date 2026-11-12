@@ -1,4 +1,4 @@
-// The code in docs/engine.md is checked against the engine (#519): every fenced
+// The code in docs/api.md is checked against the engine (propslab#519): every fenced
 // `ts` block is type-checked with the TypeScript compiler as if it sat at the
 // repository root, so a renamed export, a changed signature or a stale import
 // path fails here rather than in a reader's editor. The runPipeline signature
@@ -10,18 +10,17 @@
 // node:fs, because the app's tsconfig has no Node types (see docs.test.ts).
 import { describe, it, expect } from 'vitest';
 import * as tsNamespace from 'typescript';
-import { runPipeline } from '../engine';
+import { runPipeline } from '../index';
 
 // typescript is CommonJS: depending on the loader its API is on the namespace
 // or on `default`.
 const ts: typeof tsNamespace = (tsNamespace as unknown as { default?: typeof tsNamespace }).default ?? tsNamespace;
 
 const engineDoc =
-  Object.values(import.meta.glob<string>('/docs/engine.md', { query: '?raw', import: 'default', eager: true }))[0] ??
-  '';
+  Object.values(import.meta.glob<string>('/docs/api.md', { query: '?raw', import: 'default', eager: true }))[0] ?? '';
 
 interface Block {
-  /** 1-based line of the first line of code in engine.md. */
+  /** 1-based line of the first line of code in api.md. */
   line: number;
   code: string;
 }
@@ -46,7 +45,7 @@ function tsBlocks(markdown: string): Block[] {
  * fails the type-check with "Cannot find name"; declare it here.
  */
 const AMBIENT = `
-import type { EventMetadata as AmbientMetadata } from './src/engine';
+import type { EventMetadata as AmbientMetadata } from 'propslab-engine';
 declare global { interface ImportMeta { url: string } }
 declare const rawData: string;
 declare const raw: string;
@@ -77,6 +76,8 @@ function typeCheck(blocks: Block[]): string[] {
     verbatimModuleSyntax: true,
     skipLibCheck: true,
     noEmit: true,
+    // The examples import the package by its name, as a consumer does.
+    paths: { 'propslab-engine': [`${root}/src/index.ts`] },
   };
   const host = ts.createCompilerHost(options);
   const { getSourceFile, fileExists, readFile } = host;
@@ -97,13 +98,13 @@ function typeCheck(blocks: Block[]): string[] {
     for (const d of [...program.getSyntacticDiagnostics(file), ...program.getSemanticDiagnostics(file)]) {
       const at = d.start === undefined ? 0 : file.getLineAndCharacterOfPosition(d.start).line + 1 - AMBIENT_LINES;
       const docLine = (blocks[index]?.line ?? 0) + at - 1;
-      problems.push(`docs/engine.md:${docLine}: ${ts.flattenDiagnosticMessageText(d.messageText, '\n')} (TS${d.code})`);
+      problems.push(`docs/api.md:${docLine}: ${ts.flattenDiagnosticMessageText(d.messageText, '\n')} (TS${d.code})`);
     }
   }
   return problems;
 }
 
-describe('docs/engine.md examples', () => {
+describe('docs/api.md examples', () => {
   const blocks = tsBlocks(engineDoc);
 
   it('has the examples this test expects', () => {
@@ -122,7 +123,7 @@ describe('docs/engine.md examples', () => {
       .exec(engineDoc)?.[1]
       ?.split(',')
       .map((p) => p.trim());
-    const declaration = ts.sys.readFile(`${ts.sys.getCurrentDirectory()}/src/engine/pipeline.ts`) ?? '';
+    const declaration = ts.sys.readFile(`${ts.sys.getCurrentDirectory()}/src/pipeline.ts`) ?? '';
     const actual = /export function runPipeline\(([^)]*)\)/
       .exec(declaration)?.[1]
       ?.split(',')
@@ -153,7 +154,7 @@ describe('docs/engine.md examples', () => {
       defaultTransforms: '',
       localTransforms: '',
     };
-    // Running the documented snippet is the test; eslint.config.js allows the implied eval here (#774).
+    // Running the documented snippet is the test; eslint.config.js allows the implied eval here (propslab#774).
     const run = new Function(...Object.keys(scope), js) as (...values: unknown[]) => void;
     run(...Object.values(scope));
 

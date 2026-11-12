@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // stopProcessingParse.test.ts
-// STOP_PROCESSING_IF is parsed once per run, not once per event (#561).
+// STOP_PROCESSING_IF is parsed once per run, not once per event (propslab#561).
 // ---------------------------------------------------------------------------
 
 import { describe, it, expect, vi } from 'vitest';

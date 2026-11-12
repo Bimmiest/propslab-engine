@@ -41,7 +41,7 @@ describe('detectLineFormat', () => {
     expect(byKey(out, 'KV_MODE')?.value).toBe('json');
   });
 
-  // #438: without a breaker the default line merge splits the object at a date.
+  // propslab#438: without a breaker the default line merge splits the object at a date.
   it('a single multi-line JSON object also gets a breaker that keeps it whole', () => {
     const raw = '{\n  "a": 1,\n  "b": 2\n}';
     const out = detectLineFormat(raw, splitLines(raw));
@@ -224,7 +224,7 @@ describe('detectTimestamp', () => {
   });
 });
 
-describe('locateTimestamp (#898)', () => {
+describe('locateTimestamp (propslab#898)', () => {
   it('uses the literal before the timestamp, and caps the lookahead to just past it', () => {
     expect(locateTimestamp('id=1 ts=2024-01-15T10:00:00 x', { start: 8, end: 27 })).toEqual({
       prefix: 'ts=',
@@ -330,7 +330,7 @@ describe('scaffoldConfig (integration)', () => {
   });
 });
 
-// #438: the scaffolded stanza, applied as written, must keep each pretty-printed
+// propslab#438: the scaffolded stanza, applied as written, must keep each pretty-printed
 // object whole. Dates inside the objects are what the default line merge
 // (BREAK_ONLY_BEFORE_DATE) would otherwise break on.
 describe('scaffoldConfig end to end — one event per multi-line object', () => {
@@ -362,7 +362,7 @@ describe('scaffoldConfig end to end — one event per multi-line object', () => 
   });
 });
 
-// Follow-up to #438: TRUNCATE caps a LINE_BREAKER segment, and the breaker the
+// Follow-up to propslab#438: TRUNCATE caps a LINE_BREAKER segment, and the breaker the
 // scaffold proposes keeps a pretty-printed object as one segment, so the
 // suggestion must size against the object, not its longest `\n` line.
 describe('scaffoldConfig end to end — TRUNCATE sized to the whole object', () => {

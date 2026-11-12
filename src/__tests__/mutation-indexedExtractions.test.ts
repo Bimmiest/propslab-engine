@@ -1,11 +1,11 @@
-// Tests written against mutants that survived `npm run test:mutation` (#370).
+// Tests written against mutants that survived `npm run test:mutation` (propslab#370).
 // Each pins an INDEXED_EXTRACTIONS behaviour the suite executed without asserting.
 import { describe, it, expect } from 'vitest';
 import { applyIndexedExtractions } from '../processors/indexedExtractions';
 import { validateRegex } from '../utils/splunkRegex';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 const directive = (key: string, value: string): ConfDirective => ({ key, value, line: 1, directiveType: key });
 
@@ -109,7 +109,7 @@ describe('FIELD_NAMES — the list', () => {
     expect(fieldsOf(extract('csv', ['1,2'], { FIELD_NAMES: '" a ", b' }))).toEqual([{ a: '1', b: '2' }]);
   });
 
-  // #449 corrected this: an empty entry was skipped, shifting `b` onto the
+  // propslab#449 corrected this: an empty entry was skipped, shifting `b` onto the
   // second column. Each entry names its own column, so the empty one leaves
   // the second column unnamed and `b` names the third.
   it('leaves the column of an empty entry unnamed', () => {
@@ -182,7 +182,7 @@ describe('locating the header and the data', () => {
     ]);
   });
 
-  // #449 corrected this: the input came back unextracted. Every line falls
+  // propslab#449 corrected this: the input came back unextracted. Every line falls
   // before a header past the end of the input, and none is indexed.
   it('indexes nothing when HEADER_FIELD_LINE_NUMBER is past the input', () => {
     const input = [makeEvent('a,b'), makeEvent('1,2')];
@@ -205,7 +205,7 @@ describe('locating the header and the data', () => {
   });
 });
 
-// #444 corrected two of these. They read that a w3c row carries only its
+// propslab#444 corrected two of these. They read that a w3c row carries only its
 // columns; without TIMESTAMP_FIELDS, w3c reads its timestamp from the date and
 // time columns, so a row with neither has `timestamp=none` and a trace step
 // after the extraction's.

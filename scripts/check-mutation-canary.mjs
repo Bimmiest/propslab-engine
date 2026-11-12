@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Canary for Stryker's test filter (#508, #796).
+// Canary for Stryker's test filter (propslab#508, propslab#796).
 //
 // Stryker runs each mutant against only the tests that cover it, by giving
 // vitest a `testNamePattern` of their full names. If the runner and vitest
@@ -22,7 +22,7 @@ import { pathToFileURL } from 'node:url';
 import { tally } from './lib/mutationShards.mjs';
 
 /** The file the canary run mutates; keep in step with package.json and mutation.yml. */
-export const CANARY_FILE = 'src/engine/utils/wildcardMatch.ts';
+export const CANARY_FILE = 'src/utils/wildcardMatch.ts';
 /**
  * A run of this file measures 39 killed of 43 (90.7%). The margins are wide on
  * purpose: this detects a broken harness, not a weakened test — the score gate

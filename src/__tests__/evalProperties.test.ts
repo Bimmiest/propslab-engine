@@ -24,9 +24,9 @@ import { parseExpression, type Node } from '../processors/eval/parser';
 import { evalNode } from '../processors/eval/evaluator';
 import type { EvalValue } from '../processors/eval/values';
 import type { SplunkEvent } from '../types';
-import { fcSeed } from '../../test/fcSeed';
-import { prng } from '../../test/prng';
-import { makeEvent } from '../../test/makeEvent';
+import { fcSeed } from '../test/fcSeed';
+import { prng } from '../test/prng';
+import { makeEvent } from '../test/makeEvent';
 
 fc.configureGlobal({ seed: fcSeed(340), numRuns: 300 });
 
@@ -259,7 +259,7 @@ function expectParseErrorOnly(text: string) {
 
 // ── (a) the parser only ever throws its own errors ──────
 
-describe('eval parser robustness (#340)', () => {
+describe('eval parser robustness (propslab#340)', () => {
   /** Fragments that exercise every lexer branch, glued together at random. */
   const fragment = fc.oneof(
     fc.constantFrom(
@@ -374,7 +374,7 @@ function normalize(node: Node): Node {
 
 // ── (b) keyword case and whitespace never change the result ──
 
-describe('eval keyword casing and whitespace (#340)', () => {
+describe('eval keyword casing and whitespace (propslab#340)', () => {
   it('gives the same outcome for any casing of the keywords and any whitespace', () => {
     fc.assert(
       fc.property(expr, fc.integer(), fc.integer(), (g, s1, s2) => {
@@ -389,7 +389,7 @@ describe('eval keyword casing and whitespace (#340)', () => {
 
 // ── (c) operator equivalences from the SPL operator table ──
 
-describe('eval operator equivalences (#340)', () => {
+describe('eval operator equivalences (propslab#340)', () => {
   const list = fc.array(expr, { minLength: 1, maxLength: 4 });
   const cased = (w: string, seed: number) => randomCase(w, prng(seed));
   const text = (g: Gen) => canonical(g.toks);
@@ -478,7 +478,7 @@ function print(node: Node): string {
   }
 }
 
-describe('eval AST print/parse round trip (#340)', () => {
+describe('eval AST print/parse round trip (propslab#340)', () => {
   it('parses a printed AST back to the same AST', () => {
     fc.assert(
       fc.property(expr, fc.integer(), (g, seed) => {
@@ -496,7 +496,7 @@ describe('eval AST print/parse round trip (#340)', () => {
 // other operand, a comparison, LIKE or IN involving it is NULL, and NULL is
 // falsy: if() takes its else branch, and NOT does not turn it true.
 
-describe('eval NULL propagation (#343)', () => {
+describe('eval NULL propagation (propslab#343)', () => {
   const text = (g: Gen) => canonical(g.toks);
   const op = fc.constantFrom('=', '==', '!=', '<', '>', '<=', '>=', 'LIKE');
 

@@ -1,4 +1,4 @@
-// The full mutation run in shards (#851). One job cannot run past GitHub's
+// The full mutation run in shards (propslab#851). One job cannot run past GitHub's
 // 6-hour limit, so the weekly run divides Stryker's `mutate` list across the
 // jobs of a matrix, and a last job holds the combined score to the floor.
 

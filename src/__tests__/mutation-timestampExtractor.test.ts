@@ -1,4 +1,4 @@
-// Tests written against mutants that survived `npm run test:mutation` (#370).
+// Tests written against mutants that survived `npm run test:mutation` (propslab#370).
 // Each pins a timestamp-extraction behaviour the suite ran but never asserted:
 // where exactly the sanity bounds fall, what an unusable bound falls back to,
 // which zone a dateless stamp's "today" is read in, and what the trace says
@@ -9,7 +9,7 @@ import { describe, it, expect } from 'vitest';
 import { extractTimestamps } from '../processors/timestampExtractor';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string): SplunkEvent {
   return makeEvent(raw);

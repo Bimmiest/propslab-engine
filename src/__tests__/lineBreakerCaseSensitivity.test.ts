@@ -10,7 +10,7 @@ const dir = (key: string, value: string): ConfDirective => ({ key, value, line: 
 // Keys are compared case-sensitively, as confParser's "is ignored" warning for
 // a mis-cased attribute says: the simulator must not honour a directive it has
 // just declared dead.
-describe('lineBreaker — directive keys are case-sensitive (#119)', () => {
+describe('lineBreaker — directive keys are case-sensitive (propslab#119)', () => {
   it('ignores a mis-cased line_breaker, matching the parser warning', () => {
     const { result, diagnostics } = runPipeline(
       'aXbXc',

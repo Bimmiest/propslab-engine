@@ -41,7 +41,7 @@ export function applyFieldAliases(events: SplunkEvent[], directives: ConfDirecti
     const noteNoOp = (alias: CompiledAlias, reason: NoOpReason) => {
       noOps.push({
         // Named per alias: one FIELDALIAS line can hold several, and each one
-        // misses on its own events (#772).
+        // misses on its own events (propslab#772).
         directive: `${alias.directive.key} → ${alias.source} ${alias.mode} ${alias.target}`,
         file: 'props.conf',
         line: alias.directive.line,
@@ -86,7 +86,7 @@ export function applyFieldAliases(events: SplunkEvent[], directives: ConfDirecti
     if (created.size === 0 && removed.size === 0) return { ...event, ...withNoOps };
 
     const fieldAliases = [...created].map(([target, source]) => ({ target, source }));
-    // A target that the event had before is overwritten, not added (#900).
+    // A target that the event had before is overwritten, not added (propslab#900).
     const targets = [...created.keys()];
     const overwritten = targets.filter((f) => hasField(event.fields, f));
     const description: string[] = [];

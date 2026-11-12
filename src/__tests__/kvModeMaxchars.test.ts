@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------
 // kvModeMaxchars.test.ts
-// limits.conf's `[kv] maxchars` cap on automatic key=value extraction (#451).
+// limits.conf's `[kv] maxchars` cap on automatic key=value extraction (propslab#451).
 //
 // Doc-derived (limits.conf.spec, [kv] maxchars): "When non-zero, truncate _raw
 // to this size and then do auto KV", default 10240 characters. The simulator
 // reads no limits.conf, so the default always applies. That KV_MODE = json is
-// not capped at `[spath] extraction_cutoff` comes from #451.
+// not capped at `[spath] extraction_cutoff` comes from propslab#451.
 // ---------------------------------------------------------------------------
 
 import { describe, it, expect } from 'vitest';
@@ -13,7 +13,7 @@ import { applyKvMode } from '../processors/kvMode';
 import { runPipeline } from '../pipeline';
 import type { ConfDirective, SplunkEvent, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 const CAP = 10_240;
 const HEAD = 'early=yes pad=';
@@ -151,7 +151,7 @@ describe('the cap through the pipeline', () => {
     expect(capInfo(diagnostics)).toHaveLength(1);
   });
 
-  // #451: KV_MODE = json is not capped at [spath] extraction_cutoff (5000).
+  // propslab#451: KV_MODE = json is not capped at [spath] extraction_cutoff (5000).
   it('does not stop KV_MODE = json at 5000 characters', () => {
     const raw = `{"early":"yes","pad":"${'x'.repeat(6_000)}","late":"yes"}`;
     expect(raw.indexOf('"late"')).toBeGreaterThan(5_000);

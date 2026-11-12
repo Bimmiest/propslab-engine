@@ -1,10 +1,10 @@
-// Tests written against mutants that survived `npm run test:mutation` (#370).
+// Tests written against mutants that survived `npm run test:mutation` (propslab#370).
 // Each pins a KV_MODE behaviour the suite executed without asserting.
 import { describe, it, expect } from 'vitest';
 import { applyKvMode } from '../processors/kvMode';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string, line = 1): SplunkEvent {
   return makeEvent(raw, { lineNumbers: { start: line, end: line } });

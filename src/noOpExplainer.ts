@@ -194,11 +194,11 @@ function atomBoundaries(pattern: string): number[] {
  * points instead of trying each: a prefix of a pattern that matches somewhere
  * also matches there, so "this prefix matches" holds up to some cut and not
  * after it. Trying every cut cost one probe per atom per event, which at a few
- * thousand events was most of the run (#415).
+ * thousand events was most of the run (propslab#415).
  *
  * A cut the atom scan got wrong, inside `\k<name>` say, does not compile. It
  * is dropped from the search: read as a miss, it sent the search below the
- * cuts that do match (#561).
+ * cuts that do match (propslab#561).
  */
 export function longestPartialMatch(pattern: string, text: string): { end: number; prefix: string } | null {
   // The last boundary is the whole pattern, which by the time this is called

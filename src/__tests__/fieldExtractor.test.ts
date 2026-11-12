@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { extractFields } from '../processors/fieldExtractor';
 import type { SplunkEvent, ConfDirective } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string, fields: Record<string, string | string[]> = {}): SplunkEvent {
   return makeEvent(raw, { fields });
@@ -95,7 +95,7 @@ describe('extractFields — fieldOffsets provenance', () => {
   });
 });
 
-describe('extractFields — captureOffsets (#118)', () => {
+describe('extractFields — captureOffsets (propslab#118)', () => {
   const raw = 'user=admin id=7';
   const dirs = [dir('user', 'user=(?<user>\\w+)')];
 

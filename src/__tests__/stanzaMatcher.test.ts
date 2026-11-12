@@ -165,7 +165,7 @@ describe('mergeDirectives — duplicate keys', () => {
   });
 });
 
-describe('matchStanzas — host case-insensitivity (#118)', () => {
+describe('matchStanzas — host case-insensitivity (propslab#118)', () => {
   // Doc-derived (props.conf.spec): "[source::<source>] and [<sourcetype>]
   // stanzas match in a case-sensitive manner, while [host::<host>] stanzas
   // match in a case-insensitive manner."
@@ -200,8 +200,8 @@ describe('matchStanzas — host case-insensitivity (#118)', () => {
 
 // Doc-derived (props.conf.spec, [source::<source>]): "`|` is equivalent to
 // 'or'. `( )` are used to limit scope of `|`." That is PCRE alternation, and a
-// source pattern is PCRE only when it contains `*` or `...` (#442).
-describe('matchStanzas — `|` alternation and `( )` scoping (#284, #442)', () => {
+// source pattern is PCRE only when it contains `*` or `...` (propslab#442).
+describe('matchStanzas — `|` alternation and `( )` scoping (propslab#284, propslab#442)', () => {
   it('matches either branch of a scoped alternation', () => {
     const s = source('.../(messages|secure)');
     expect(matches(s, at('/var/log/secure'))).toBe(true);
@@ -232,7 +232,7 @@ describe('matchStanzas — `|` alternation and `( )` scoping (#284, #442)', () =
   });
 
   it('matches nothing with `|` in a pattern that has no wildcard', () => {
-    // #442 corrected this. These patterns used to be read as alternations
+    // propslab#442 corrected this. These patterns used to be read as alternations
     // with no wildcard in them; Splunk compares such a pattern as written, and
     // one containing `|` then matches no source at all.
     const scoped = source('/var/log/(messages|secure)');
@@ -262,9 +262,9 @@ describe('matchStanzas — `|` alternation and `( )` scoping (#284, #442)', () =
 // Doc-derived (props.conf.spec, stanza pattern syntax): "\\ = matches a literal
 // backslash '\'". That is PCRE's escape, and holds where the pattern is PCRE:
 // always for a host pattern, and for a source pattern containing `*` or `...`.
-// A source pattern with neither is compared as written (#442), so there `\\` is
+// A source pattern with neither is compared as written (propslab#442), so there `\\` is
 // two backslashes.
-describe('matchStanzas — backslashes in a source pattern (#303, #442)', () => {
+describe('matchStanzas — backslashes in a source pattern (propslab#303, propslab#442)', () => {
   // The conf text `C:\\logs\\app.log`, i.e. written the way the spec says.
   const SPEC_WINDOWS = 'C:\\\\logs\\\\app.log';
 
@@ -276,7 +276,7 @@ describe('matchStanzas — backslashes in a source pattern (#303, #442)', () => 
   });
 
   it('compares a pattern with no wildcard as written, so `\\` there is two backslashes', () => {
-    // #442 corrected this. It used to read `\\` as one backslash in every
+    // propslab#442 corrected this. It used to read `\\` as one backslash in every
     // pattern, matching `C:\logs\app.log` and not the source spelled as the
     // stanza is.
     expect(matches(source(SPEC_WINDOWS), at('C:\\\\logs\\\\app.log'))).toBe(true);
@@ -288,7 +288,7 @@ describe('matchStanzas — backslashes in a source pattern (#303, #442)', () => 
   });
 
   it('compares backslashes one for one in a pattern with no wildcard', () => {
-    // #442 corrected this. Backslashes used to pair up as escapes, so three
+    // propslab#442 corrected this. Backslashes used to pair up as escapes, so three
     // matched two; compared as written, three match only three.
     expect(matches(source('a\\\\\\b'), at('a\\\\\\b'))).toBe(true);
     expect(matches(source('a\\\\\\b'), at('a\\\\b'))).toBe(false);
@@ -318,7 +318,7 @@ describe('matchStanzas — backslashes in a source pattern (#303, #442)', () => 
   });
 });
 
-describe('matchStanzas — ASCII order breaks a full tie (#318)', () => {
+describe('matchStanzas — ASCII order breaks a full tie (propslab#318)', () => {
   // Doc-derived: props.conf.spec resolves colliding patterns of equal priority
   // by the ASCII order of the stanza, the one sorting first winning. What this
   // pins is that file order does not decide it.
@@ -355,12 +355,12 @@ describe('matchStanzas — ASCII order breaks a full tie (#318)', () => {
 
 // Doc-derived (props.conf.spec, [<spec>] stanza patterns): "suppose two [<spec>]
 // stanzas supply the same setting. In this case, Splunk software chooses the
-// value to apply based on the ASCII order of the patterns in question." #443
+// value to apply based on the ASCII order of the patterns in question." propslab#443
 // established that nothing comes before it: the more specific pattern does not
 // win.
-describe('matchStanzas — no specificity rule before ASCII order (#443)', () => {
+describe('matchStanzas — no specificity rule before ASCII order (propslab#443)', () => {
   it('lets the ASCII-first pattern win over a more specific one', () => {
-    // #443 corrected this. The stanza with more literal characters used to
+    // propslab#443 corrected this. The stanza with more literal characters used to
     // rank first, so `/var/log/x443/...` won.
     const stanzas = [source('/var/log/x443/...'), source('.../app443.log')];
     const expected = ['source::.../app443.log', 'source::/var/log/x443/...'];
@@ -386,9 +386,9 @@ describe('matchStanzas — no specificity rule before ASCII order (#443)', () =>
 // full implementation of Perl-compatible regular expressions (PCRE) with the
 // translation of "...", "*", and "." Thus, "." matches a period, "*" matches
 // non-directory separators, and "..." matches any number of any characters."
-// #442 established that regex syntax works before, inside and after the
+// propslab#442 established that regex syntax works before, inside and after the
 // wildcard segment.
-describe('matchStanzas — a source pattern with a wildcard is PCRE (#442)', () => {
+describe('matchStanzas — a source pattern with a wildcard is PCRE (propslab#442)', () => {
   it('reads `?` as a quantifier', () => {
     const s = source('.../app.ab?c');
     expect(matches(s, at('/x/app.ac'))).toBe(true);
@@ -508,10 +508,10 @@ describe('matchStanzas — a source pattern with a wildcard is PCRE (#442)', () 
   });
 });
 
-// Issue-derived (#442), beyond the spec: a source pattern is PCRE only when it
+// Issue-derived (propslab#442), beyond the spec: a source pattern is PCRE only when it
 // contains `*` or `...`. Without either, Splunk compares it with the source
 // exactly as written.
-describe('matchStanzas — a source pattern with no wildcard is compared as written (#442)', () => {
+describe('matchStanzas — a source pattern with no wildcard is compared as written (propslab#442)', () => {
   it('reads `?` as a plain character', () => {
     const s = source('/x/nwq.ab?c');
     expect(matches(s, at('/x/nwq.ab?c'))).toBe(true);
@@ -532,8 +532,8 @@ describe('matchStanzas — a source pattern with no wildcard is compared as writ
 // Doc-derived (props.conf.spec, [host::<host>]): host stanzas "match in a
 // case-insensitive manner", and "To force a [host::<host>] stanza to match in a
 // case-sensitive manner use the "(?-i)" option in its pattern." Issue-derived
-// (#442): a host pattern is PCRE whether or not it has a wildcard.
-describe('matchStanzas — a host pattern is always PCRE (#442)', () => {
+// (propslab#442): a host pattern is PCRE whether or not it has a wildcard.
+describe('matchStanzas — a host pattern is always PCRE (propslab#442)', () => {
   it('matches case-insensitively', () => {
     expect(matches(host('WEB-HOSTCASE'), onHost('web-hostcase'))).toBe(true);
   });

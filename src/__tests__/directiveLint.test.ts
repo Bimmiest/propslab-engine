@@ -20,7 +20,7 @@ function diagnosticsFor(props: string, transforms = '') {
 
 const messagesFor = (props: string, transforms = '') => diagnosticsFor(props, transforms).map((d) => d.message);
 
-describe('#177 — a transforms setting that is inert in its phase', () => {
+describe('propslab#177 — a transforms setting that is inert in its phase', () => {
   it('flags a search-time-only setting in a TRANSFORMS- stanza', () => {
     const d = diagnosticsFor('TRANSFORMS-x = t1\n', '[t1]\nREGEX = (\\w+)\nFORMAT = a::$1\nMV_ADD = true\n').find(
       (x) => x.directiveKey === 'MV_ADD',
@@ -66,7 +66,7 @@ describe('#177 — a transforms setting that is inert in its phase', () => {
   });
 });
 
-describe('#179 — a value that is not the documented type', () => {
+describe('propslab#179 — a value that is not the documented type', () => {
   it('flags a boolean that is not a boolean literal', () => {
     const d = diagnosticsFor('SHOULD_LINEMERGE = yes please\n').find((x) => x.directiveKey === 'SHOULD_LINEMERGE');
     expect(d?.level).toBe('warning');

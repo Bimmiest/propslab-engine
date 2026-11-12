@@ -10,7 +10,7 @@ export interface SampleConfig {
 }
 
 // The examples a user loads from the empty preview and the command palette
-// (#666). Each shows a different part of the pipeline. Every host, user and
+// (propslab#666). Each shows a different part of the pipeline. Every host, user and
 // address is invented: the addresses are RFC 5737 documentation ranges or
 // private ranges, and the domains are example.com. Every config is written
 // from the .spec files, not copied from an add-on. The dates are in 2026, so

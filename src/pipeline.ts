@@ -46,11 +46,11 @@ const errorText = (err: unknown) => (err instanceof Error ? err.message : 'Unkno
  * A `batch` stage reads across events (line breaking, the previous event's
  * `_time`, a CSV header row), and a retry one event at a time would be a
  * different computation, so it falls back to `events` unchanged as a whole.
- * See docs/adr/0001-stage-failures-degrade-to-diagnostics.md.
+ * See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0001-stage-failures-degrade-to-diagnostics.md.
  *
  * Once the run's time budget is spent, the stage stops at its next regex call,
  * and every stage after it passes its events through unrun.
- * See docs/adr/0019-a-run-stops-at-its-time-budget.md.
+ * See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0019-a-run-stops-at-its-time-budget.md.
  */
 function safeProcessor(
   name: RunStage,
@@ -188,7 +188,7 @@ function resolveDirectives(
 
   // `rename` is search-time only: the event stays indexed as its original
   // sourcetype, and search-time config comes from the target stanza alone.
-  // See docs/adr/0002-input-time-sourcetype-and-rename.md.
+  // See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0002-input-time-sourcetype-and-rename.md.
   const renamedSourcetype = getRenamedSourcetype(matchedStanzas);
   if (!renamedSourcetype) {
     return { directives, searchTimeDirectives: directives, renamedSourcetype: undefined, effectiveMetadata };
@@ -217,7 +217,7 @@ function runIndexTime(rawData: string, run: PipelineRun): SplunkEvent[] {
   const { directives, propsConf, transformsConf, ctx } = run;
   // Stage 1: Line breaking and merging. breakLines alone decides the
   // SHOULD_LINEMERGE default INDEXED_EXTRACTIONS implies (see
-  // docs/adr/0008-structured-formats-default-line-merging-off.md). With nothing
+  // https://github.com/Bimmiest/propslab/blob/main/docs/adr/0008-structured-formats-default-line-merging-off.md). With nothing
   // broken there are no events to carry forward, so the fallback is empty.
   let events = safeProcessor(
     'LINE_BREAKER',
@@ -257,7 +257,7 @@ function runIndexTime(rawData: string, run: PipelineRun): SplunkEvent[] {
 
   // Stage 3, continued: ROUTE_EVENTS_OLDER_THAN — the spec runs the age test "after
   // timestamp extraction", and for structured data TIMESTAMP_FIELDS, read by the
-  // indexed extractions, is that extraction (#557). So it reads the _time the
+  // indexed extractions, is that extraction (propslab#557). So it reads the _time the
   // event ends up with, before any index-time transform can rewrite it.
   events = safeProcessor('ROUTE_EVENTS_OLDER_THAN', events, (batch, c) => routeEventsByAge(batch, directives, c), ctx);
 
@@ -328,7 +328,7 @@ function runSearchTimeStages(
   // rewrites (SEDCMD, DEST_KEY = _raw) to the fields whose extracted value they
   // changed or destroyed. Runs last because it replays search-time extraction
   // against the pre-rewrite text.
-  // See docs/adr/0011-raw-rewrites-attributed-by-replay.md.
+  // See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0011-raw-rewrites-attributed-by-replay.md.
   return safeProcessor(
     'SEDCMD attribution',
     ev,
@@ -471,7 +471,7 @@ function warnBatchMetadataRewrites(
  * 'local', text }]` — for a caller reading an app off disk, where `local/`
  * overrides `default/` per attribute. `parseConf` merges them; every directive
  * and every diagnostic derived from one then names the layer it came from.
- * See docs/adr/0012-layered-conf-input.md.
+ * See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0012-layered-conf-input.md.
  */
 export function runPipeline(
   rawData: string,
@@ -524,7 +524,7 @@ export function runPipeline(
 
   // Compared against the metadata the events were BROKEN with, not the
   // caller's: an input-time `sourcetype =` assignment is not an index-time
-  // rewrite. See docs/adr/0002-input-time-sourcetype-and-rename.md.
+  // rewrite. See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0002-input-time-sourcetype-and-rename.md.
   const originalMetaKey = metaKey(run.effectiveMetadata);
   if (options?.perEventPipeline) {
     events = runSearchTimePerEvent(events, run, originalMetaKey);

@@ -178,9 +178,9 @@ function evaluateAll(event: SplunkEvent, compiled: CompiledEval[], reporter: Eva
 
 /**
  * Write an event's EVAL results onto it, and trace what they changed. A field
- * that the event had before is modified, not added (#900). A null result
+ * that the event had before is modified, not added (propslab#900). A null result
  * removes a field that the event had, and is a no-op otherwise: a no-op is not
- * in the trace (ADR 0010, #876).
+ * in the trace (propslab ADR 0010, propslab#876).
  */
 function applyResults(event: SplunkEvent, results: EvalResults, byField: Map<string, ConfDirective>): SplunkEvent {
   const noOps: DirectiveNoOp[] = [];

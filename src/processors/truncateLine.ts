@@ -1,6 +1,6 @@
 // TRUNCATE's byte cap: the limit a stanza sets, and one line cut to it.
 // truncator.ts applies it to each event's segments; lineBreaker.ts reads it
-// too, because the merge rules see each line as TRUNCATE leaves it (#561).
+// too, because the merge rules see each line as TRUNCATE leaves it (propslab#561).
 
 import type { ConfDirective } from '../types';
 import { effectiveDirective } from '../utils/directiveValues';

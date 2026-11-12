@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { applyEvalExpressions } from '../processors/evalProcessor';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(fields: Record<string, string> = {}, raw = 'raw'): SplunkEvent {
   return makeEvent(raw, { fields });
@@ -270,7 +270,7 @@ describe('applyEvalExpressions — function fidelity', () => {
 });
 
 describe('applyEvalExpressions — replace()', () => {
-  it('runs a backtracking-prone pattern rather than refusing it (#368)', () => {
+  it('runs a backtracking-prone pattern rather than refusing it (propslab#368)', () => {
     // (a+)+ is accepted: PCRE's limits bound it.
     const result = applyEvalExpressions(
       [event({}, 'aaaaaab')],
@@ -526,10 +526,10 @@ describe('applyEvalExpressions — complex nested case() with OR', () => {
   });
 });
 
-// #9: the lexer folded a `-` after ANY paren into a negative literal, and the
+// propslab#9: the lexer folded a `-` after ANY paren into a negative literal, and the
 // parser never checked for leftover tokens — so `len(x) - 1` silently became
 // `len(x)` and malformed input was accepted.
-describe('applyEvalExpressions — parser correctness (#9)', () => {
+describe('applyEvalExpressions — parser correctness (propslab#9)', () => {
   it('subtracts after a closing paren instead of lexing a negative literal', () => {
     const r = applyEvalExpressions([event({ x: 'hello' })], [evalDir('n', 'len(x) - 1')], runCtx(FIXED_NOW))[0]!;
     expect(r.fields['n']).toBe('4'); // len("hello") = 5, minus 1
@@ -563,7 +563,7 @@ describe('applyEvalExpressions — parser correctness (#9)', () => {
 });
 
 // Non-numeric values are NULL, as in Splunk, not coerced to 0.
-describe('applyEvalExpressions — numeric NULL semantics (#10)', () => {
+describe('applyEvalExpressions — numeric NULL semantics (propslab#10)', () => {
   it('does not treat a non-numeric string as 0 in comparison', () => {
     const r = applyEvalExpressions(
       [event({ a: 'abc' })],
@@ -603,7 +603,7 @@ describe('applyEvalExpressions — numeric NULL semantics (#10)', () => {
   });
 });
 
-describe('applyEvalExpressions — string escapes reach regex functions intact (#54)', () => {
+describe('applyEvalExpressions — string escapes reach regex functions intact (propslab#54)', () => {
   it('match() honours a single-backslash class', () => {
     const result = applyEvalExpressions(
       [event({}, 'abc123')],
@@ -628,7 +628,7 @@ describe('applyEvalExpressions — string escapes reach regex functions intact (
   });
 });
 
-describe('applyEvalExpressions — replace() backreferences (#54)', () => {
+describe('applyEvalExpressions — replace() backreferences (propslab#54)', () => {
   it('swaps groups with \\1 / \\2 (the docs example)', () => {
     const result = applyEvalExpressions(
       [event({ date: '1/14/2017' })],
@@ -657,7 +657,7 @@ describe('applyEvalExpressions — replace() backreferences (#54)', () => {
   });
 });
 
-describe('applyEvalExpressions — strftime %z / %Z (#75.4)', () => {
+describe('applyEvalExpressions — strftime %z / %Z (propslab#75.4)', () => {
   it('emits a numeric offset rather than the literal specifier', () => {
     const result = applyEvalExpressions(
       [event()],
@@ -714,7 +714,7 @@ function evalWith(expr: string, fields: Record<string, string>): string | string
   return applyEvalExpressions([event(fields)], [evalDir('out', expr)], runCtx(FIXED_NOW))[0]!.fields['out'];
 }
 
-describe('#165 — true() as a case() fallback', () => {
+describe('propslab#165 — true() as a case() fallback', () => {
   it('takes the trailing true() branch when no earlier test matches', () => {
     const out = evalWith('case(status < 300, "ok", status < 500, "client", true(), "server")', {
       status: '503',
@@ -736,7 +736,7 @@ describe('#165 — true() as a case() fallback', () => {
   });
 });
 
-describe('#168 — null propagates through concatenation', () => {
+describe('propslab#168 — null propagates through concatenation', () => {
   it('produces no value when the left side is a missing field', () => {
     expect(evalWith('absent_field . "-suffix"', { user: 'alice' })).toBeUndefined();
   });
@@ -759,7 +759,7 @@ describe('#168 — null propagates through concatenation', () => {
   });
 });
 
-describe('#211 — null propagates into function arguments', () => {
+describe('propslab#211 — null propagates into function arguments', () => {
   // Functions do not coerce an absent field to "" either: `EVAL-ulen =
   // len(user)` writes nothing on an event without a `user`. 0 would be the
   // damaging answer precisely because it looks like a real one.

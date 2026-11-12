@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // makeEvent.ts
-// The one SplunkEvent literal the tests share (#507).
+// The one SplunkEvent literal the tests share (propslab#507).
 //
 // Fifty-odd test files each carried their own copy of this object, so adding a
 // required field to SplunkEvent meant editing all of them, and each copy drifted
@@ -8,7 +8,7 @@
 // a field passes it; everything else is the same neutral event everywhere.
 // ---------------------------------------------------------------------------
 
-import type { SplunkEvent } from '../engine';
+import type { SplunkEvent } from '../types';
 
 /**
  * A SplunkEvent with the given raw text, and any other field overridden.

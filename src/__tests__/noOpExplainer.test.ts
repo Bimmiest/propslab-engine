@@ -42,14 +42,14 @@ describe('longestPartialMatch', () => {
     expect(partial?.end).toBe('[warn] '.length);
   });
 
-  it('reads a POSIX class and a leading ] as PCRE does (#561)', () => {
+  it('reads a POSIX class and a leading ] as PCRE does (propslab#561)', () => {
     // A scan to the first `]` cut `[[:digit:]]+x` after `[[:digit:]`, which
     // does not compile, and reported that nothing matched.
     expect(longestPartialMatch('[[:digit:]]+x', '123y')).toEqual({ end: 3, prefix: '[[:digit:]]+' });
     expect(longestPartialMatch('[]a]+Z', ']a]b')).toEqual({ end: 3, prefix: '[]a]+' });
   });
 
-  it('drops a cut that does not compile rather than read it as a miss (#561)', () => {
+  it('drops a cut that does not compile rather than read it as a miss (propslab#561)', () => {
     // The scan cuts inside `\k<w>`; those prefixes do not compile.
     expect(longestPartialMatch(String.raw`(?<w>a)\k<w>Z`, 'aab')).toEqual({ end: 2, prefix: String.raw`(?<w>a)\k<w>` });
   });
@@ -77,7 +77,7 @@ describe('longestPartialMatch', () => {
     expect(longestPartialMatch('ERRORX|FATAL', 'ERROR here')).toBeNull();
   });
 
-  it('reports nothing for a top-level alternation rather than an empty-matching prefix (#365)', () => {
+  it('reports nothing for a top-level alternation rather than an empty-matching prefix (propslab#365)', () => {
     // `ERROR|` matches the empty string at 0, which is not agreement.
     expect(longestPartialMatch('ERROR|FATAL', 'all good here')).toBeNull();
     expect(explainRegexNoOp('ERROR|FATAL', 'all good here', '_raw')).toEqual({ kind: 'no-match' });
@@ -176,7 +176,7 @@ describe('describeNoOp', () => {
     expect(describeNoOp({ kind: 'groups-unset', fields: ['a', 'b'] })).toContain('a, b took no part in the match');
   });
 
-  it('says an EVAL computed null without guessing why (#772)', () => {
+  it('says an EVAL computed null without guessing why (propslab#772)', () => {
     // In a sourcetype with several record types the usual cause is a case()
     // that returns null on purpose, with every field it reads present.
     expect(describeNoOp({ kind: 'eval-null', expression: 'len(x)' })).toBe(
@@ -194,7 +194,7 @@ describe('describeNoOp', () => {
     expect(describeNoOp({ kind: 'regex-invalid', error: 'missing )' })).toBe('the pattern did not compile: missing )');
   });
 
-  it('says a pattern matched when the replacement equals the matched text (#875)', () => {
+  it('says a pattern matched when the replacement equals the matched text (propslab#875)', () => {
     expect(describeNoOp({ kind: 'replacement-identical' })).toBe(
       'the pattern matched, but the replacement is the same as the matched text, so the event did not change',
     );

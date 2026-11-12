@@ -1,14 +1,14 @@
-// Eval edge cases settled by #446: what the math functions and arithmetic give
+// Eval edge cases settled by propslab#446: what the math functions and arithmetic give
 // when a result is not an ordinary number, which text reads as a non-finite
 // number, tostring()'s Boolean and radix formats, the multivalue functions on
 // NULL, and characters counted as code points. A test whose behaviour the
-// Search Reference states says so; the rest cite #446. How + and the
+// Search Reference states says so; the rest cite propslab#446. How + and the
 // comparison operators type their operands is in evalOperandTypes.test.ts.
 import { describe, it, expect } from 'vitest';
 import { evaluateExpression } from '../processors/eval/evaluator';
 import { runPipeline } from '../pipeline';
 import type { EventMetadata } from '../types';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 import { FIXED_NOW } from './runCtx';
 
 type Fields = Record<string, string | string[]>;
@@ -33,7 +33,7 @@ function fieldsOf(body: string, transforms = '', raw = 'x'): Fields {
 const ingest = (assignments: string, raw = 'x') =>
   fieldsOf('TRANSFORMS-t = t\n', `[t]\nINGEST_EVAL = ${assignments}\n`, raw);
 
-describe('a math function undefined at its argument is NULL (#446)', () => {
+describe('a math function undefined at its argument is NULL (propslab#446)', () => {
   it.each(['sqrt(-1)', 'ln(0)', 'ln(-1)', 'log(0)', 'log(-1)', 'log(0, 10)', 'log(8, 0)', 'round(1.5, 400)'])(
     '%s',
     (expr) => {
@@ -68,7 +68,7 @@ describe('a math function undefined at its argument is NULL (#446)', () => {
   });
 });
 
-describe('pow() gives what floating point gives (#446)', () => {
+describe('pow() gives what floating point gives (propslab#446)', () => {
   it.each([
     ['pow(0, -1)', Infinity],
     ['pow(0, -0.5)', Infinity],
@@ -86,7 +86,7 @@ describe('pow() gives what floating point gives (#446)', () => {
   });
 });
 
-describe('an overflow is the number Infinity, and arithmetic keeps NaN (#446)', () => {
+describe('an overflow is the number Infinity, and arithmetic keeps NaN (propslab#446)', () => {
   it.each([
     ['exp(1000)', Infinity, 'Infinity'],
     ['pow(10, 400)', Infinity, 'Infinity'],
@@ -136,7 +136,7 @@ describe('an overflow is the number Infinity, and arithmetic keeps NaN (#446)', 
   });
 });
 
-describe('tostring() (#446)', () => {
+describe('tostring() (propslab#446)', () => {
   // Doc-derived (Search Reference, tostring): "If the value is a Boolean value,
   // it returns the corresponding string value, "True" or "False"", and
   // tostring(15,"hex") is "0xF". The pipeline writes them as they are.
@@ -185,7 +185,7 @@ describe('tostring() (#446)', () => {
   });
 });
 
-describe('the text of a non-finite number reads as that number (#446)', () => {
+describe('the text of a non-finite number reads as that number (propslab#446)', () => {
   it.each([
     ['s + 1', 'Infinity', Infinity],
     ['s * 2', 'Infinity', Infinity],
@@ -219,7 +219,7 @@ describe('the text of a non-finite number reads as that number (#446)', () => {
   });
 });
 
-describe('the multivalue functions on NULL (#446)', () => {
+describe('the multivalue functions on NULL (propslab#446)', () => {
   it.each([
     'mvappend(missing, missing)',
     'mvdedup(missing)',
@@ -253,7 +253,7 @@ describe('the multivalue functions on NULL (#446)', () => {
   });
 });
 
-describe('characters are counted as code points (#446)', () => {
+describe('characters are counted as code points (propslab#446)', () => {
   // Doc-derived (Search Reference, len): "This function returns a count of the
   // UTF-8 code points in a string."
   it('len() counts code points, not UTF-16 units', () => {

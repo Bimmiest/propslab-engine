@@ -4,7 +4,7 @@ import { detached, hasReDoSRisk } from '../redosHeuristic';
 // The heuristic is advisory now — it ranks the MCP server's timeout suspects —
 // so these pin its verdicts only; no pattern is refused on its word.
 
-describe('hasReDoSRisk — strengthened heuristic (#11/#34)', () => {
+describe('hasReDoSRisk — strengthened heuristic (propslab#11/#34)', () => {
   it.each([
     '(\\d+)+', // nested quantified group
     '(.+)*x', // nested group, star outer
@@ -28,7 +28,7 @@ describe('hasReDoSRisk — strengthened heuristic (#11/#34)', () => {
   });
 });
 
-describe('hasReDoSRisk — ambiguity analysis (#55)', () => {
+describe('hasReDoSRisk — ambiguity analysis (propslab#55)', () => {
   it.each([
     '(\\d+\\.){3}\\d+', // canonical IPv4 — `\d+` cannot match the `.`
     '^(?:[^ ]* ){2}', // Splunk docs' own TIME_PREFIX recipe
@@ -54,7 +54,7 @@ describe('hasReDoSRisk — ambiguity analysis (#55)', () => {
   });
 });
 
-describe('hasReDoSRisk — adjacent quantifiers compare whole atoms (#365)', () => {
+describe('hasReDoSRisk — adjacent quantifiers compare whole atoms (propslab#365)', () => {
   it.each(['\\d+d+', '\\.+.+', 'd+\\d+', '\\w*w*'])(
     'does not read an escape and its bare letter as one atom: %s',
     (p) => {
@@ -67,7 +67,7 @@ describe('hasReDoSRisk — adjacent quantifiers compare whole atoms (#365)', () 
   });
 });
 
-describe('hasReDoSRisk — the verdict cache (#487)', () => {
+describe('hasReDoSRisk — the verdict cache (propslab#487)', () => {
   it('gives the same verdict for a pattern too long to cache, every time', () => {
     // Past the full analysis's length limit the verdict is not cached; the
     // cheap check runs on each call. (The MCP package's suspects test checks
@@ -88,7 +88,7 @@ describe('hasReDoSRisk — the verdict cache (#487)', () => {
   });
 });
 
-describe('hasReDoSRisk — very long patterns (#480)', () => {
+describe('hasReDoSRisk — very long patterns (propslab#480)', () => {
   // REDOS_ANALYSIS_MAX_LENGTH is 2000 and REDOS_PRESENCE_CHECK_MAX_LENGTH 5000.
   const padded = (core: string, length: number) => core + 'x'.repeat(length - core.length);
 
@@ -101,7 +101,7 @@ describe('hasReDoSRisk — very long patterns (#480)', () => {
   it('assumes a pattern past the length cap is risky, without scanning it', () => {
     expect(hasReDoSRisk(padded('(ab)', 5001))).toBe(true);
     // Quadratic for REDOS_NESTED_GROUP: about 0.8 s at 30,000 characters when it
-    // was scanned. No stopwatch (#507), two structural bounds instead. First,
+    // was scanned. No stopwatch (propslab#507), two structural bounds instead. First,
     // the only regex the overlong pattern is handed to is the one linear
     // adjacent-quantifier check, counted rather than timed. Second, the pattern
     // is sized so that a scan by the nested-group regex (about 10^12 steps at a

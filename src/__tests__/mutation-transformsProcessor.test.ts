@@ -1,4 +1,4 @@
-// Tests written against mutants that survived `npm run test:mutation` (#370).
+// Tests written against mutants that survived `npm run test:mutation` (propslab#370).
 // Most pin the "once per stanza" contract of the transform diagnostics — the
 // suite ran every warning against one event, so a warning repeated per event
 // (or suppressed after the first stanza) passed unnoticed — and the exact
@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 import { applyTransforms } from '../processors/transformsProcessor';
 import type { SplunkEvent, ConfDirective, ConfStanza, ParsedConf, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string): SplunkEvent {
   return makeEvent(raw);

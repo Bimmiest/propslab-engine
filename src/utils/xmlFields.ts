@@ -2,7 +2,7 @@
  * The one walk from an XML element tree to the (name, value) pairs XML field
  * extraction reads: `KV_MODE = xml` (search time) and
  * `INDEXED_EXTRACTIONS = xml | xmlkv | xmlkv-winevt` (index time) both call
- * it, so the two cannot drift apart on naming (#483). What each does with the
+ * it, so the two cannot drift apart on naming (propslab#483). What each does with the
  * pairs afterwards (KV_MODE's multivalue accumulation; the indexed filters and
  * cutoff) stays in its own processor.
  */
@@ -28,7 +28,7 @@ export interface XmlCandidate {
 }
 
 // Iterative pre-order walk: the reader accepts any depth, so recursion here
-// overflowed the stack on deeply nested input (#428). Paths are carried as
+// overflowed the stack on deeply nested input (propslab#428). Paths are carried as
 // joined strings rather than copied arrays, which made depth quadratic. Only a
 // leaf has a value, so output order matches the recursive walk it replaced.
 export function walkXmlFields(root: XmlElement, mode: XmlNaming, out: XmlCandidate[] = []): XmlCandidate[] {

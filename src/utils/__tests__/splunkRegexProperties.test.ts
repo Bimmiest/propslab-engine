@@ -24,14 +24,14 @@
 //    reads as POSIX collating syntax when a matching `=]` or `.]` follows.
 //  - A repeated group that can match empty. PCRE ends the loop on an empty
 //    iteration; JS rejects that iteration and backtracks into it, so
-//    `([^a]*?)*` matches "" at the start of "*" in PCRE and "*" in JS (#584).
+//    `([^a]*?)*` matches "" at the start of "*" in PCRE and "*" in JS (propslab#584).
 //    PCRE's is Splunk's answer. The generator quantifies only groups that
 //    must consume a character.
 //
 // And one fault in the oracle rather than a difference: V8 13.6 (Node 24)
 // drops the `i` of a `(?i:…)` group that opens with `\b` or `\B` when
 // another alternative starts with a non-word character, so
-// `/-|(?i:\Bb)/` misses the "B" in "xB" (#585). The mid-pattern property
+// `/-|(?i:\Bb)/` misses the "B" in "xB" (propslab#585). The mid-pattern property
 // does not open a flag group with a word boundary.
 //
 // The seed is fixed so a run is reproducible.
@@ -40,7 +40,7 @@
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 import { safeRegex, type SplunkRegex } from '../splunkRegex';
-import { fcSeed } from '../../../test/fcSeed';
+import { fcSeed } from '../../test/fcSeed';
 
 fc.configureGlobal({ seed: fcSeed(340), numRuns: 300 });
 
@@ -316,7 +316,7 @@ const SUPPORTS_SCOPED_MODIFIERS = (() => {
 
 // ── Properties ──────────────────────────────────────────
 
-describe('PCRE2 agrees with JS on the syntax the two share (#368)', () => {
+describe('PCRE2 agrees with JS on the syntax the two share (propslab#368)', () => {
   it('compiles every generated pattern but a lookbehind of unbounded length', () => {
     fc.assert(
       fc.property(pcrePattern, ({ js, pcre: p }) => {

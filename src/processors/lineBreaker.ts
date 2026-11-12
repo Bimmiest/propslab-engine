@@ -53,7 +53,7 @@ function identifiesNoTimestamps(directives: ConfDirective[]): boolean {
  */
 function dateLineTest(directives: ConfDirective[]): (line: string) => boolean {
   // Under DATETIME_CONFIG = CURRENT or NONE no line has a date, so lines merge
-  // up to MAX_EVENTS (#610).
+  // up to MAX_EVENTS (propslab#610).
   if (identifiesNoTimestamps(directives)) return () => false;
   const finder = createTimestampFinder(readTimestampLocation(directives));
   return (line) => finder.find(line).found;
@@ -66,7 +66,7 @@ function dateLineTest(directives: ConfDirective[]): (line: string) => boolean {
  * TRUNCATE caps a LINE_BREAKER segment, which with a custom breaker can span
  * many `\n`s. Kept beside the event rather than on it so the public event shape
  * is unchanged; an event the breaker did not produce has no entry.
- * See docs/adr/0009-truncate-caps-line-breaker-segments.md.
+ * See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0009-truncate-caps-line-breaker-segments.md.
  */
 const segmentLengths = new WeakMap<SplunkEvent, number[]>();
 
@@ -160,7 +160,7 @@ interface MergedSegment extends Segment {
  * LINE_BREAKER identifies the break by its CAPTURE GROUP, so a pattern with
  * no group names nothing to remove and Splunk falls back to the default —
  * breaking on newlines, which leaves the would-be delimiter as an event of
- * its own. See docs/adr/0007-line-breaking-follows-recorded-splunk-behaviour.md.
+ * its own. See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0007-line-breaking-follows-recorded-splunk-behaviour.md.
  */
 function resolveLineBreaker(
   declared: string | undefined,
@@ -290,7 +290,7 @@ export function splitSegments(
  * one-record-per-line format, where merging would glue records together. The
  * XML modes keep the ordinary default, since an XML record spans lines. An
  * explicit SHOULD_LINEMERGE still wins. This is the only place the default is
- * decided. See docs/adr/0008-structured-formats-default-line-merging-off.md.
+ * decided. See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0008-structured-formats-default-line-merging-off.md.
  */
 function shouldLineMergeFor(directives: ConfDirective[]): boolean {
   const shouldLineMergeVal = getDirective(directives, 'SHOULD_LINEMERGE');
@@ -338,7 +338,7 @@ function readMergeRules(directives: ConfDirective[], diagnostics?: DiagnosticSin
   // Not anchored: a line that matches anywhere starts a new event, and the
   // event starts at the beginning of that line, not at the match. The merge
   // rules below follow observed Splunk behaviour where it departs from the
-  // spec's prose; see docs/adr/0007-line-breaking-follows-recorded-splunk-behaviour.md.
+  // spec's prose; see https://github.com/Bimmiest/propslab/blob/main/docs/adr/0007-line-breaking-follows-recorded-splunk-behaviour.md.
   const breakOnlyBefore = compileBreakPattern('BREAK_ONLY_BEFORE', directives, diagnostics);
   // Splunk default: BREAK_ONLY_BEFORE_DATE=true when SHOULD_LINEMERGE=true.
   // Only disabled when explicitly set to a false spelling.
@@ -348,12 +348,12 @@ function readMergeRules(directives: ConfDirective[], diagnostics?: DiagnosticSin
 
   // The negative half of the merging rules. MUST_NOT_BREAK_BEFORE is
   // deliberately NOT read: Splunk breaks anyway, so the faithful simulation is
-  // no effect (ADR 0007).
+  // no effect (propslab ADR 0007).
   const mustNotBreakAfter = compileBreakPattern('MUST_NOT_BREAK_AFTER', directives, diagnostics);
 
   // MAX_EVENTS caps how many CONTINUATION lines may be merged into an event,
   // not how many lines the event may total: MAX_EVENTS = 3 produces a
-  // four-line event (ADR 0007).
+  // four-line event (propslab ADR 0007).
   const maxEventsStr = getDirective(directives, 'MAX_EVENTS');
   const parsedMaxEvents = maxEventsStr !== undefined ? parseInt(maxEventsStr.trim(), 10) : 256;
   const maxContinuationLines = Number.isFinite(parsedMaxEvents) && parsedMaxEvents > 0 ? parsedMaxEvents : 256;
@@ -439,7 +439,7 @@ function startEvent(seg: Segment): MergedSegment {
  *
  * The rules see each segment as TRUNCATE leaves it (`seen`): a merge rule that
  * matches only past the cut does not fire. This follows a capture on Splunk
- * 10.4.0 (ADR 0021). The events keep the full text here; the truncator cuts
+ * 10.4.0 (propslab ADR 0021). The events keep the full text here; the truncator cuts
  * their segments next.
  */
 function mergeSegments(

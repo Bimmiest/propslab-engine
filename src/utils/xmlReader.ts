@@ -106,7 +106,7 @@ const NAME_START =
 const NAME_CHAR = `${NAME_START}\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040`;
 // no-misleading-character-class reads the U+0300–U+036F combining-mark *range*
 // as a combined character; it is a range endpoint, not a glyph sequence, so
-// eslint.config.js turns the rule off for this file (#774).
+// eslint.config.js turns the rule off for this file (propslab#774).
 const NAME_RE = new RegExp(`[${NAME_START}][${NAME_CHAR}]*`, 'uy');
 /** The end of a run of character data: the next markup or reference. Global, so `lastIndex` sets where it starts. */
 const TEXT_END_RE = /[<&]/g;
@@ -304,7 +304,7 @@ class Reader {
     const name = this.name();
     const attributes: XmlAttribute[] = [];
     // Names seen so far: a Set, so an element with very many attributes is not
-    // checked against the whole list for every one (#480).
+    // checked against the whole list for every one (propslab#480).
     const seenNames = new Set<string>();
     for (;;) {
       const spaced = this.space();

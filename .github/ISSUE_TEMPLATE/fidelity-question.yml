@@ -1,0 +1,66 @@
+name: Fidelity question
+description: The output of the engine is different from the output of real Splunk
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when the output of the engine is different from the output of real Splunk. Give these items:
+        - the input lines that you tested
+        - the `props.conf` and `transforms.conf` stanzas
+        - the output of Splunk
+        - the version and the build of Splunk
+        - a confirmation that you saw this on a licensed instance that you own.
+  - type: textarea
+    id: input
+    attributes:
+      label: Input lines
+      description: The raw events or log lines that you tested.
+      placeholder: "Example: 192.168.1.1 - user [01/Jan/2024:12:00:00 +0000]"
+    validations:
+      required: true
+  - type: textarea
+    id: props
+    attributes:
+      label: props.conf stanza
+      description: The stanza from props.conf that applies to the input.
+      placeholder: |
+        [sourcetype]
+        TRANSFORMS = transform1, transform2
+    validations:
+      required: true
+  - type: textarea
+    id: transforms
+    attributes:
+      label: transforms.conf stanzas
+      description: The stanzas from transforms.conf that apply to the input.
+      placeholder: |
+        [transform1]
+        REGEX = ...
+        FORMAT = ...
+    validations:
+      required: true
+  - type: textarea
+    id: splunk-output
+    attributes:
+      label: What Splunk produced
+      description: The events and the fields that your Splunk instance made.
+      placeholder: "Events and extracted field values..."
+    validations:
+      required: true
+  - type: textarea
+    id: splunk-version
+    attributes:
+      label: Splunk version and build
+      description: The exact version and build number, for example "10.4.0, build abc123".
+      placeholder: "10.4.0, build abc123"
+    validations:
+      required: true
+  - type: checkboxes
+    id: licensed
+    attributes:
+      label: Confirmation
+      description: Confirm that you saw this on a licensed Splunk instance that you own.
+      options:
+        - label: I confirmed this on a Splunk instance licensed to me or my organization
+          required: true

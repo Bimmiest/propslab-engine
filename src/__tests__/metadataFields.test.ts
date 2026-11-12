@@ -4,7 +4,7 @@ import { applyFieldAliases } from '../processors/fieldAlias';
 import { applyEvalExpressions } from '../processors/evalProcessor';
 import type { SplunkEvent, ConfDirective } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw = 'hello'): SplunkEvent {
   return makeEvent(raw, {
@@ -23,7 +23,7 @@ const dir = (key: string, value: string, directiveType: string, className?: stri
 // host/source/sourcetype/index are default fields at search time, so a
 // large family of staple TA/CIM directives can read them without any prior
 // extraction.
-describe('metadata as search-time default fields (#56)', () => {
+describe('metadata as search-time default fields (propslab#56)', () => {
   it('EXTRACT ... in source reads the event source', () => {
     const out = extractFields(
       [event()],
