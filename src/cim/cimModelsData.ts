@@ -9,7 +9,7 @@
 // is not vendored here and is not needed to build, test, or run the app.
 //
 // Regenerate with `node scripts/generate-cim-models.js <path-to-Splunk_SA_CIM>`
-// rather than editing by hand. How each entry is derived (see #37 — hand-written
+// rather than editing by hand. How each entry is derived (see propslab#37 — hand-written
 // lists had drifted and listed fields several models don't define):
 //
 //   * One entry per CIM *root dataset* (a dataset whose parent is BaseEvent or

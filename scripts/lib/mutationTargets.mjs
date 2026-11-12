@@ -1,5 +1,5 @@
 // Which files a pull request's mutation run mutates, from what it changed:
-// the selection behind scripts/mutation-targets.mjs, apart from git (#571).
+// the selection behind scripts/mutation-targets.mjs, apart from git (propslab#571).
 
 import { posix } from 'node:path';
 import stryker from '../../stryker.config.mjs';

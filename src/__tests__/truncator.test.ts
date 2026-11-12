@@ -4,7 +4,7 @@ import { breakLines } from '../processors/lineBreaker';
 import { runPipeline } from '../pipeline';
 import type { SplunkEvent, ConfDirective } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string): SplunkEvent {
   return makeEvent(raw);
@@ -82,7 +82,7 @@ describe('truncateEvents', () => {
   // parseInt is too lenient. These forms must not truncate with a wrong length
   // (1e3 read as 1) or disable truncation (0x10 read as 0), and an empty or
   // negative value resets TRUNCATE in Splunk: each caps at the 10,000-byte
-  // default (#559).
+  // default (propslab#559).
   it.each(['0x10', '1e3', '100abc', '1.5', '-5', '', '   '])('caps at the default for TRUNCATE = "%s"', (bad) => {
     const e = truncateEvents([event('x'.repeat(20_021))], truncateDir(bad), runCtx(FIXED_NOW))[0]!;
     expect(e._raw).toHaveLength(10_000);
@@ -91,7 +91,7 @@ describe('truncateEvents', () => {
   });
 });
 
-describe('#559 — a malformed TRUNCATE in a run', () => {
+describe('propslab#559 — a malformed TRUNCATE in a run', () => {
   const META = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
 
   it('caps at the default and is reported once, by the linter', () => {
@@ -115,7 +115,7 @@ describe('#559 — a malformed TRUNCATE in a run', () => {
 // and LINE_BREAKER is what delimits a line — "the start of the first capturing
 // group [is] the end of the previous line". So a line is a LINE_BREAKER segment,
 // before merging, and may contain newlines.
-describe('#287 — TRUNCATE caps LINE_BREAKER segments, not newline-separated pieces', () => {
+describe('propslab#287 — TRUNCATE caps LINE_BREAKER segments, not newline-separated pieces', () => {
   const META = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
   const d = (key: string, value: string): ConfDirective => ({ key, value, line: 1, directiveType: key });
 

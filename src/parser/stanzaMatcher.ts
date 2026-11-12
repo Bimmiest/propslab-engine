@@ -32,7 +32,7 @@ const PATTERN_DEFAULT_PRIORITY = 0;
 /**
  * Whether a `source::` pattern is a regex. Splunk reads it as PCRE only when it
  * contains `*` or `...` somewhere, and otherwise compares it with the source as
- * written (#442) — see {@link compileStanzaPattern}.
+ * written (propslab#442) — see {@link compileStanzaPattern}.
  */
 function isSourceRegex(pattern: string): boolean {
   return pattern.includes('*') || pattern.includes('...');
@@ -43,7 +43,7 @@ const REGEX_SYNTAX = new Set('\\^$|()[]{}?*+');
 
 /**
  * Whether a `host::` pattern names one host. It is always matched as a regex
- * (#442), but with no wildcard and no regex syntax beyond the `.` it reads as a
+ * (propslab#442), but with no wildcard and no regex syntax beyond the `.` it reads as a
  * period, it can only match the one name it spells, in any case.
  */
 function isLiteralHost(pattern: string): boolean {
@@ -149,7 +149,7 @@ export function matchStanzas(stanzas: ConfStanza[], metadata: EventMetadata): Co
   // sorting first taking precedence. props.conf.spec: "suppose two [<spec>]
   // stanzas supply the same setting. In this case, Splunk software chooses the
   // value to apply based on the ASCII order of the patterns in question." There
-  // is no rule before it ranking the more specific pattern higher (#443):
+  // is no rule before it ranking the more specific pattern higher (propslab#443):
   // `[source::.../app.log]` beats `[source::/var/log/x/...]` for a source both
   // match. File order must not decide it either: reordering two stanzas in
   // props.conf does not change which one wins.
@@ -291,10 +291,10 @@ function stanzaPattern(kind: 'source' | 'host', pattern: string): StanzaPattern 
  *   "To force a [host::<host>] stanza to match in a case-sensitive manner use
  *   the "(?-i)" option in its pattern."
  * - A `source::` pattern is that regex, case-sensitive, only when it contains
- *   `*` or `...` (#442). Without either it is compared with the source exactly
+ *   `*` or `...` (propslab#442). Without either it is compared with the source exactly
  *   as written: `?`, `\d`, `[0-9]` and `(a)` are plain characters, and `\\` is
  *   two backslashes where in a regex it is one. A literal pattern containing
- *   `|` matches nothing, neither as an alternation nor as text (#442).
+ *   `|` matches nothing, neither as an alternation nor as text (propslab#442).
  *
  * A regex PCRE rejects matches nothing, and `problem` says why, for the conf
  * lint. A match is bounded by Splunk's default MATCH_LIMIT and DEPTH_LIMIT,

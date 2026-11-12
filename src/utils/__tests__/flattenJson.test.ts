@@ -17,9 +17,9 @@ const NUMBERS =
   '{"big":9007199254740993,"dec":10.50,"exp":1e3,"expu":1E+3,"huge":123456789012345678901234567890,' +
   '"negz":-0.0,"small":1E-7,"str":"10.50","int":42}';
 
-// Splunk keeps a JSON number as the event wrote it (#448), where JSON.parse
+// Splunk keeps a JSON number as the event wrote it (propslab#448), where JSON.parse
 // would round it through a double.
-describe('parseJson — a number keeps the text it was written as (#448)', () => {
+describe('parseJson — a number keeps the text it was written as (propslab#448)', () => {
   it('extracts each number exactly as written', () => {
     expect(flatten(parseJson(NUMBERS))).toEqual({
       big: '9007199254740993',
@@ -95,7 +95,7 @@ describe('parseJson — a number keeps the text it was written as (#448)', () =>
 
 // A runtime without JSON.parse source text access gives a reviver no third
 // argument. The parser then falls back to JS numbers, rendered as JS renders them.
-describe('createJsonParser — without source text access (#448)', () => {
+describe('createJsonParser — without source text access (propslab#448)', () => {
   const noContext: JsonParse = (text, reviver) =>
     JSON.parse(text, reviver && ((key: string, value: unknown) => reviver(key, value)));
   const ignoresReviver: JsonParse = (text) => JSON.parse(text);

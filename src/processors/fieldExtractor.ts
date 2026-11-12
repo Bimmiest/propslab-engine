@@ -145,7 +145,7 @@ function warnStrippedSourceRef(
 
 /**
  * Splunk trims leading and trailing whitespace from an EXTRACT value, and an
- * empty result creates no field, as observed in Splunk (#411). Spaces and tabs
+ * empty result creates no field, as observed in Splunk (propslab#411). Spaces and tabs
  * were observed; the rest of ASCII whitespace is trimmed with them. Whether non-ASCII spaces such as
  * U+00A0 are trimmed is unchecked, so they are kept.
  */
@@ -272,7 +272,7 @@ export function parseExtractValue(value: string): { pattern: string; sourceField
 /**
  * The value `in <field>` reads: from `fields`, which holds what the event
  * arrived with plus what earlier EXTRACTs in this pass produced, in class-name
- * order, as observed in Splunk (#410): an EXTRACT whose class sorts before the
+ * order, as observed in Splunk (propslab#410): an EXTRACT whose class sorts before the
  * one producing the field finds nothing. Fields from KV_MODE are not here,
  * because automatic extraction runs after every EXTRACT.
  */

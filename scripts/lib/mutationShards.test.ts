@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { assignShards, mergeFiles, score, shardCount, tally } from './mutationShards.mjs';
 
-// The weekly mutation run in shards (#851): which files each shard mutates,
+// The weekly mutation run in shards (propslab#851): which files each shard mutates,
 // and how the shards' reports become one score.
 const mutants = (counts: Record<string, number>) =>
   Object.entries(counts).flatMap(([status, n]) => Array.from({ length: n }, () => ({ status })));

@@ -1,4 +1,4 @@
-// Tests written against mutants that survived `npm run test:mutation` (#370).
+// Tests written against mutants that survived `npm run test:mutation` (propslab#370).
 // eval's value model — the coercions and comparisons every operator and builtin
 // share — was only ever reached through whole expressions, which left most of
 // its branches free to change: `if(0, …)` taking the true branch, `x / 0`
@@ -25,7 +25,7 @@ import {
 } from '../processors/eval/values';
 import { evaluateExpression } from '../processors/eval/evaluator';
 import type { SplunkEvent } from '../types';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(fields: Record<string, string | string[]> = {}): SplunkEvent {
   return makeEvent('raw', { fields });
@@ -75,7 +75,7 @@ describe('parseDecimal', () => {
 });
 
 describe('parseNumber', () => {
-  it('reads a decimal, and the exact text of a non-finite number (#446)', () => {
+  it('reads a decimal, and the exact text of a non-finite number (propslab#446)', () => {
     expect(parseNumber(' 42 ')).toBe(42);
     expect(parseNumber('Infinity')).toBe(Infinity);
     expect(parseNumber('-Infinity')).toBe(-Infinity);
@@ -146,7 +146,7 @@ describe('numArg', () => {
     [null, null],
     [undefined, null],
     [5, 5],
-    // A number is taken as it is (#446). The old reading turned NaN and
+    // A number is taken as it is (propslab#446). The old reading turned NaN and
     // Infinity into NULL; Splunk keeps both as numbers.
     [NaN, NaN],
     [Infinity, Infinity],
@@ -190,7 +190,7 @@ describe('toStr, strArg and toMv', () => {
 describe('isNumericValue', () => {
   it('accepts numbers and decimal strings only', () => {
     expect(isNumericValue(3)).toBe(true);
-    // NaN and Infinity are numbers (#446), which the old reading refused.
+    // NaN and Infinity are numbers (propslab#446), which the old reading refused.
     expect(isNumericValue(NaN)).toBe(true);
     expect(isNumericValue(-Infinity)).toBe(true);
     expect(isNumericValue('3')).toBe(true);
@@ -224,13 +224,13 @@ describe('addOrConcat and arith', () => {
     expect(addOrConcat('a', '5')).toBe('a5');
   });
 
-  it('concatenates the text of both sides beside a side that is statically text (#522)', () => {
+  it('concatenates the text of both sides beside a side that is statically text (propslab#522)', () => {
     expect(addOrConcat('5', '1', 'string', 'string')).toBe('51');
     expect(addOrConcat('5', '1', 'string', 'dynamic')).toBe('51');
     expect(addOrConcat('5', '1', 'dynamic', 'string')).toBe('51');
   });
 
-  // #446 and #522 corrected the old reading, which concatenated a number
+  // propslab#446 and propslab#522 corrected the old reading, which concatenated a number
   // beside text ("a3").
   it('adds beside a side that is statically a number, NULL for a field that is not numeric', () => {
     expect(addOrConcat('2', 3, 'dynamic', 'number')).toBe(5);
@@ -240,7 +240,7 @@ describe('addOrConcat and arith', () => {
     expect(addOrConcat(['5', '6'], 1, 'dynamic', 'number')).toBeNull();
   });
 
-  it('is NULL for static text beside a static number, a type error in Splunk (#522)', () => {
+  it('is NULL for static text beside a static number, a type error in Splunk (propslab#522)', () => {
     expect(addOrConcat('5', 1, 'string', 'number')).toBeNull();
     expect(addOrConcat(1, '5', 'number', 'string')).toBeNull();
   });
@@ -320,9 +320,9 @@ describe('compare', () => {
     expect(compare('abc', '10', '==')).toBe(false);
   });
 
-  // #446 and #522 corrected the old reading, under which a non-numeric string
+  // propslab#446 and propslab#522 corrected the old reading, under which a non-numeric string
   // against a number was compared as text ("abc" > 10 was true).
-  it('reads a field as a number against a static number, NULL when it is not numeric (#522)', () => {
+  it('reads a field as a number against a static number, NULL when it is not numeric (propslab#522)', () => {
     expect(compare('10', 9, '>', 'dynamic', 'number')).toBe(true);
     expect(compare(10, '10.0', '==', 'number', 'dynamic')).toBe(true);
     expect(compare(9, 10, '<', 'number', 'number')).toBe(true);
@@ -331,7 +331,7 @@ describe('compare', () => {
     expect(compare(true, 1, '==', 'dynamic', 'number')).toBeNull();
   });
 
-  it('compares a field as its text against static text (#522)', () => {
+  it('compares a field as its text against static text (propslab#522)', () => {
     expect(compare('10', '9', '>', 'dynamic', 'string')).toBe(false);
     expect(compare('9', '10', '<', 'string', 'dynamic')).toBe(false);
     expect(compare('10', '10.0', '==', 'dynamic', 'string')).toBe(false);
@@ -340,7 +340,7 @@ describe('compare', () => {
     expect(compare('5', '1', '>', 'string', 'string')).toBe(true);
   });
 
-  it('is NULL for static text against a static number, a type error in Splunk (#522)', () => {
+  it('is NULL for static text against a static number, a type error in Splunk (propslab#522)', () => {
     expect(compare('10', 9, '>', 'string', 'number')).toBeNull();
     expect(compare(9, '9', '==', 'number', 'string')).toBeNull();
   });

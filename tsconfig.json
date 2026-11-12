@@ -1,0 +1,18 @@
+{
+  // The type-check: every source file, its tests and the config files that are
+  // TypeScript. `npm run typecheck`. ESLint's type-aware rules resolve files
+  // through this project too (projectService), so a file not included here is
+  // a file the typed lint rules cannot see. The tests run under Node with
+  // Vite's `import.meta.glob`, so they get both sets of types; the shipped
+  // source is held to ES2022 alone by tsconfig.build.json.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "types": ["node", "vite/client"],
+    // The tests of the scripts import scripts/**/*.mjs and take their types
+    // from the JSDoc (propslab#575).
+    "allowJs": true
+  },
+  "include": ["src", "scripts/**/*.test.ts", "vitest.config.ts", "vitest.stryker.config.ts"]
+}

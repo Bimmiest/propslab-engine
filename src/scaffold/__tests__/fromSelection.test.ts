@@ -100,7 +100,7 @@ describe('upsertDirectiveInStanza', () => {
     expect(out).toBe('[web]\nKV_MODE = none\nTIME_PREFIX = \\[\n\n[db]\nKV_MODE = json');
   });
 
-  it('edits the definition that wins: the last line in the last block (#431)', () => {
+  it('edits the definition that wins: the last line in the last block (propslab#431)', () => {
     const text =
       '[web]\nTIME_PREFIX = a\nTIME_PREFIX = b\n\n[db]\nKV_MODE = json\n\n[web]\nTIME_PREFIX = c\nTIME_PREFIX = d';
     expect(upsertDirectiveInStanza(text, 'web', 'TIME_PREFIX', 'e')).toBe(
@@ -108,16 +108,16 @@ describe('upsertDirectiveInStanza', () => {
     );
   });
 
-  it('appends to the last block of a split stanza when the key is not in it (#431)', () => {
+  it('appends to the last block of a split stanza when the key is not in it (propslab#431)', () => {
     const text = '[web]\nTIME_PREFIX = a\n\n[db]\nKV_MODE = json\n\n[web]\nKV_MODE = none\n';
     expect(upsertDirectiveInStanza(text, 'web', 'TIME_PREFIX', 'b')).toBe(
       '[web]\nTIME_PREFIX = a\n\n[db]\nKV_MODE = json\n\n[web]\nKV_MODE = none\nTIME_PREFIX = b\n',
     );
   });
-  // #484. A line ending in an ODD number of backslashes continues onto the next
+  // propslab#484. A line ending in an ODD number of backslashes continues onto the next
   // (props.conf.spec: "A backslash at the end of a line continues the value"), so
   // replacing a directive replaces every physical line it spans.
-  describe('a directive continued with backslashes (#484)', () => {
+  describe('a directive continued with backslashes (propslab#484)', () => {
     const valueOf = (text: string, key: string): string | undefined =>
       parseConf(text, 'props.conf')
         .stanzas.flatMap((st) => st.directives)

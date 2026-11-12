@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { importedSources, isTestFile, MUTATE_GLOBS, selectMutated } from './mutationTargets.mjs';
 
-// The PR selection in mutation.yml (#571): which changed files a mutation run
+// The PR selection in mutation.yml (propslab#571): which changed files a mutation run
 // mutates, read from Stryker's own `mutate` list.
 const globs = MUTATE_GLOBS;
 
@@ -10,27 +10,21 @@ describe('selectMutated', () => {
     expect(
       selectMutated(
         [
-          'src/engine/pipeline.ts',
-          'src/engine/processors/lineBreaker.ts',
-          'src/engine/utils/splunkRegex.ts',
-          'src/store/useAppStore.ts',
-          'src/engine/types.ts',
-          'src/workers/pipelineWorker.ts',
-          'src/engine/registry/propsDirectives.ts',
-          'src/engine/directiveSupport.ts',
-          'src/engine/__tests__/lineBreaker.test.ts',
-          'src/utils/viewResult.ts',
-          'packages/mcp-server/src/runInWorker.ts',
-          'docs/engine.md',
+          'src/pipeline.ts',
+          'src/processors/lineBreaker.ts',
+          'src/utils/splunkRegex.ts',
+          'src/index.ts',
+          'src/types.ts',
+          'src/registry/propsDirectives.ts',
+          'src/directiveSupport.ts',
+          'src/__tests__/lineBreaker.test.ts',
+          'src/test/makeEvent.ts',
+          'scripts/mutation-targets.mjs',
+          'docs/api.md',
         ],
         globs,
       ),
-    ).toEqual([
-      'src/engine/pipeline.ts',
-      'src/engine/processors/lineBreaker.ts',
-      'src/engine/utils/splunkRegex.ts',
-      'src/store/useAppStore.ts',
-    ]);
+    ).toEqual(['src/pipeline.ts', 'src/processors/lineBreaker.ts', 'src/utils/splunkRegex.ts']);
   });
 
   it('reads `**/` as zero or more directories and `*` as one name', () => {

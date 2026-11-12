@@ -1,4 +1,4 @@
-// Table-driven fidelity check for every eval builtin (#512).
+// Table-driven fidelity check for every eval builtin (propslab#512).
 //
 // Builtin fidelity was found defective one function at a time (trim ignoring
 // its second argument, multivalue compare, NULL arguments past the first).
@@ -9,7 +9,7 @@
 // Doc-derived (Splunk Enterprise Search Reference, "Evaluation functions"), so
 // every row cites the page section it relies on and is kept to what that
 // section says. Where the page is silent, a row may instead cite the issue
-// that settled the behaviour (#446), and says so.
+// that settled the behaviour (propslab#446), and says so.
 // A row whose documented behaviour is unclear is a TODO with the reason, never
 // an assertion of whatever the simulator happens to do.
 import { describe, it, expect } from 'vitest';
@@ -17,7 +17,7 @@ import { evaluateExpression } from '../processors/eval/evaluator';
 import { builtinNames } from '../processors/eval/builtins';
 import type { EvalValue } from '../processors/eval/values';
 import type { SplunkEvent } from '../types';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 type Fields = Record<string, string | string[]>;
 
@@ -40,11 +40,11 @@ const TIME = `${BASE} > Date and Time functions`;
 const CRYPTO = `${BASE} > Cryptographic functions`;
 /** The general rule for an argument that is NULL. */
 const NULL_RULE = `${BASE} overview: a function given a NULL (nonexistent) field returns NULL`;
-/** Settled by #446, where the pages are silent. */
-const UNDEFINED_IS_NULL = '#446: a math function undefined at its argument is NULL';
-const OVERFLOW = '#446: an overflow is the number Infinity, not NULL';
-const POW_AS_IS = '#446: pow() gives what floating point gives, NaN and Infinity included';
-const NON_FINITE_TEXT = '#446: the text "Infinity", "-Infinity" or "NaN" is a number, but not to tonumber()';
+/** Settled by propslab#446, where the pages are silent. */
+const UNDEFINED_IS_NULL = 'propslab#446: a math function undefined at its argument is NULL';
+const OVERFLOW = 'propslab#446: an overflow is the number Infinity, not NULL';
+const POW_AS_IS = 'propslab#446: pow() gives what floating point gives, NaN and Infinity included';
+const NON_FINITE_TEXT = 'propslab#446: the text "Infinity", "-Infinity" or "NaN" is a number, but not to tonumber()';
 
 // ── Rows ────────────────────────────────────────────────
 
@@ -104,9 +104,9 @@ todo('len', 'len(mv)', MV_UNDOCUMENTED, MV_AB);
 nulls('substr', ['substr(missing, 1)', 'substr("abc", missing)', 'substr("abc", 1, missing)']);
 row('substr', 'substr("", 1)', '', `${TEXT} > substr(X,Y,Z)`);
 row('substr', 'substr("abc", 2, 1)', 'b', `${TEXT} > substr(X,Y,Z): 1-based start`);
-row('substr', 'substr("😀abc", 2)', 'abc', '#446: positions count code points, as len() does');
-row('substr', 'substr("😀abc", 1, 1)', '😀', '#446: positions count code points, as len() does');
-row('substr', 'substr("ab😀", -1)', '😀', '#446: positions count code points, as len() does');
+row('substr', 'substr("😀abc", 2)', 'abc', 'propslab#446: positions count code points, as len() does');
+row('substr', 'substr("😀abc", 1, 1)', '😀', 'propslab#446: positions count code points, as len() does');
+row('substr', 'substr("ab😀", -1)', '😀', 'propslab#446: positions count code points, as len() does');
 todo('substr', 'substr(mv, 1)', MV_UNDOCUMENTED, MV_AB);
 todo('substr', 'substr("abc", mv)', MV_UNDOCUMENTED, MV_AB);
 todo('substr', 'substr("abc", 1, mv)', MV_UNDOCUMENTED, MV_AB);
@@ -148,7 +148,7 @@ row(
   'split',
   'split("😀ab", "")',
   ['\uFFFD', '\uFFFD', '\uFFFD', '\uFFFD', 'a', 'b'],
-  '#446: an empty delimiter splits into UTF-8 bytes, each byte of a multi-byte character shown as U+FFFD',
+  'propslab#446: an empty delimiter splits into UTF-8 bytes, each byte of a multi-byte character shown as U+FFFD',
 );
 todo('split', 'split("", ",")', 'the docs do not say whether an empty string gives no values or one empty value');
 todo('split', 'split(mv, ",")', MV_UNDOCUMENTED, MV_AB);
@@ -191,15 +191,20 @@ row('tostring', 'tostring(1==1)', 'True', `${CONV} > tostring(X,Y): a Boolean is
 row('tostring', 'tostring(1==2)', 'False', `${CONV} > tostring(X,Y): a Boolean is "True" or "False"`);
 row('tostring', 'tostring(15, "hex")', '0xF', `${CONV} > tostring(X,Y): the "hex" example`);
 row('tostring', 'tostring(255, "hex")', '0xFF', `${CONV} > tostring(X,Y): "hex"`);
-row('tostring', 'tostring(-255, "hex")', '0xFFFFFFFFFFFFFF01', "#446: a negative is its 64-bit two's complement");
-row('tostring', 'tostring(15.7, "hex")', null, '#446: "hex" of a number with a fraction is NULL');
+row(
+  'tostring',
+  'tostring(-255, "hex")',
+  '0xFFFFFFFFFFFFFF01',
+  "propslab#446: a negative is its 64-bit two's complement",
+);
+row('tostring', 'tostring(15.7, "hex")', null, 'propslab#446: "hex" of a number with a fraction is NULL');
 row('tostring', 'tostring(9, "binary")', '1001', `${CONV} > tostring(X,Y): the "binary" example`);
-row('tostring', 'tostring(-9, "binary")', null, '#446: "binary" of a negative is NULL');
+row('tostring', 'tostring(-9, "binary")', null, 'propslab#446: "binary" of a negative is NULL');
 row('tostring', 'tostring(12345.6789, "commas")', '12,345.68', `${CONV} > tostring(X,Y): the "commas" example`);
 row('tostring', 'tostring(615, "duration")', '00:10:15', `${CONV} > tostring(X,Y): the "duration" example`);
 row('tostring', 'tostring(exp(1000))', 'Infinity', OVERFLOW);
-row('tostring', 'tostring(exp(1000), "commas")', 'In,fin,ity', '#446: "commas" groups the text of Infinity');
-row('tostring', 'tostring(exp(1000), "duration")', '00:00:Infinity', '#446: "duration" of Infinity');
+row('tostring', 'tostring(exp(1000), "commas")', 'In,fin,ity', 'propslab#446: "commas" groups the text of Infinity');
+row('tostring', 'tostring(exp(1000), "duration")', '00:00:Infinity', 'propslab#446: "duration" of Infinity');
 todo('tostring', 'tostring(255, missing)', 'the docs do not say what a NULL format gives');
 todo('tostring', 'tostring(mv)', MV_UNDOCUMENTED, MV_AB);
 
@@ -210,7 +215,7 @@ row('typeof', 'typeof("")', 'String', `${INFO} > typeof(X)`);
 row('typeof', 'typeof("😀")', 'String', `${INFO} > typeof(X)`);
 row('typeof', 'typeof(sqrt(-1))', 'Invalid', UNDEFINED_IS_NULL);
 row('typeof', 'typeof(exp(1000))', 'Number', OVERFLOW);
-row('typeof', 'typeof(exp(1000) - exp(1000))', 'Number', '#446: NaN from arithmetic is a number');
+row('typeof', 'typeof(exp(1000) - exp(1000))', 'Number', 'propslab#446: NaN from arithmetic is a number');
 todo(
   'typeof',
   'typeof(mv)',
@@ -281,18 +286,18 @@ row('log', 'log(0)', null, UNDEFINED_IS_NULL);
 row('log', 'log(-1)', null, UNDEFINED_IS_NULL);
 row('abs', 'abs(sqrt(-1))', null, `${UNDEFINED_IS_NULL}, and ${NULL_RULE}`);
 row('sqrt', 'sqrt(-1) + 1', null, `${UNDEFINED_IS_NULL}; NULL propagates through arithmetic`);
-row('log', 'log(8, 0)', null, '#446: a base of zero or below is NULL');
-row('log', 'log(8, -2)', null, '#446: a base of zero or below is NULL');
-// #446 corrected the old reading, which made every result that was not a
+row('log', 'log(8, 0)', null, 'propslab#446: a base of zero or below is NULL');
+row('log', 'log(8, -2)', null, 'propslab#446: a base of zero or below is NULL');
+// propslab#446 corrected the old reading, which made every result that was not a
 // finite number NULL: exp(1000), pow(10, 1000), pow(0, -1), pow(-8, 0.5) and
 // log(10, 1) were all NULL.
-row('log', 'log(8, 1)', Infinity, '#446: base 1 divides by ln(1), which is 0, giving Infinity');
+row('log', 'log(8, 1)', Infinity, 'propslab#446: base 1 divides by ln(1), which is 0, giving Infinity');
 row('pow', 'pow(0, -1)', Infinity, POW_AS_IS);
 row('pow', 'pow(-8, 0.5)', NaN, POW_AS_IS);
 row('typeof', 'typeof(pow(-8, 0.5))', 'Number', POW_AS_IS);
 row('exp', 'exp(1000)', Infinity, OVERFLOW);
 row('exp', '-1 * exp(1000)', -Infinity, OVERFLOW);
-row('exp', 'exp(1000) - exp(1000)', NaN, '#446: NaN from arithmetic is a number, not NULL');
+row('exp', 'exp(1000) - exp(1000)', NaN, 'propslab#446: NaN from arithmetic is a number, not NULL');
 row('pow', 'pow(10, 400)', Infinity, OVERFLOW);
 
 nulls('pow', ['pow(missing, 2)', 'pow(2, missing)']);
@@ -358,26 +363,26 @@ todo('mvfilter', 'mvfilter(mv != "a")', 'not simulated (returns the field unfilt
 
 row('mvappend', 'mvappend(mv, "c")', ['a', 'b', 'c'], `${MV} > mvappend(...)`, MV_AB);
 row('mvappend', 'mvappend("😀", "a")', ['😀', 'a'], `${MV} > mvappend(...)`);
-row('mvappend', 'mvappend(missing, missing)', null, '#446: nothing to append is NULL, not an empty multivalue');
-row('mvappend', 'mvappend(missing, "a")', ['a'], '#446: a NULL argument adds no values');
+row('mvappend', 'mvappend(missing, missing)', null, 'propslab#446: nothing to append is NULL, not an empty multivalue');
+row('mvappend', 'mvappend(missing, "a")', ['a'], 'propslab#446: a NULL argument adds no values');
 todo('mvappend', 'mvappend("", "a")', 'the docs do not say whether an empty string is appended as a value');
 
 row('mvdedup', 'mvdedup(split("a,b,a", ","))', ['a', 'b'], `${MV} > mvdedup(MVFIELD): duplicates removed, order kept`);
 row('mvdedup', 'mvdedup(split("😀,😀", ","))', ['😀'], `${MV} > mvdedup(MVFIELD)`);
-row('mvdedup', 'mvdedup(missing)', null, '#446: a NULL argument is NULL, not an empty multivalue');
+row('mvdedup', 'mvdedup(missing)', null, 'propslab#446: a NULL argument is NULL, not an empty multivalue');
 todo('mvdedup', 'mvdedup("")', 'the docs do not say what a single empty string gives');
 
 row('mvsort', 'mvsort(split("b,a", ","))', ['a', 'b'], `${MV} > mvsort(X): lexicographic order`);
 // The docs' own example: "Numbers are sorted based on the first digit. For
 // example, the numbers 10, 9, 70, 100 are sorted lexicographically as 10, 100,
-// 70, 9." (#524 read it the other way.)
+// 70, 9." (propslab#524 read it the other way.)
 row(
   'mvsort',
   'mvsort(split("10,9,70,100", ","))',
   ['10', '100', '70', '9'],
   `${MV} > mvsort(X): numbers are sorted based on the first digit`,
 );
-row('mvsort', 'mvsort(missing)', null, '#446: a NULL argument is NULL, not an empty multivalue');
+row('mvsort', 'mvsort(missing)', null, 'propslab#446: a NULL argument is NULL, not an empty multivalue');
 todo('mvsort', 'mvsort("")', 'the docs do not say what a single empty string gives');
 
 row('mvfind', 'mvfind(missing, "a")', null, `${MV} > mvfind(MVFIELD,"REGEX"): no match is NULL`);
@@ -396,8 +401,8 @@ row('mvzip', 'mvzip(a, b)', ['1,x', '2,y'], `${MV} > mvzip(MVFIELD_X,MVFIELD_Y,"
   b: ['x', 'y'],
 });
 row('mvzip', 'mvzip("😀", "b", "")', ['😀b'], `${MV} > mvzip(MVFIELD_X,MVFIELD_Y,"Z")`);
-row('mvzip', 'mvzip(missing, "b")', null, '#446: a NULL argument is NULL, not an empty multivalue');
-row('mvzip', 'mvzip(mv, missing)', null, '#446: a NULL argument is NULL, not an empty multivalue', MV_AB);
+row('mvzip', 'mvzip(missing, "b")', null, 'propslab#446: a NULL argument is NULL, not an empty multivalue');
+row('mvzip', 'mvzip(mv, missing)', null, 'propslab#446: a NULL argument is NULL, not an empty multivalue', MV_AB);
 todo('mvzip', 'mvzip(mv, mv, missing)', 'the docs do not say what a NULL delimiter gives', MV_AB);
 
 // Cryptographic and time (not simulated / clock) ──────────
@@ -415,8 +420,8 @@ nulls(
   `${TIME} > strftime(X,Y): a value that is not a time is NULL`,
 );
 // strftime formats in the machine's local zone, as the user's zone stands in
-// for Splunk's per-user setting (#407). Epoch 0 is 1969 west of UTC, so these
-// rows use noon UTC on 2024-07-01, which is 2024 in every zone (#586).
+// for Splunk's per-user setting (propslab#407). Epoch 0 is 1969 west of UTC, so these
+// rows use noon UTC on 2024-07-01, which is 2024 in every zone (propslab#586).
 row('strftime', 'strftime(1719835200, "%Y")', '2024', `${TIME} > strftime(X,Y): %Y is the year`);
 row('strftime', 'strftime(1719835200, "😀%Y")', '😀2024', `${TIME} > strftime(X,Y): other text is literal`);
 row('strftime', 'strftime(0, "")', '', `${TIME} > strftime(X,Y): an empty format is empty`);
@@ -436,9 +441,13 @@ nulls('like', ['like(missing, "%")', 'like("a", missing)']);
 row('like', 'like("", "%")', true, `${COND} > like(TEXT,PATTERN): % matches any run, including none`);
 row('like', 'like("", "_")', false, `${COND} > like(TEXT,PATTERN): _ matches exactly one character`);
 row('like', 'like("abc", "a_c")', true, `${COND} > like(TEXT,PATTERN)`);
-row('like', 'like(s, "%ERROR%")', true, '#447: % matches across newlines', { s: 'first\nERROR here\nlast' });
-row('like', 'like(s, "abc")', false, '#447: a trailing newline defeats an exact match', { s: 'abc\n' });
-todo('like', 'like("😀", "_")', 'one character or two UTF-16 units: #446 settled it for len() and substr() only');
+row('like', 'like(s, "%ERROR%")', true, 'propslab#447: % matches across newlines', { s: 'first\nERROR here\nlast' });
+row('like', 'like(s, "abc")', false, 'propslab#447: a trailing newline defeats an exact match', { s: 'abc\n' });
+todo(
+  'like',
+  'like("😀", "_")',
+  'one character or two UTF-16 units: propslab#446 settled it for len() and substr() only',
+);
 todo('like', 'like(mv, "a")', MV_UNDOCUMENTED, MV_AB);
 todo('like', 'like("a", mv)', MV_UNDOCUMENTED, MV_AB);
 
@@ -446,7 +455,11 @@ nulls('match', ['match(missing, "a")', 'match("a", missing)']);
 row('match', 'match("", "^$")', true, `${COND} > match(SUBJECT,"REGEX")`);
 row('match', 'match("a😀b", "😀")', true, `${COND} > match(SUBJECT,"REGEX")`);
 row('match', 'match("abc", "^b")', false, `${COND} > match(SUBJECT,"REGEX")`);
-todo('match', 'match("😀", "^.$")', 'one character or two UTF-16 units: #446 settled it for len() and substr() only');
+todo(
+  'match',
+  'match("😀", "^.$")',
+  'one character or two UTF-16 units: propslab#446 settled it for len() and substr() only',
+);
 todo('match', 'match(mv, "a")', MV_UNDOCUMENTED, MV_AB);
 todo('match', 'match("a", mv)', MV_UNDOCUMENTED, MV_AB);
 

@@ -1,7 +1,7 @@
 name: Mutation
 
 # Coverage says a line ran; it does not say a test would notice if the line were
-# wrong. Stryker answers that second question by breaking src/engine/** one small
+# wrong. Stryker answers that second question by breaking src/** one small
 # edit at a time and checking that some test fails. A full run takes over four
 # hours of work, so it lives here rather than in ci.yml, is divided across the
 # jobs of a matrix, and pull requests mutate only the engine files they change.
@@ -9,7 +9,7 @@ on:
   # The whole engine, from scratch, in shards whose combined score is held to
   # the floor in stryker.config.mjs (the `score` job). Later in the morning
   # than ci.yml's weekly run so the two do not share a queue. The full run
-  # includes the static mutants (#857): see `ignoreStatic` in stryker.config.mjs.
+  # includes the static mutants (propslab#857): see `ignoreStatic` in stryker.config.mjs.
   schedule:
     - cron: '0 8 * * 1'
   workflow_dispatch:
@@ -25,13 +25,12 @@ on:
   # cost never depends on how recently something else ran.
   pull_request:
     branches: [main]
-    # Wide on purpose (#571): the scope is stryker.config.mjs's `mutate`,
+    # Wide on purpose (propslab#571): the scope is stryker.config.mjs's `mutate`,
     # which "Find changed engine files" reads, so it is written in one place.
-    # A PR that changes nothing in it stops after that step, before the MCP
-    # build and the canary.
+    # A PR that changes nothing in it stops after that step, before the
+    # canary.
     paths:
       - 'src/**'
-      - 'packages/mcp-server/src/**'
       - 'scripts/**'
       - 'stryker.config.mjs'
       - 'vitest.config.ts'
@@ -43,7 +42,7 @@ permissions:
 
 # Same rule as ci.yml: supersede on PRs, never on main.
 # A push gets a group of its own commit, as in ci.yml, so no main commit loses
-# its run to a newer pending one (#888).
+# its run to a newer pending one (propslab#888).
 concurrency:
   group: mutation-${{ github.event_name == 'push' && github.sha || github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
@@ -57,20 +56,20 @@ jobs:
       fail-fast: false
       matrix:
         # A full run was one job, and it grew past every limit it was given:
-        # 120, 180, 240 and 300 minutes (#571), and 254 minutes on 2026-11-09.
+        # 120, 180, 240 and 300 minutes (propslab#571), and 254 minutes on 2026-11-09.
         # GitHub stops a job at 6 hours, so the full run is divided into shards
-        # (#851). scripts/mutation-shard.mjs gives each shard about the same
+        # (propslab#851). scripts/mutation-shard.mjs gives each shard about the same
         # share of the `mutate` list, by file size. To add a shard, add a number.
         # A pull request mutates only what it changed, in one job: shard 0.
         shard: ${{ fromJSON(github.event_name == 'pull_request' && '[0]' || '[1, 2, 3, 4]') }}
     # Measured on 2026-11-11: four shards without the static mutants took 25 to
     # 40 minutes each, and the static mutants add about 40 minutes of work in
-    # all (#857), so a shard takes about 45 to 55. When a shard gets near its
+    # all (propslab#857), so a shard takes about 45 to 55. When a shard gets near its
     # limit, add a shard; do not raise the limit.
     #
     # A PR run mutates the files it changes, and the sources its changed tests
     # import. A test-only change to a property suite brings the parser it
-    # imports: #723's property suites brought 3,621 mutants and were two-thirds
+    # imports: propslab#723's property suites brought 3,621 mutants and were two-thirds
     # through at 48 minutes, so a PR gets 90.
     timeout-minutes: ${{ github.event_name == 'pull_request' && 90 || 150 }}
     steps:
@@ -86,13 +85,9 @@ jobs:
       # deploy build: the same tree is tested everywhere. See ci.yml for why
       # nothing here needs install scripts.
       - uses: Bimmiest/shared-workflows/.github/actions/setup-node-project@171cd386717395c01be5e23ab926823c7b246cf6 # v1.11.0
-        with:
-          cache-dependency-path: |
-            package-lock.json
-            packages/mcp-server/package-lock.json
 
       # The scope is stryker.config.mjs's `mutate` list, read by
-      # scripts/mutation-targets.mjs, so it is written in one place (#571).
+      # scripts/mutation-targets.mjs, so it is written in one place (propslab#571).
       # Deleted files have nothing to mutate, so only added and modified ones
       # count, and renames are off, so a renamed and edited file counts too.
       # A changed test file brings the source files it imports: the PR changed
@@ -123,7 +118,7 @@ jobs:
             config=$(git diff --name-only "origin/$BASE_REF...HEAD" -- stryker.config.mjs vitest.config.ts vitest.stryker.config.ts .github/workflows/mutation.yml \
               scripts/mutation-targets.mjs scripts/drop-format-only.mjs scripts/lib/mutationTargets.mjs scripts/lib/formatOnly.mjs)
             if [ -n "$config" ]; then
-              files=src/engine/utils/fieldRef.ts
+              files=src/utils/fieldRef.ts
               echo "Mutation setup changed; smoke run on \`$files\`." >> "$GITHUB_STEP_SUMMARY"
             fi
           fi
@@ -134,27 +129,16 @@ jobs:
             echo "Mutating: \`$files\`" >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      # The run includes the MCP server's tests for the modules it mutates
-      # there, and Stryker's first pass runs every included test: they import
-      # the package's SDK, and one of them spawns the built server.
-      - name: Install and build the MCP server
-        if: github.event_name != 'pull_request' || steps.changed.outputs.files != ''
-        run: |
-          npm ci --ignore-scripts --prefix packages/mcp-server
-          npm run build --prefix packages/mcp-server
-
       - name: Verify the regex engine's WebAssembly
         if: github.event_name != 'pull_request' || steps.changed.outputs.files != ''
-        # Both installed copies, as in ci.yml (#504): the mutation run executes
-        # the engine on a binary that nothing else here has vouched for.
-        run: |
-          node scripts/check-wasm-checksum.mjs
-          node scripts/check-wasm-checksum.mjs packages/mcp-server
+        # As in ci.yml (propslab#504): the mutation run executes the engine on a
+        # binary that nothing else here has vouched for.
+        run: node scripts/check-wasm-checksum.mjs
 
       # One small, well-tested file, mutated first. Stryker hands vitest a
       # test-name filter for each mutant; if a vitest or Stryker upgrade makes the
       # two join names differently, no test runs per mutant, every mutant reads
-      # as SURVIVED, and the run only looks like a low score (#508, #796). This
+      # as SURVIVED, and the run only looks like a low score (propslab#508, propslab#796). This
       # fails with the cause named, before the long run starts, on every trigger.
       # It is the check `npm run test:mutation:canary` runs locally.
       - name: Canary (Stryker still runs the tests of each mutant)
@@ -222,9 +206,9 @@ jobs:
         run: node scripts/check-mutation-score.mjs reports/shards >> "$GITHUB_STEP_SUMMARY"
 
   # A failed scheduled run opens an issue, or comments on the open one
-  # (#573). See environment.yml's `report` job. A shard that hits its timeout
+  # (propslab#573). A shard that hits its timeout
   # ends `cancelled`, not `failure`, and then `score` is skipped, so
-  # `failure()` alone would stay false and no issue would open (#889).
+  # `failure()` alone would stay false and no issue would open (propslab#889).
   report:
     needs: [mutation, score]
     if: >-

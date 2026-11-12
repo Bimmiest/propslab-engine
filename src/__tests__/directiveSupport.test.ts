@@ -19,7 +19,7 @@ import { runPipeline } from '../pipeline';
 import type { EventMetadata } from '../types';
 import { FIXED_NOW } from './runCtx';
 
-describe('directive support classification (#153)', () => {
+describe('directive support classification (propslab#153)', () => {
   it('classifies every directive in the registry', () => {
     const unclassified = getAllDirectives()
       .filter((d) => !(d.key in DIRECTIVE_SUPPORT))
@@ -59,7 +59,7 @@ describe('directive support classification (#153)', () => {
     // silently goes stale is worse than no number, so it is asserted rather
     // than trusted -- this is what makes the README's claim maintainable.
     const readme = Object.values(
-      import.meta.glob<string>('../../../README.md', { eager: true, query: '?raw', import: 'default' }),
+      import.meta.glob<string>('../../README.md', { eager: true, query: '?raw', import: 'default' }),
     )[0];
     expect(readme, 'README.md could not be read').toBeTruthy();
 
@@ -88,7 +88,7 @@ describe('directive support classification (#153)', () => {
 
   it('keeps the README undocumented count in step with the list', () => {
     const readme = Object.values(
-      import.meta.glob<string>('../../../README.md', { eager: true, query: '?raw', import: 'default' }),
+      import.meta.glob<string>('../../README.md', { eager: true, query: '?raw', import: 'default' }),
     )[0];
     const stated = /\*\*(\d+)\*\* attributes are valid in Splunk/.exec(readme ?? '');
     expect(stated, 'README has no undocumented-attribute count').toBeTruthy();
@@ -165,7 +165,7 @@ function withUndocumented<T>(key: string, body: () => T): T {
   }
 }
 
-describe('unsimulated directives are reported rather than ignored (#153)', () => {
+describe('unsimulated directives are reported rather than ignored (propslab#153)', () => {
   it('warns, and names the tracking issue, for an ignored directive', () => {
     const d = withSupport('TZ_ALIAS', IGNORED_STANDIN, () =>
       diagnosticsFor('TZ_ALIAS = EST=GMT-5\n').find((x) => x.directiveKey === 'TZ_ALIAS'),
@@ -210,7 +210,7 @@ describe('unsimulated directives are reported rather than ignored (#153)', () =>
     expect(d?.message).toContain('not simulated');
   });
 
-  it('warns for a valid attribute the registry does not document (#178)', () => {
+  it('warns for a valid attribute the registry does not document (propslab#178)', () => {
     // UNDOCUMENTED_ATTRIBUTES is empty, so this borrows a name the way the
     // ignored-directive tests above borrow a classification: the mechanism has
     // to stay assertable when there is nothing parked in it. A name the

@@ -1,7 +1,7 @@
 import { CEF_HEADER, LEEF_HEADER, detectLineFormat } from './lineFormat';
 
 /**
- * The format of a raw sample, named for the chip in the Raw Log footer (#742).
+ * The format of a raw sample, named for the chip in the Raw Log footer (propslab#742).
  *
  * The formats that each line shows by itself come first: their lines also
  * pass the structural checks (a CEF line has seven `|`, so it reads as PSV),

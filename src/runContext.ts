@@ -4,8 +4,8 @@
 //
 // Stages used to take `now` and the diagnostics list as optional positional
 // parameters defaulting to `Date.now()` and a fresh array, so a call site that
-// dropped one got a silently different result (#416), and each stage kept its
-// own "already warned" sets, which forgot between calls (#418). `runPipeline`
+// dropped one got a silently different result (propslab#416), and each stage kept its
+// own "already warned" sets, which forgot between calls (propslab#418). `runPipeline`
 // builds one of these and every stage reads its run state from it.
 // ---------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ export interface RunLimits {
    * its next regex call and the stages after it do not run, with an error
    * diagnostic. Unbounded by default, so a library run gives the same result
    * on a slow machine as on a fast one: the browser app sets it below its
-   * worker watchdog, and the MCP server terminates its worker instead (#560).
+   * worker watchdog, and the MCP server terminates its worker instead (propslab#560).
    */
   readonly maxRunMs: number;
 }

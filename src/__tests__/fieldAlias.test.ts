@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { applyFieldAliases } from '../processors/fieldAlias';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(fields: Record<string, string | string[]>): SplunkEvent {
   return makeEvent('raw', { fields });
@@ -45,7 +45,7 @@ describe('applyFieldAliases — literal', () => {
     ]);
   });
 
-  it('names the alias that missed when one line holds several (#772)', () => {
+  it('names the alias that missed when one line holds several (propslab#772)', () => {
     const e = applyFieldAliases(
       [event({ pid: '1' })],
       [dir('a', 'pid AS process_id op AS signature')],
@@ -58,9 +58,9 @@ describe('applyFieldAliases — literal', () => {
 
 // Doc-derived (props.conf.spec, FIELDALIAS): with AS, "If the <orig_field_name>
 // field has no value or does not exist, the <new_field_name> is removed"; with
-// ASNEW, it "is kept". Until #445 a missing source left the target alone in
+// ASNEW, it "is kept". Until propslab#445 a missing source left the target alone in
 // both modes.
-describe('applyFieldAliases — a source with no value (#445)', () => {
+describe('applyFieldAliases — a source with no value (propslab#445)', () => {
   const run = (fields: Record<string, string | string[]>, value: string) =>
     applyFieldAliases([event(fields)], [dir('a', value)], runCtx(FIXED_NOW))[0]!;
 
@@ -142,7 +142,7 @@ describe('applyFieldAliases — a source with no value (#445)', () => {
     expect(step?.fieldsRemoved).toBeUndefined();
   });
 
-  // #900: the step's lists say what the event had before it.
+  // propslab#900: the step's lists say what the event had before it.
   it('puts a target the event had before in fieldsModified, and a new one in fieldsAdded', () => {
     const e = run({ a: '1', x: 'old' }, 'a AS x  a AS y');
     expect(e.fields).toEqual({ a: '1', x: '1', y: '1' });

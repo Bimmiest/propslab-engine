@@ -36,7 +36,7 @@ function isMetadataFieldName(name: string): name is MetadataFieldName {
  *
  * After a `rename`, `sourcetype` is the new name and `_sourcetype` the one the
  * event is indexed under: props.conf.spec has a search find renamed events by
- * the new name, and the original through `_sourcetype` (#757).
+ * the new name, and the original through `_sourcetype` (propslab#757).
  */
 export function getMetadataField(
   event: Pick<SplunkEvent, 'metadata' | 'renamedSourcetype'>,

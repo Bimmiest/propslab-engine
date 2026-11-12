@@ -1,0 +1,17 @@
+{
+  // The build of the package. The package ships its TypeScript source, and
+  // each consumer compiles it with its own toolchain, so this config emits
+  // nothing. It type-checks `src/` as a consumer receives it: tests left out,
+  // no Node types and only ES2022. The engine runs in a Web Worker and under
+  // Node, and neither has a DOM: a browser-only global that type-checked
+  // against the DOM lib once extracted nothing at run time (propslab#280).
+  // Here such a global is a build failure. `npm run build`.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": []
+  },
+  "include": ["src"],
+  "exclude": ["src/**/__tests__", "src/**/*.test.ts", "src/test"]
+}

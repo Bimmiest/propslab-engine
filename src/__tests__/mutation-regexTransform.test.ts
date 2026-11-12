@@ -1,10 +1,10 @@
-// Tests written against mutants that survived `npm run test:mutation` (#370).
+// Tests written against mutants that survived `npm run test:mutation` (propslab#370).
 // Each pins a behaviour of one transforms.conf stanza applied to one event that
 // the suite executed but never asserted.
 import { describe, it, expect, vi } from 'vitest';
 import { applyRegexTransform } from '../transforms/regexTransform';
 import type { SplunkEvent, ConfStanza } from '../types';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string, fields: Record<string, string | string[]> = {}): SplunkEvent {
   return makeEvent(raw, { fields });
@@ -120,7 +120,7 @@ describe('DEFAULT_VALUE', () => {
 
 describe('$0 — the DEST_KEY value before the REGEX ran', () => {
   // A metadata key holds its `host::`-style prefix, as SOURCE_KEY reads it and
-  // as FORMAT must write it. #620 corrected these from the bare value, which
+  // as FORMAT must write it. propslab#620 corrected these from the bare value, which
   // made `FORMAT = $0.example.com` write a host with no prefix, so no change.
   it.each([
     ['MetaData:Host', 'host::h'],

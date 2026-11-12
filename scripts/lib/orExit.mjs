@@ -1,7 +1,7 @@
 // The value of a read that a script cannot go on without, or exit 1 with a
 // message that says what to do. The scripts in scripts/ read the build output
 // or an installed package at the top level; this keeps each result a `const`
-// rather than a `let` assigned inside a `try` (#865).
+// rather than a `let` assigned inside a `try` (propslab#865).
 
 /**
  * Returns what `read` returns. When it throws, prints `message` to stderr and

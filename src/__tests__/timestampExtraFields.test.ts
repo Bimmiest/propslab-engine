@@ -13,7 +13,7 @@ import { extractTimestamps, resolveExtraTimeFields, EXTRA_TIME_FIELD_NAMES } fro
 import { runPipeline } from '../pipeline';
 import type { SplunkEvent, ConfDirective } from '../types';
 import { runCtx } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string): SplunkEvent {
   return makeEvent(raw);
@@ -39,7 +39,7 @@ function timeFields(e: SplunkEvent | undefined): Record<string, string | string[
   return out;
 }
 
-describe('ADD_EXTRA_TIME_FIELDS (#273)', () => {
+describe('ADD_EXTRA_TIME_FIELDS (propslab#273)', () => {
   const FORMAT = dir('TIME_FORMAT', '%Y-%m-%d %H:%M:%S');
 
   it('writes the date_* and position fields by default', () => {
@@ -164,7 +164,7 @@ describe('ADD_EXTRA_TIME_FIELDS (#273)', () => {
   });
 });
 
-describe('DETERMINE_TIMESTAMP_DATE_WITH_SYSTEM_TIME (#273)', () => {
+describe('DETERMINE_TIMESTAMP_DATE_WITH_SYSTEM_TIME (propslab#273)', () => {
   const TIME_ONLY = dir('TIME_FORMAT', '%H:%M:%S');
 
   it('no longer puts a dateless timestamp on 1 January', () => {
@@ -176,7 +176,7 @@ describe('DETERMINE_TIMESTAMP_DATE_WITH_SYSTEM_TIME (#273)', () => {
   // the clock, so it is yesterday's. 01:00 is past midnight either way. The
   // third line, 13:00, is what tells the two strategies apart: carried forward
   // it is on the date of the line before (the 4th); read off the clock it is
-  // 12.5 hours ahead, so yesterday's. (Before #471 the second line told them
+  // 12.5 hours ahead, so yesterday's. (Before propslab#471 the second line told them
   // apart, because the carried date never rolled over midnight.)
   const RAWS = ['23:00:00 late', '01:00:00 early', '13:00:00 afternoon'];
 
@@ -204,7 +204,7 @@ describe('DETERMINE_TIMESTAMP_DATE_WITH_SYSTEM_TIME (#273)', () => {
     expect(out[2]?._time?.toISOString()).toBe('2026-08-03T13:00:00.000Z');
   });
 
-  it('advances a carried date past midnight when the time of day goes back (#471)', () => {
+  it('advances a carried date past midnight when the time of day goes back (propslab#471)', () => {
     // Doc-derived: Splunk advances the date when a dateless time of day goes
     // backwards across midnight. Only that is asserted.
     const out = run(['23:59:59 b', '00:00:01 c'], [TIME_ONLY]);
@@ -251,7 +251,7 @@ describe('DETERMINE_TIMESTAMP_DATE_WITH_SYSTEM_TIME (#273)', () => {
     expect(e?.fields['date_mday']).toBe('3');
   });
 
-  it('reads "today" in a named zone\'s offset on the clock\'s date, summer time included (#556)', () => {
+  it('reads "today" in a named zone\'s offset on the clock\'s date, summer time included (propslab#556)', () => {
     // 04:30 UTC on 15 July is 00:30 EDT, so the stamp is today's, the 15th. Read
     // at January's offset (EST, -05:00) the clock said 23:30 on the 14th.
     const [e] = run(

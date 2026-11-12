@@ -21,7 +21,7 @@ import { applyIngestEval } from '../transforms/ingestEval';
 import { evaluateStopCondition } from '../transforms/stopProcessing';
 import type { SplunkEvent, ConfDirective } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(fields: Record<string, string> = {}): SplunkEvent {
   return makeEvent('raw', { fields });
@@ -44,7 +44,7 @@ function evalWith(expr: string, fields: Record<string, string> = {}) {
 const value = (expr: string, fields: Record<string, string> = {}) =>
   evaluateExpression(expr, event(fields), undefined, FIXED_NOW);
 
-describe('comparison operators with a NULL operand (#343)', () => {
+describe('comparison operators with a NULL operand (propslab#343)', () => {
   it.each(['=', '==', '!=', '<', '>', '<=', '>='])('missing %s "" is NULL', (op) => {
     expect(value(`missing ${op} ""`)).toBeNull();
     expect(value(`"" ${op} missing`)).toBeNull();
@@ -79,7 +79,7 @@ describe('comparison operators with a NULL operand (#343)', () => {
   });
 });
 
-describe('LIKE, like() and match() with a NULL argument (#343)', () => {
+describe('LIKE, like() and match() with a NULL argument (propslab#343)', () => {
   it('yields NULL, like the comparison operators', () => {
     expect(value('missing LIKE "%"')).toBeNull();
     expect(value('like(missing, "%")')).toBeNull();
@@ -100,7 +100,7 @@ describe('LIKE, like() and match() with a NULL argument (#343)', () => {
   });
 });
 
-describe('IN and in() with a NULL value (#343)', () => {
+describe('IN and in() with a NULL value (propslab#343)', () => {
   it('is NULL for IN, NOT IN and in()', () => {
     expect(value('missing IN ("", "a")')).toBeNull();
     expect(value('missing NOT IN ("a")')).toBeNull();
@@ -114,7 +114,7 @@ describe('IN and in() with a NULL value (#343)', () => {
   });
 });
 
-describe('boolean operators under three-valued logic (#343)', () => {
+describe('boolean operators under three-valued logic (propslab#343)', () => {
   it.each([
     ['NOT (missing == "a")', null],
     ['(missing == "a") AND false', false],
@@ -144,7 +144,7 @@ describe('boolean operators under three-valued logic (#343)', () => {
   });
 });
 
-describe('consumers of a NULL condition (#343)', () => {
+describe('consumers of a NULL condition (propslab#343)', () => {
   it('INGEST_EVAL queue=if(...) takes the else branch on a missing field', () => {
     // `level != "INFO"` is NULL for an event with no `level`, so it is not
     // routed to nullQueue.

@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { applyEvalExpressions } from '../processors/evalProcessor';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(fields: Record<string, string> = {}): SplunkEvent {
   return makeEvent('raw', { fields });
@@ -43,7 +43,7 @@ function expectSyntaxError(expr: string, message: RegExp) {
   expect(errors[0]!.message).toMatch(message);
 }
 
-describe('eval numbers with a leading decimal point (#312)', () => {
+describe('eval numbers with a leading decimal point (propslab#312)', () => {
   it('reads .5 as a number', () => {
     expect(run('.5 * 2').value).toBe('1');
   });
@@ -76,7 +76,7 @@ describe('eval numbers with a leading decimal point (#312)', () => {
   });
 });
 
-describe('eval lexer errors (#312)', () => {
+describe('eval lexer errors (propslab#312)', () => {
   it('reports an unexpected character instead of skipping it', () => {
     expectSyntaxError('1 # 2', /Unexpected character: #/);
   });
@@ -94,7 +94,7 @@ describe('eval lexer errors (#312)', () => {
   });
 });
 
-describe('eval LIKE operator (#312)', () => {
+describe('eval LIKE operator (propslab#312)', () => {
   it('matches with % and _ wildcards', () => {
     expect(run('if(a LIKE "f%", 1, 0)', { a: 'foo' }).value).toBe('1');
     expect(run('if(a LIKE "f%", 1, 0)', { a: 'bar' }).value).toBe('0');
@@ -127,7 +127,7 @@ describe('eval LIKE operator (#312)', () => {
   });
 });
 
-describe('eval XOR operator (#312)', () => {
+describe('eval XOR operator (propslab#312)', () => {
   it('is true when exactly one side is true', () => {
     expect(run('if(1==1 XOR 1==2, 1, 0)').value).toBe('1');
     expect(run('if(1==2 XOR 1==1, 1, 0)').value).toBe('1');
@@ -146,7 +146,7 @@ describe('eval XOR operator (#312)', () => {
   });
 });
 
-describe('eval NOT NOT (#312)', () => {
+describe('eval NOT NOT (propslab#312)', () => {
   it('parses and cancels out', () => {
     expect(run('if(NOT NOT 1==1, 1, 0)').value).toBe('1');
     expect(run('if(NOT NOT NOT 1==1, 1, 0)').value).toBe('0');
@@ -166,7 +166,7 @@ describe('eval NOT NOT (#312)', () => {
 // asserted narrowly here. NOT is a prefix operator and stays a keyword.
 // ---------------------------------------------------------------------------
 
-describe('eval in() function (#332)', () => {
+describe('eval in() function (propslab#332)', () => {
   it('is true when any list item matches the value', () => {
     expect(run('if(in(a, "x", "y"), 1, 0)', { a: 'y' }).value).toBe('1');
     expect(run('if(in(a, "x", "y"), 1, 0)', { a: 'z' }).value).toBe('0');
@@ -193,7 +193,7 @@ describe('eval in() function (#332)', () => {
   });
 });
 
-describe('word operators are identifiers in value position (#332)', () => {
+describe('word operators are identifiers in value position (propslab#332)', () => {
   it('reads bare fields named xor and like', () => {
     expect(run('xor', { xor: 'v' }).value).toBe('v');
     expect(run('like . "x"', { like: 'v' }).value).toBe('vx');
@@ -220,7 +220,7 @@ describe('word operators are identifiers in value position (#332)', () => {
 // above). Asserted narrowly: the result must not depend on keyword casing.
 // ---------------------------------------------------------------------------
 
-describe('eval NOT IN in any casing (#337)', () => {
+describe('eval NOT IN in any casing (propslab#337)', () => {
   // NOT, not, Not, nOT — and likewise for IN — in every pairing.
   const casings = (word: string) => [
     word.toUpperCase(),

@@ -60,7 +60,7 @@ export function evaluateStopCondition(
     });
   };
 
-  // Parsed once per run, as INGEST_EVAL is: this runs once per event (#561).
+  // Parsed once per run, as INGEST_EVAL is: this runs once per event (propslab#561).
   const parsed = ctx.memo.get<{ tree: Node } | { error: unknown }>('STOP_PROCESSING_IF', dir, () => {
     try {
       return { tree: parseExpression(expression) };

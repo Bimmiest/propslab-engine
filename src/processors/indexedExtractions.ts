@@ -240,7 +240,7 @@ function delimitedOptions(
   const namesDir = find('FIELD_NAMES');
   if (namesDir) {
     // Positional, as a header line is: `FIELD_NAMES = ts,,b` leaves the second
-    // column unnamed, so it extracts nothing, and names the third `b` (#449).
+    // column unnamed, so it extracts nothing, and names the third `b` (propslab#449).
     const names = parseNameList(namesDir.value, true);
     if (names.some((name) => name !== '')) opts.fieldNames = names;
   }
@@ -304,7 +304,7 @@ function compileOption(
 }
 
 /**
- * MISSING_VALUE_REGEX matches a whole value, not part of one (#449). Getting
+ * MISSING_VALUE_REGEX matches a whole value, not part of one (propslab#449). Getting
  * Data In: "If Splunk software finds data that matches the specified regular
  * expression in the structured data file, it considers the value for the field
  * in the row to be empty." So with `-`, a lone dash is missing while
@@ -335,7 +335,7 @@ function wholeValueTest(regex: SplunkRegex | null): ((value: string) => boolean)
  * value does not parse, or none of the fields has one, the event takes the
  * previous event's `_time`, or the time of indexing when there is no previous
  * event, and the rest of the event is not searched for another timestamp
- * (#444). The values are parsed as one batch so that each inherits from the
+ * (propslab#444). The values are parsed as one batch so that each inherits from the
  * one before it, as the timestamp stage's events do.
  *
  * `defaults` are the fields a format reads when TIMESTAMP_FIELDS names none,
@@ -388,7 +388,7 @@ function timestampFieldsValue(fields: SplunkEvent['fields'], names: readonly str
  * `event` with the `_time` parsing its TIMESTAMP_FIELDS value (`probe`)
  * settled on, and the probe's time fields in place of the ones the timestamp
  * stage wrote for a timestamp it found elsewhere in the event, which can be a
- * different date (#618). A value that gave no timestamp fell back the way the
+ * different date (propslab#618). A value that gave no timestamp fell back the way the
  * timestamp stage does, and its fields say so (`timestamp=none`). The probe's
  * `timestartpos` and `timeendpos` are offsets into the joined value, not into
  * `_raw`, so a value that parsed leaves them out. `named` says which fields
@@ -492,7 +492,7 @@ function extractDelimited(
     dataStart = skip;
   } else if (opts.headerLineNumber > 0) {
     // HEADER_FIELD_LINE_NUMBER counts the lines of the input, blank lines and
-    // preamble lines included (#449), so the header is the event that starts
+    // preamble lines included (propslab#449), so the header is the event that starts
     // on that line, not the nth event, and the lines before it are not
     // indexed. A header line that is preamble extracts nothing: the lines after
     // the preamble are indexed with no fields. A blank one, which no event starts on,
@@ -527,7 +527,7 @@ function extractDelimited(
     for (const [i, value] of values.entries()) {
       // A value past the end of the header is named by its column,
       // EXTRA_FIELD_4 for the fourth; one under an empty header name is not
-      // extracted at all (#449).
+      // extracted at all (propslab#449).
       const header = headers[i] ?? `EXTRA_FIELD_${i + 1}`;
       // MISSING_VALUE_REGEX names the placeholder a source writes for "no
       // value"; indexing the placeholder would make an absent value
@@ -564,7 +564,7 @@ interface PendingRow {
 
 /**
  * The data rows, with a row whose quoted value holds a line break put back
- * together (#449). Line breaking runs before this and splits such a row at
+ * together (propslab#449). Line breaking runs before this and splits such a row at
  * the break, so while a quoted value is open the next event continues the
  * row, joined by the line break the input had there. A quoted value that
  * never closes runs to the end of the input; a quote in the middle of a field
@@ -649,7 +649,7 @@ function lineBreakBefore(
  * W3C extended log format. Without TIMESTAMP_FIELDS the timestamp is read from
  * the `date` and `time` columns, joined in that order wherever they sit in the
  * row, as if `TIMESTAMP_FIELDS = date, time` were set. props.conf.spec does
- * not document this default (#444). A row with neither column gets no
+ * not document this default (propslab#444). A row with neither column gets no
  * timestamp from elsewhere in it, whatever TIME_FORMAT says.
  */
 function extractW3c(events: SplunkEvent[], directives: ConfDirective[], ctx: RunContext): SplunkEvent[] {
@@ -797,7 +797,7 @@ function splitDelimitedLine(line: string, opts: LineSyntax, inQuotes: boolean): 
     } else if (ch === opts.quote && /^[ \t]*$/.test(current)) {
       // A quote opens a quoted value only at the start of a field, after any
       // spaces or tabs, which are not part of the value. Anywhere else it is a
-      // literal character, as in 5'10" (#449).
+      // literal character, as in 5'10" (propslab#449).
       current = '';
       inQuotes = true;
       fieldQuoted = true;

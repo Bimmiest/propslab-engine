@@ -82,7 +82,7 @@ export const DEFAULT_DEPTH_LIMIT = 1000;
 /**
  * The most a stanza can raise either limit to, PCRE2's own default. One match
  * at this limit takes about 0.2 s; "no limit", 0xffffffff steps, about 90 s,
- * which no run budget can interrupt (#560).
+ * which no run budget can interrupt (propslab#560).
  */
 export const MAX_REGEX_LIMIT = 10_000_000;
 
@@ -195,7 +195,7 @@ class RegexCache {
 /**
  * Patterns each cache holds. A run whose config uses more distinct patterns
  * than this evicts the next one it needs on every lookup, so every pattern
- * recompiles for every event (#614); a compiled pattern is a few KB of wasm
+ * recompiles for every event (propslab#614); a compiled pattern is a few KB of wasm
  * memory, so this is set well past any one sourcetype's config.
  */
 export const REGEX_CACHE_LIMIT = 1024;

@@ -128,7 +128,7 @@ describe('the run ledger through runPipeline', () => {
     expect(errors).toHaveLength(1);
   });
 
-  it('reports a malformed SEDCMD on the clone sourcetype once, not once per clone (#476)', () => {
+  it('reports a malformed SEDCMD on the clone sourcetype once, not once per clone (propslab#476)', () => {
     const props = '[st]\nSHOULD_LINEMERGE = false\nTRANSFORMS-a = clone\n[copy]\nSEDCMD-mask = s/[unclosed/X/\n';
     const transforms = '[clone]\nREGEX = .\nCLONE_SOURCETYPE = copy\n';
     for (const perEventPipeline of [false, true]) {

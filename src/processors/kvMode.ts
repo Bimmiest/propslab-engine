@@ -68,7 +68,7 @@ export function applyKvMode(events: SplunkEvent[], directives: ConfDirective[], 
     if (added.length === 0 && missedPastCap.length === 0) return event;
 
     // XML appends a value to a field that the event had before, and records
-    // it in `added`: that field is modified, not added (#900).
+    // it in `added`: that field is modified, not added (propslab#900).
     const modified = added.filter((f) => hasField(event.fields, f));
     return {
       ...event,
@@ -306,7 +306,7 @@ function extractXml(raw: string, fields: Record<string, string | string[]>, adde
  * literally: a pair that starts past the cut is not extracted, and a value
  * that runs across it keeps the part before it. KV_MODE = json is not cut, and
  * neither is the JSON pass AUTO_KV_JSON adds to auto; `[spath]
- * extraction_cutoff` (5000) does not cap KV_MODE = json either (#451).
+ * extraction_cutoff` (5000) does not cap KV_MODE = json either (propslab#451).
  */
 const KV_MAXCHARS = 10_240;
 
@@ -412,7 +412,7 @@ function extractKeyValue(
   // key and discards the rest -- `label=a label=b` is `label = "a"`, not a
   // multivalue field. Worth stating plainly because the opposite is the more
   // common intuition, and it is what this code did until observed Splunk
-  // behaviour settled it (#169).
+  // behaviour settled it (propslab#169).
   //
   // The "already extracted" guard still has to distinguish a key this pass has
   // seen from one an EARLIER processor wrote: automatic KV must not overwrite a

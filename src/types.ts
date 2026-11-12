@@ -24,7 +24,7 @@ export type TimeSource =
 /**
  * `_time` sources that were not read out of the event's own text. Nothing in
  * this app reads it; propslab-sb and propslab-ent do, through the vendored
- * engine. #570 deleted it as dead and broke both, so a search for readers
+ * engine. propslab#570 deleted it as dead and broke both, so a search for readers
  * must include them.
  */
 export const FALLBACK_TIME_SOURCES: readonly TimeSource[] = [
@@ -71,7 +71,7 @@ export interface ProcessingStep {
    * them, after search-time extraction.
    *
    * At search time, fields that a step wrote over: REPORT, KV_MODE, FIELDALIAS
-   * and EVAL put such a field here, not in `fieldsAdded` (#900).
+   * and EVAL put such a field here, not in `fieldsAdded` (propslab#900).
    */
   fieldsModified?: string[];
   /**
@@ -90,7 +90,7 @@ export interface ProcessingStep {
    *
    * `description` also names them, but as prose for a human to read. The
    * structured form is what consumers should read; `description` is for display.
-   * See docs/adr/0010-engine-decisions-are-structured-data-on-the-event.md.
+   * See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0010-engine-decisions-are-structured-data-on-the-event.md.
    */
   fieldAliases?: { target: string; source: string }[];
   /**
@@ -99,7 +99,7 @@ export interface ProcessingStep {
    *
    * Recorded from the directives that survived stanza matching for THIS event,
    * so a consumer never re-reads props.conf to recover it.
-   * See docs/adr/0010-engine-decisions-are-structured-data-on-the-event.md.
+   * See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0010-engine-decisions-are-structured-data-on-the-event.md.
    */
   evalExpressions?: Record<string, string>;
   /**
@@ -124,7 +124,7 @@ export interface ProcessingStep {
  *
  * SEDCMD and DEST_KEY = _raw cannot name the fields they changed, and the
  * extraction rules that can do not run until search time.
- * See docs/adr/0011-raw-rewrites-attributed-by-replay.md.
+ * See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0011-raw-rewrites-attributed-by-replay.md.
  */
 export interface RawMutation {
   /** Index into the event's `processingTrace` of the step to backfill. */
@@ -169,7 +169,7 @@ export interface SplunkEvent {
    * every consumer of it treats a step as work done, and the Pipeline tab counts
    * its length. A no-op is the absence of work, so it is recorded beside the
    * trace rather than inside it.
-   * See docs/adr/0010-engine-decisions-are-structured-data-on-the-event.md.
+   * See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0010-engine-decisions-are-structured-data-on-the-event.md.
    */
   noOps?: DirectiveNoOp[];
   /**
@@ -183,7 +183,7 @@ export interface SplunkEvent {
    * Set as search time starts when a matched stanza's `rename` points
    * elsewhere: the sourcetype the event is searched as, which the search-time
    * `sourcetype` field reads. `metadata.sourcetype` stays the one it is indexed
-   * under, and `_sourcetype` reads that (ADR 0002).
+   * under, and `_sourcetype` reads that (propslab ADR 0002).
    */
   renamedSourcetype?: string;
   /**
@@ -234,13 +234,13 @@ export interface ProcessingResult {
    * input-time `sourcetype =` assignment from a `[source::]`/`[host::]`
    * stanza, but before any index-time rewrite. The baseline a view compares
    * events against. With no input to process it is the caller's metadata
-   * unchanged. See docs/adr/0002-input-time-sourcetype-and-rename.md.
+   * unchanged. See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0002-input-time-sourcetype-and-rename.md.
    */
   inputMetadata: EventMetadata;
   /**
    * The sourcetype whose stanza search-time settings come from, when a matched
    * stanza's `rename` points away from `inputMetadata.sourcetype`. See
-   * docs/adr/0002-input-time-sourcetype-and-rename.md.
+   * https://github.com/Bimmiest/propslab/blob/main/docs/adr/0002-input-time-sourcetype-and-rename.md.
    */
   renamedSourcetype?: string;
 }
@@ -291,7 +291,7 @@ export interface ConfLayer {
  * What `parseConf` (and therefore `runPipeline`) accepts for a conf file: either
  * a single flat file's text, or an ordered list of layers, lowest precedence
  * first. A single string parses with no provenance fields on the result.
- * See docs/adr/0012-layered-conf-input.md.
+ * See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0012-layered-conf-input.md.
  */
 export type ConfInput = string | ConfLayer[];
 

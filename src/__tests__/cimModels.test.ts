@@ -9,7 +9,7 @@ const allFields = (name: string) => {
 
 // A model's events need ALL of its constraint tags to populate, so a
 // missing tag doesn't weaken membership — it breaks it entirely.
-describe('CIM constraint tags (#37)', () => {
+describe('CIM constraint tags (propslab#37)', () => {
   it('DLP is constrained by tag=dlp tag=incident', () => {
     expect(byName('DLP').tags).toEqual(expect.arrayContaining(['dlp', 'incident']));
   });
@@ -37,7 +37,7 @@ describe('CIM constraint tags (#37)', () => {
 
 // Every listed field is one the model defines, so the CIM tab never reports
 // non-compliance against fields nobody can populate.
-describe('CIM field lists match Splunk_SA_CIM (#37)', () => {
+describe('CIM field lists match Splunk_SA_CIM (propslab#37)', () => {
   it('is generated from a pinned CIM release', () => {
     expect(CIM_VERSION).toBe('8.5.0');
   });

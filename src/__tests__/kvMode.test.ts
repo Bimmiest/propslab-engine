@@ -3,7 +3,7 @@ import { applyKvMode } from '../processors/kvMode';
 import { runPipeline } from '../pipeline';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string): SplunkEvent {
   return makeEvent(raw);
@@ -133,7 +133,7 @@ describe('applyKvMode — json', () => {
   });
 });
 
-describe('applyKvMode — a leading [ is not by itself JSON (#289)', () => {
+describe('applyKvMode — a leading [ is not by itself JSON (propslab#289)', () => {
   // Not a claim about Splunk: this is about when the simulator's own warning fires,
   // which Splunk has no counterpart for.
   it.each(['json', 'auto'])('does not warn about a bracketed log prefix under KV_MODE = %s', (mode) => {
@@ -272,7 +272,7 @@ describe('applyKvMode — multi (multikv)', () => {
   });
 });
 
-describe('applyKvMode — a value may contain = (#170)', () => {
+describe('applyKvMode — a value may contain = (propslab#170)', () => {
   it('splits on the first = and keeps the rest of the token', () => {
     const out = applyKvMode([event('filter=a=b query=x=y=z plain=ok')], [dir('auto')], runCtx(FIXED_NOW))[0]!;
     expect(out.fields['filter']).toBe('a=b');
@@ -292,7 +292,7 @@ describe('applyKvMode — a value may contain = (#170)', () => {
   });
 });
 
-describe('applyKvMode — purely numeric field names are rejected (#166)', () => {
+describe('applyKvMode — purely numeric field names are rejected (propslab#166)', () => {
   it('extracts nothing from numeric keys', () => {
     // Reached in real data through a SEDCMD backreference that swaps each pair.
     const out = applyKvMode([event('2026-01-15T10:00:00Z 1=a 2=b')], [dir('auto')], runCtx(FIXED_NOW))[0]!;
@@ -301,7 +301,7 @@ describe('applyKvMode — purely numeric field names are rejected (#166)', () =>
   });
 });
 
-describe('applyKvMode — extraction never mutates the input event (#63)', () => {
+describe('applyKvMode — extraction never mutates the input event (propslab#63)', () => {
   // multikv, as the other multivalue-accumulating mode; xml has its own file.
   const TABLE = 'NAME  VALUE\na     1\nb     2';
 
@@ -320,7 +320,7 @@ describe('applyKvMode — extraction never mutates the input event (#63)', () =>
   });
 });
 
-describe('applyKvMode — KV_TRIM_SPACES (#274)', () => {
+describe('applyKvMode — KV_TRIM_SPACES (propslab#274)', () => {
   // Doc-derived: props.conf.spec 10.4.3, KV_TRIM_SPACES. Default true strips the outer spaces
   // from an automatic key=value value, false keeps them, tabs are never
   // trimmed, and it applies to KV_MODE auto and auto_escaped.
@@ -376,7 +376,7 @@ describe('applyKvMode — KV_TRIM_SPACES (#274)', () => {
   });
 });
 
-describe('applyKvMode — json depth limit skips only the deep subtree (#357)', () => {
+describe('applyKvMode — json depth limit skips only the deep subtree (propslab#357)', () => {
   // Not doc-derived: the depth limit is this simulator's own guard, so the
   // assertion is only that it costs nothing beyond the subtree it cuts off.
   const nest = (levels: number): string =>

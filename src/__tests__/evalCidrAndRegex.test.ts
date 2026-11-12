@@ -13,7 +13,7 @@ import { applyEvalExpressions } from '../processors/evalProcessor';
 import { runPipeline } from '../pipeline';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(fields: Record<string, string> = {}): SplunkEvent {
   return makeEvent('raw', { fields });
@@ -35,7 +35,7 @@ const cidr = (range: string, ip: string) =>
     runCtx(FIXED_NOW),
   )[0]!.fields['r'];
 
-describe('cidrmatch() (#291)', () => {
+describe('cidrmatch() (propslab#291)', () => {
   it.each([
     ['10.0.0.0/8', '10.1.2.3', 'true'],
     ['10.0.0.0/8', '11.0.0.1', 'false'],
@@ -89,7 +89,7 @@ describe('cidrmatch() (#291)', () => {
   // cidrmatch() follows them: the result is NULL, so the EVAL writes no field,
   // and an if() guard still takes its else branch. Doc-derived (NULL is falsy
   // in a condition).
-  it('yields NULL for an absent address, as the comparison operators do (#343)', () => {
+  it('yields NULL for an absent address, as the comparison operators do (propslab#343)', () => {
     const r = applyEvalExpressions([event()], [evalDir('r', 'cidrmatch("10.0.0.0/8", nope)')], runCtx(FIXED_NOW))[0]!;
     expect(r.fields['r']).toBeUndefined();
     const guarded = applyEvalExpressions(
@@ -111,7 +111,7 @@ describe('cidrmatch() (#291)', () => {
   });
 });
 
-describe('eval regex arguments that do not compile (#291)', () => {
+describe('eval regex arguments that do not compile (propslab#291)', () => {
   const run = (expr: string, events = [event({ s: 'abc' })]) => {
     const diagnostics: ValidationDiagnostic[] = [];
     const out = applyEvalExpressions(events, [evalDir('r', expr)], runCtx(FIXED_NOW, diagnostics));
@@ -144,7 +144,7 @@ describe('eval regex arguments that do not compile (#291)', () => {
     expect(diagnostics[0]?.message).toMatch(/lookbehind/);
   });
 
-  it('does not refuse a pattern for backtracking (#368)', () => {
+  it('does not refuse a pattern for backtracking (propslab#368)', () => {
     const { out, diagnostics } = run('if(match(s, "(a+)+"), "y", "n")', [event({ s: 'aaa' })]);
     expect(diagnostics).toEqual([]);
     expect(out[0]!.fields['r']).toBe('y');

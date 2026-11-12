@@ -5,12 +5,12 @@
 // pcre2.wasm.sha256 the package ships. It is a git dependency: the lockfile
 // pins its commit but records no integrity hash, and `npm audit` cannot see it,
 // so a binary that does not match the checksum its build produced is not the
-// one upstream built and published (#504).
+// one upstream built and published (propslab#504).
 //
 // The package's checksum comes from the same commit as the binary, so it
 // catches corruption but not a pin moved to a different build. The binary is
 // also checked against the pcre2.wasm.sha256 at this repository's root, which
-// a pin bump has to change in the same diff (#567).
+// a pin bump has to change in the same diff (propslab#567).
 //
 // The same check as `sha256sum --check --strict pcre2.wasm.sha256`, in Node so
 // it runs on every OS the MCP server's CI does, and from the package's own

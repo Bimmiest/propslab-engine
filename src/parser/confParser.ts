@@ -282,7 +282,7 @@ function createContinuation() {
 function parseLayer(text: string, fileName: 'props.conf' | 'transforms.conf', layer?: string): ParsedConf {
   // A UTF-8 BOM is one character (U+FEFF) before the first header, so it would
   // make `[stanza]` malformed and move its directives into [default]. Splunk
-  // reads such a file without it (#873). Each layer is one file, so each strips its own.
+  // reads such a file without it (propslab#873). Each layer is one file, so each strips its own.
   const lines = (text.startsWith('\uFEFF') ? text.slice(1) : text).split(/\r?\n/);
   const stanzas: ConfStanza[] = [];
   const errors: ValidationDiagnostic[] = [];

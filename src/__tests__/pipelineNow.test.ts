@@ -16,7 +16,7 @@ import type { EventMetadata } from '../types';
 const META: EventMetadata = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
 const opts = (now: number) => ({ perEventPipeline: false, now });
 
-describe('PipelineOptions.now (#293)', () => {
+describe('PipelineOptions.now (propslab#293)', () => {
   const EVENT_MS = Date.parse('2026-01-15T10:00:00Z');
   const PROPS = '[st]\nSHOULD_LINEMERGE = false\nTIME_FORMAT = %Y-%m-%dT%H:%M:%SZ\n';
   const RAW = '2026-01-15T10:00:00Z hello';

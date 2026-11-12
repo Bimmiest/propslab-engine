@@ -9,7 +9,7 @@
 //             that says the expectation was derived from the spec ("Doc-derived",
 //             the .spec file, and the directive's name in one comment), placed
 //             above that test, above a describe it is in, or at the top of its
-//             file (#569). A comment above another test in the file does not count.
+//             file (propslab#569). A comment above another test in the file does not count.
 //   exercised a test runs it through the pipeline, and nothing more is said.
 //
 // A directive with neither is a claim with no evidence, and this file fails on
@@ -17,10 +17,10 @@
 // directiveSupport.ts, or sit in DOC_UNCITED below, which can only shrink.
 //
 // Only tests committed to this repository count. Anything under
-// src/engine/__tests__/private/ (git-ignored, for local-only tests) is left
+// src/__tests__/private/ (git-ignored, for local-only tests) is left
 // out, so the verdict here is the one CI gives.
 //
-// HOW "EXERCISED" IS DECIDED (#505)
+// HOW "EXERCISED" IS DECIDED (propslab#505)
 //
 // It used to be a regex over the raw source of every test file, so `KEY =` in a
 // comment, a lint test or a registry test counted. It is now measured: the
@@ -44,9 +44,9 @@
 // Consequence: this test needs the whole `unit` project to have run in the same
 // invocation. `vitest run` and `npm test` do that. vitest.config.ts records only
 // for such a full run (and always on CI); on any other run, this file alone or
-// a shard, nothing is recorded and this test skips (#569).
+// a shard, nothing is recorded and this test skips (propslab#569).
 //
-// WHICH TESTS COUNT. Only tests under src/engine/, and not the ones listed in
+// WHICH TESTS COUNT. Only tests under src/, and not the ones listed in
 // META_TESTS: those call `runPipeline` to test the linter, the registry or this
 // table itself, and a directive that only they run is not simulated by
 // anything they show. Nothing under PRIVATE_DIR counts either (see above).
@@ -73,16 +73,15 @@ interface Recording {
  * directive's behaviour, so what they feed it is not evidence.
  */
 const META_TESTS: Record<string, string> = {
-  'src/engine/__tests__/directiveLint.test.ts': "asserts the linter's diagnostics, not the pipeline's output",
-  'src/engine/__tests__/directiveSupport.test.ts':
-    'asserts the "not simulated" diagnostics; borrows real keys as stand-ins',
-  'src/engine/__tests__/directiveValues.test.ts': 'asserts which values validate, not what the engine does with them',
-  'src/engine/__tests__/prototypeDirectiveNames.test.ts': 'feeds Object.prototype names as directive keys',
-  'src/engine/__tests__/directiveRegistry.test.ts': 'asserts registry metadata',
+  'src/__tests__/directiveLint.test.ts': "asserts the linter's diagnostics, not the pipeline's output",
+  'src/__tests__/directiveSupport.test.ts': 'asserts the "not simulated" diagnostics; borrows real keys as stand-ins',
+  'src/__tests__/directiveValues.test.ts': 'asserts which values validate, not what the engine does with them',
+  'src/__tests__/prototypeDirectiveNames.test.ts': 'feeds Object.prototype names as directive keys',
+  'src/__tests__/directiveRegistry.test.ts': 'asserts registry metadata',
 };
 
 /** Git-ignored local-only tests; never part of the repository. */
-const PRIVATE_DIR = 'src/engine/__tests__/private/';
+const PRIVATE_DIR = 'src/__tests__/private/';
 
 /**
  * Simulated directives that are exercised and have no documentation-citing
@@ -103,7 +102,7 @@ const DOC_UNCITED_CEILING = 1;
 /** Every engine test source, as text, keyed by repository path. */
 const ENGINE_TEST_SOURCES = new Map(
   Object.entries(import.meta.glob<string>('../**/*.test.ts', { eager: true, query: '?raw', import: 'default' })).map(
-    ([path, text]) => [path.replace(/^\.\//, 'src/engine/__tests__/').replace(/^\.\.\//, 'src/engine/'), text],
+    ([path, text]) => [path.replace(/^\.\//, 'src/__tests__/').replace(/^\.\.\//, 'src/'), text],
   ),
 );
 
@@ -199,7 +198,7 @@ const simulated = Object.entries(DIRECTIVE_SUPPORT)
 
 const recordings = readRecordings();
 const counted = recordings.filter(
-  (r) => r.testFile.startsWith('src/engine/') && !r.testFile.startsWith(PRIVATE_DIR) && !(r.testFile in META_TESTS),
+  (r) => r.testFile.startsWith('src/') && !r.testFile.startsWith(PRIVATE_DIR) && !(r.testFile in META_TESTS),
 );
 
 /** key -> test files that ran it through the pipeline. */
@@ -216,7 +215,7 @@ const cited = new Set(
   ),
 );
 
-describe.skipIf(!recording)('simulated directive evidence (#505)', () => {
+describe.skipIf(!recording)('simulated directive evidence (propslab#505)', () => {
   it('has the recordings it reads', () => {
     // Guards the reader, not the engine. An empty set here would make every
     // check below vacuous or every directive "unexercised"; either way the
@@ -231,7 +230,7 @@ describe.skipIf(!recording)('simulated directive evidence (#505)', () => {
     expect(
       counted.map((r) => r.testFile),
       'docDerivedDirectives.test.ts must be among the recordings, or the recorder is not seeing runPipeline',
-    ).toContain('src/engine/__tests__/docDerivedDirectives.test.ts');
+    ).toContain('src/__tests__/docDerivedDirectives.test.ts');
   });
 
   it('runs every simulated directive through the pipeline in at least one test', () => {
@@ -255,7 +254,7 @@ describe.skipIf(!recording)('simulated directive evidence (#505)', () => {
     ).toEqual([]);
   });
 
-  it('has no engine test that mocks the pipeline, which would hide its runs from the recorder (#569)', () => {
+  it('has no engine test that mocks the pipeline, which would hide its runs from the recorder (propslab#569)', () => {
     const mocking = [...ENGINE_TEST_SOURCES]
       .filter(([, source]) => /vi\.(?:do)?[mM]ock\(\s*['"][./]*(?:[\w./]*\/)?pipeline['"]/.test(source))
       .map(([file]) => file);

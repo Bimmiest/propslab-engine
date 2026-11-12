@@ -1,5 +1,5 @@
 // INGEST_EVAL parses its assignments once per run and evaluates the compiled
-// trees per event (#486), as EVAL- does.
+// trees per event (propslab#486), as EVAL- does.
 //
 // Not fidelity tests: parsing is invisible to Splunk's behaviour, so what these
 // pin is that the result is the same as re-parsing, and how often the parser runs.
@@ -21,7 +21,7 @@ import { applyIngestEval } from '../transforms/ingestEval';
 import { runPipeline } from '../pipeline';
 import type { ConfDirective, EventMetadata, SplunkEvent } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 const event = (raw: string): SplunkEvent => makeEvent(raw);
 const ingest = (value: string, line = 1): ConfDirective => ({
@@ -35,7 +35,7 @@ beforeEach(() => {
   parses.count = 0;
 });
 
-describe('INGEST_EVAL compiles once per run (#486)', () => {
+describe('INGEST_EVAL compiles once per run (propslab#486)', () => {
   it('parses each assignment once however many events it evaluates', () => {
     const dirs = [ingest('a=len(_raw), b="k" . _raw, c=upper(_raw)')];
     const out = applyIngestEval(['x', 'yy', 'zzz', 'w'].map(event), dirs, runCtx(FIXED_NOW));

@@ -3,7 +3,7 @@ import { applyIngestEval, ingestEvalTrees } from '../transforms/ingestEval';
 import { runPipeline } from '../pipeline';
 import type { SplunkEvent, ConfDirective, EventMetadata, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW, AT_FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string): SplunkEvent {
   return makeEvent(raw);
@@ -56,7 +56,7 @@ describe('applyIngestEval', () => {
   });
 });
 
-describe('applyIngestEval — queue assignment routes the event (#58)', () => {
+describe('applyIngestEval — queue assignment routes the event (propslab#58)', () => {
   it('routes to nullQueue rather than writing a plain field', () => {
     const out = applyIngestEval(
       [event('DEBUG connection retry')],
@@ -99,7 +99,7 @@ describe('applyIngestEval — queue assignment routes the event (#58)', () => {
 // settles it.
 // ---------------------------------------------------------------------------
 
-describe('applyIngestEval — metadata keys rewrite the event metadata (#327)', () => {
+describe('applyIngestEval — metadata keys rewrite the event metadata (propslab#327)', () => {
   it.each([
     ['index', 'index="security"', 'security'],
     ['host', 'host="web01"', 'web01'],
@@ -138,7 +138,7 @@ describe('applyIngestEval — metadata keys rewrite the event metadata (#327)', 
   });
 });
 
-describe('applyIngestEval — the := operator (#327)', () => {
+describe('applyIngestEval — the := operator (propslab#327)', () => {
   it('assigns to the named field, not one ending in a colon', () => {
     const out = applyIngestEval([event('x')], ingestDir('x := "1"'), runCtx(FIXED_NOW))[0]!;
     expect(out.fields['x']).toBe('1');
@@ -170,7 +170,7 @@ describe('applyIngestEval — the := operator (#327)', () => {
   });
 });
 
-describe('runPipeline — INGEST_EVAL metadata rewrites re-match stanzas (#327)', () => {
+describe('runPipeline — INGEST_EVAL metadata rewrites re-match stanzas (propslab#327)', () => {
   // Doc-derived, as above: a sourcetype rewritten at index time is a new
   // sourcetype for search-time props, whichever mechanism rewrote it.
   const meta: EventMetadata = { index: 'main', host: 'h', source: '/a.log', sourcetype: 'st' };
@@ -197,7 +197,7 @@ describe('runPipeline — INGEST_EVAL metadata rewrites re-match stanzas (#327)'
   });
 });
 
-describe('applyIngestEval — the trace says what was rewritten (#346)', () => {
+describe('applyIngestEval — the trace says what was rewritten (propslab#346)', () => {
   // Trace content, not Splunk behaviour: nothing here is a fidelity claim.
   const step = (e: SplunkEvent) => e.processingTrace[e.processingTrace.length - 1]!;
 
@@ -223,7 +223,7 @@ describe('applyIngestEval — the trace says what was rewritten (#346)', () => {
   });
 
   it.each(['len(_raw)>=5', 'a!="x"', 'len(_raw) > 5'])(
-    'reports %s as not an assignment and writes no field (#612)',
+    'reports %s as not an assignment and writes no field (propslab#612)',
     (expr) => {
       const diags: ValidationDiagnostic[] = [];
       const out = applyIngestEval([event('hello world')], ingestDir(expr), runCtx(FIXED_NOW, diags))[0]!;
@@ -235,7 +235,7 @@ describe('applyIngestEval — the trace says what was rewritten (#346)', () => {
     },
   );
 
-  it('runs the assignments beside one that is not, and counts only those (#612)', () => {
+  it('runs the assignments beside one that is not, and counts only those (propslab#612)', () => {
     const diags: ValidationDiagnostic[] = [];
     const out = applyIngestEval([event('x')], ingestDir('a=1, upper(b)'), runCtx(FIXED_NOW, diags))[0]!;
     expect(out.fields).toEqual({ a: '1' });
@@ -245,7 +245,7 @@ describe('applyIngestEval — the trace says what was rewritten (#346)', () => {
     expect(step(out).description).toBe('Evaluated 1 ingest-time expression(s)');
   });
 
-  it('writes an indexed field to _meta too, where a later SOURCE_KEY = _meta transform reads it (#558)', () => {
+  it('writes an indexed field to _meta too, where a later SOURCE_KEY = _meta transform reads it (propslab#558)', () => {
     const props = '[st]\nSHOULD_LINEMERGE = false\nTRANSFORMS-x = a,b';
     const transforms =
       '[a]\nINGEST_EVAL = env="prod"\n\n[b]\nSOURCE_KEY = _meta\nREGEX = env::prod\nDEST_KEY = queue\nFORMAT = nullQueue';
@@ -256,7 +256,7 @@ describe('applyIngestEval — the trace says what was rewritten (#346)', () => {
     expect(e?._meta).toEqual({ env: 'prod', _queue: 'nullQueue' });
   });
 
-  it('removes an indexed field from _meta when it is assigned null (#558)', () => {
+  it('removes an indexed field from _meta when it is assigned null (propslab#558)', () => {
     const input = { ...event('x'), fields: { env: 'prod' }, _meta: { env: 'prod' } };
     const out = applyIngestEval([input], ingestDir('env=null()'), runCtx(FIXED_NOW))[0]!;
     expect(out.fields['env']).toBeUndefined();
@@ -291,7 +291,7 @@ describe('applyIngestEval — the trace says what was rewritten (#346)', () => {
   });
 });
 
-describe('INGEST_EVAL _time out of the Date range (#417)', () => {
+describe('INGEST_EVAL _time out of the Date range (propslab#417)', () => {
   const meta: EventMetadata = { index: 'main', host: 'h', source: '/a.log', sourcetype: 'st' };
   const props = '[st]\nSHOULD_LINEMERGE = false\nTRANSFORMS-t = t\n';
   const raw = '2026-01-02 03:04:05 a\n2026-01-02 03:04:06 b';
@@ -331,7 +331,7 @@ describe('INGEST_EVAL _time out of the Date range (#417)', () => {
   });
 });
 
-describe('runPipeline — INGEST_EVAL reports each problem once per run (#418)', () => {
+describe('runPipeline — INGEST_EVAL reports each problem once per run (propslab#418)', () => {
   // The transforms pass runs INGEST_EVAL one event at a time, so what it has
   // reported must outlive a single call.
   const meta: EventMetadata = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
@@ -350,7 +350,7 @@ describe('runPipeline — INGEST_EVAL reports each problem once per run (#418)',
   });
 });
 
-describe('INGEST_EVAL errors are keyed by where the directive is (#477)', () => {
+describe('INGEST_EVAL errors are keyed by where the directive is (propslab#477)', () => {
   const meta: EventMetadata = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
 
   it('reports the errors of two stanzas that assign the same field, each once', () => {
@@ -384,7 +384,7 @@ describe('INGEST_EVAL errors are keyed by where the directive is (#477)', () => 
   });
 });
 
-describe('runPipeline — CLONE_SOURCETYPE does not repeat INGEST_EVAL problems per clone (#452)', () => {
+describe('runPipeline — CLONE_SOURCETYPE does not repeat INGEST_EVAL problems per clone (propslab#452)', () => {
   // Each clone is its own applyTransforms call, so the warning ledgers have to
   // belong to the pipeline run, not the call.
   const meta: EventMetadata = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };

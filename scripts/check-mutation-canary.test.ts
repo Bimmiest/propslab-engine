@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CANARY_FILE, MIN_KILLED, MIN_SCORE, verdict } from './check-mutation-canary.mjs';
 
-// The canary for Stryker's test filter (#508). Reading the report is the
+// The canary for Stryker's test filter (propslab#508). Reading the report is the
 // script's own; what can be wrong is deciding from it.
 const mutants = (counts: Record<string, number>) =>
   Object.entries(counts).flatMap(([status, n]) => Array.from({ length: n }, () => ({ status })));

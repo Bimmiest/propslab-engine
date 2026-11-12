@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
 // mutation-shard.mjs
 //
-// The files that one shard of the weekly mutation run mutates (#851), as a
+// The files that one shard of the weekly mutation run mutates (propslab#851), as a
 // comma list for `stryker run --mutate`. The files are those that
 // stryker.config.mjs's `mutate` selects, so the scope is written in one place.
 // The shard number counts from 1.

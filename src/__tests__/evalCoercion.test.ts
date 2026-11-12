@@ -14,7 +14,7 @@ import { evaluateExpression } from '../processors/eval/evaluator';
 import { applyIngestEval } from '../transforms/ingestEval';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(fields: Record<string, string> = {}): SplunkEvent {
   return makeEvent('raw', { fields });
@@ -23,9 +23,9 @@ function event(fields: Record<string, string> = {}): SplunkEvent {
 const value = (expr: string, fields: Record<string, string> = {}) =>
   evaluateExpression(expr, event(fields), undefined, 0);
 
-describe('eval reads strings as decimal numbers only (#358)', () => {
+describe('eval reads strings as decimal numbers only (propslab#358)', () => {
   // A non-numeric string beside a number is NULL under + and every
-  // comparison since #446, which corrected the old readings: `"0x10" + 1` was
+  // comparison since propslab#446, which corrected the old readings: `"0x10" + 1` was
   // the concatenation "0x101", and `" " == 0` was false.
   it('agrees between + and * on a hex-looking string: neither is a number', () => {
     expect(value('"0x10" + 1')).toBeNull();
@@ -46,7 +46,7 @@ describe('eval reads strings as decimal numbers only (#358)', () => {
     }
   });
 
-  it('reads the text of a non-finite number as that number, except in tonumber() (#446)', () => {
+  it('reads the text of a non-finite number as that number, except in tonumber() (propslab#446)', () => {
     for (const s of ['Infinity', '-Infinity', 'NaN']) {
       expect(value(`isnum("${s}")`), s).toBe(true);
       expect(value(`tonumber("${s}")`), s).toBeNull();
@@ -69,7 +69,7 @@ describe('eval reads strings as decimal numbers only (#358)', () => {
   });
 
   // A field holding numeric text is read as a number against one. A string
-  // literal against a number is a type error, NULL here, since #522 and #446
+  // literal against a number is a type error, NULL here, since propslab#522 and propslab#446
   // corrected the old reading, under which `"1e3" == 1000` was true.
   it('compares a numeric field numerically', () => {
     expect(value('x == 1000', { x: '1e3' })).toBe(true);
@@ -85,7 +85,7 @@ describe('eval reads strings as decimal numbers only (#358)', () => {
   });
 });
 
-describe('substr() with a negative or zero length (#358)', () => {
+describe('substr() with a negative or zero length (propslab#358)', () => {
   it('returns "" rather than reading backwards', () => {
     expect(value('substr("hello", 3, -1)')).toBe('');
     expect(value('substr("hello", 3, 0)')).toBe('');
@@ -103,7 +103,7 @@ describe('substr() with a negative or zero length (#358)', () => {
 //   | makeresults | eval s="hello"
 //   | eval a=substr(s,0,3), b=substr(s,0,1), c=substr(s,0), d=substr(s,-10,3), e=substr(s,-5,2)
 // gave a="hel", b="h", c="hello", d=NULL, e="he".
-describe('substr() start boundaries, checked against Splunk (#397)', () => {
+describe('substr() start boundaries, checked against Splunk (propslab#397)', () => {
   it('reads a start of 0 as 1', () => {
     expect(value('substr("hello", 0, 3)')).toBe('hel');
     expect(value('substr("hello", 0, 1)')).toBe('h');
@@ -120,7 +120,7 @@ describe('substr() start boundaries, checked against Splunk (#397)', () => {
   });
 });
 
-describe('assigning a boolean result (#358)', () => {
+describe('assigning a boolean result (propslab#358)', () => {
   const evalDir = (className: string, expr: string): ConfDirective => ({
     key: `EVAL-${className}`,
     value: expr,

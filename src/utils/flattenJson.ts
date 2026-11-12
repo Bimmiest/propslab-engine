@@ -5,7 +5,7 @@ const MAX_DEPTH = 10;
 /**
  * A JSON number, carried as the text the event wrote it as.
  *
- * Splunk's JSON extraction keeps a number as written (#448): `10.50` stays
+ * Splunk's JSON extraction keeps a number as written (propslab#448): `10.50` stays
  * `10.50`, `1E+3` stays `1E+3`, and an integer past 2^53 keeps every digit.
  * A JS number would round each of them through a double first.
  */

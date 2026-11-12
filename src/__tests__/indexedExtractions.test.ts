@@ -3,7 +3,7 @@ import { applyIndexedExtractions } from '../processors/indexedExtractions';
 import { runPipeline } from '../pipeline';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string): SplunkEvent {
   return makeEvent(raw);
@@ -41,7 +41,7 @@ describe('applyIndexedExtractions — JSON', () => {
     expect(events[0]!.fields['request.path']).toBe('/api');
   });
 
-  it('keeps shallow siblings of an over-deep subtree (#357)', () => {
+  it('keeps shallow siblings of an over-deep subtree (propslab#357)', () => {
     // Not doc-derived: the depth limit is the simulator's own guard; it must
     // cost only the subtree past it, not the keys that follow.
     let deep = '"bottom"';
@@ -64,13 +64,13 @@ describe('applyIndexedExtractions — JSON', () => {
   // A file saved as "UTF-8 with BOM" starts its first line with U+FEFF, which
   // is not part of the JSON document (RFC 8259 section 8.1 lets a parser
   // ignore it), and Splunk reads such a file's first event normally.
-  it('reads JSON that starts with a byte order mark or has surrounding whitespace (#482)', () => {
+  it('reads JSON that starts with a byte order mark or has surrounding whitespace (propslab#482)', () => {
     const events = applyIndexedExtractions([event('﻿{"a":1}'), event('  {"b":2}\n')], [dir('json')], runCtx(FIXED_NOW));
     expect(events[0]!.fields['a']).toBe('1');
     expect(events[1]!.fields['b']).toBe('2');
   });
 
-  it('reports events that are not valid JSON instead of skipping them silently (#482)', () => {
+  it('reports events that are not valid JSON instead of skipping them silently (propslab#482)', () => {
     const diagnostics: ValidationDiagnostic[] = [];
     const bad = event('{"a":1,}');
     bad.lineNumbers = { start: 3, end: 3 };
@@ -301,7 +301,7 @@ describe('applyIndexedExtractions — no directive', () => {
   });
 });
 
-describe('applyIndexedExtractions — header is the first content line (#14)', () => {
+describe('applyIndexedExtractions — header is the first content line (propslab#14)', () => {
   it('skips a leading blank line', () => {
     const events = applyIndexedExtractions(
       [event(''), event('ts,host'), event('2024-01-15,myhost')],
@@ -329,7 +329,7 @@ describe('applyIndexedExtractions — header is the first content line (#14)', (
   });
 });
 
-describe('applyIndexedExtractions — header names are sanitized (#68)', () => {
+describe('applyIndexedExtractions — header names are sanitized (propslab#68)', () => {
   it('rewrites W3C hyphens to underscores', () => {
     const events = applyIndexedExtractions(
       [event('#Fields: date time c-ip cs-uri-stem sc-status'), event('2024-01-15 10:00:00 10.0.0.1 /index.html 200')],
@@ -363,7 +363,7 @@ describe('applyIndexedExtractions — header names are sanitized (#68)', () => {
   });
 });
 
-describe('#164 — INDEXED_EXTRACTIONS turns off line merging by default', () => {
+describe('propslab#164 — INDEXED_EXTRACTIONS turns off line merging by default', () => {
   it('gives one event per JSON object, each with its fields extracted', () => {
     const raw =
       '{"ts":"2026-01-15T10:00:00Z","user":"alice","status":200}\n' +
@@ -401,7 +401,7 @@ function dirOf(key: string, value: string): ConfDirective {
   return { key, value, line: 1, directiveType: key };
 }
 
-describe('applyIndexedExtractions — FIELD_DELIMITER (#184)', () => {
+describe('applyIndexedExtractions — FIELD_DELIMITER (propslab#184)', () => {
   it('splits on the declared character instead of the format default', () => {
     const events = applyIndexedExtractions(
       [event('a;b;c'), event('1;2;3')],
@@ -431,7 +431,7 @@ describe('applyIndexedExtractions — FIELD_DELIMITER (#184)', () => {
   });
 });
 
-describe('applyIndexedExtractions — FIELD_QUOTE (#184)', () => {
+describe('applyIndexedExtractions — FIELD_QUOTE (propslab#184)', () => {
   it('honours a non-default quote character', () => {
     const events = applyIndexedExtractions(
       [event('a,b'), event("'1,5',2")],
@@ -451,7 +451,7 @@ describe('applyIndexedExtractions — FIELD_QUOTE (#184)', () => {
   });
 });
 
-describe('applyIndexedExtractions — FIELD_NAMES (#184)', () => {
+describe('applyIndexedExtractions — FIELD_NAMES (propslab#184)', () => {
   it('names fields directly for headerless data, consuming no header line', () => {
     const events = applyIndexedExtractions(
       [event('2026-01-15T10:00:00Z,alice,200'), event('2026-01-15T10:00:01Z,bob,404')],
@@ -473,8 +473,8 @@ describe('applyIndexedExtractions — FIELD_NAMES (#184)', () => {
   });
 });
 
-describe('applyIndexedExtractions — HEADER_FIELD_LINE_NUMBER (#184)', () => {
-  // The header is the event that starts on the line (#449), so these events
+describe('applyIndexedExtractions — HEADER_FIELD_LINE_NUMBER (propslab#184)', () => {
+  // The header is the event that starts on the line (propslab#449), so these events
   // carry the line numbers line breaking would give them.
   it('takes the header from the declared 1-based line', () => {
     const events = applyIndexedExtractions(
@@ -487,7 +487,7 @@ describe('applyIndexedExtractions — HEADER_FIELD_LINE_NUMBER (#184)', () => {
   });
 });
 
-describe('applyIndexedExtractions — PREAMBLE_REGEX (#184)', () => {
+describe('applyIndexedExtractions — PREAMBLE_REGEX (propslab#184)', () => {
   it('skips leading preamble lines before the header', () => {
     const events = applyIndexedExtractions(
       [event('; generated by tool'), event('; do not edit'), event('a,b'), event('1,2')],
@@ -509,7 +509,7 @@ describe('applyIndexedExtractions — PREAMBLE_REGEX (#184)', () => {
   });
 });
 
-describe('applyIndexedExtractions — TIMESTAMP_FIELDS (#184)', () => {
+describe('applyIndexedExtractions — TIMESTAMP_FIELDS (propslab#184)', () => {
   it('composes _time from the named fields using TIME_FORMAT', () => {
     const events = applyIndexedExtractions(
       [event('date,time,user'), event('2026-01-15,10:00:00,alice')],
@@ -524,7 +524,7 @@ describe('applyIndexedExtractions — TIMESTAMP_FIELDS (#184)', () => {
     expect(events[0]!._time?.toISOString()).toBe('2026-01-15T10:00:00.000Z');
   });
 
-  // #444 corrected this. It read that a row whose named fields are missing
+  // propslab#444 corrected this. It read that a row whose named fields are missing
   // kept the _time the timestamp stage gave it; Splunk treats missing fields
   // like a value that does not parse, and the first row then gets the time of
   // indexing.
@@ -537,7 +537,7 @@ describe('applyIndexedExtractions — TIMESTAMP_FIELDS (#184)', () => {
     expect(events[0]!._time?.getTime()).toBe(FIXED_NOW);
   });
 
-  // #444 corrected this. It read that a value which does not parse left the
+  // propslab#444 corrected this. It read that a value which does not parse left the
   // timestamp stage's _time in place, which that stage may have read from
   // anywhere in the row; Splunk does not search the row, and the first row
   // gets the time of indexing.
@@ -581,8 +581,8 @@ describe('applyIndexedExtractions — TIMESTAMP_FIELDS (#184)', () => {
 });
 
 // TIMESTAMP_FIELDS for every structured format, and what happens when its
-// value does not parse (#444).
-describe('TIMESTAMP_FIELDS beyond the delimited formats, and its fallback (#444)', () => {
+// value does not parse (propslab#444).
+describe('TIMESTAMP_FIELDS beyond the delimited formats, and its fallback (propslab#444)', () => {
   /** Events for one `[st]` stanza, judged against a clock later than every stamp below. */
   const run = (raw: string, props: string) =>
     runPipeline(raw, { index: 'main', host: 'h', source: 's', sourcetype: 'st' }, `[st]\n${props}`, '', {
@@ -683,7 +683,7 @@ describe('TIMESTAMP_FIELDS beyond the delimited formats, and its fallback (#444)
   // event whose _time was not read from its text has timestamp=none and no
   // date_* fields, so a row that fell back loses the ones the timestamp stage
   // wrote for the stamp it found elsewhere in the row.
-  it('replaces the time fields of an event whose value parsed, when the event held another date (#618)', () => {
+  it('replaces the time fields of an event whose value parsed, when the event held another date (propslab#618)', () => {
     const [e] = run(
       '{"msg":"started 2026-01-14 08:00:00","when":"2026-01-15 10:30:00"}',
       'INDEXED_EXTRACTIONS = json\nTZ = UTC\nTIMESTAMP_FIELDS = when\n',
@@ -739,7 +739,7 @@ describe('TIMESTAMP_FIELDS beyond the delimited formats, and its fallback (#444)
 
   // Without TIMESTAMP_FIELDS, w3c reads its timestamp from the date and time
   // columns and does not scan the row. props.conf.spec does not document this
-  // default; #444 established it.
+  // default; propslab#444 established it.
   describe('w3c without TIMESTAMP_FIELDS reads date and time', () => {
     const w3c = 'INDEXED_EXTRACTIONS = w3c\nTZ = UTC\n';
 
@@ -842,7 +842,7 @@ describe('TIMESTAMP_FIELDS beyond the delimited formats, and its fallback (#444)
 // pipeline from a props.conf stanza.
 // ---------------------------------------------------------------------------
 
-describe('applyIndexedExtractions — FIELD_HEADER_REGEX (#272)', () => {
+describe('applyIndexedExtractions — FIELD_HEADER_REGEX (propslab#272)', () => {
   it('takes the header from the line the regex matches, after the match', () => {
     const events = applyIndexedExtractions(
       [event('#Version: 1'), event('#Fields: a,b'), event('1,2')],
@@ -886,7 +886,7 @@ describe('applyIndexedExtractions — FIELD_HEADER_REGEX (#272)', () => {
   });
 });
 
-describe('applyIndexedExtractions — HEADER_FIELD_DELIMITER / HEADER_FIELD_QUOTE (#272)', () => {
+describe('applyIndexedExtractions — HEADER_FIELD_DELIMITER / HEADER_FIELD_QUOTE (propslab#272)', () => {
   it('splits the header on its own delimiter and the body on the body one', () => {
     const events = applyIndexedExtractions(
       [event('a\tb\tc'), event('1,2,3')],
@@ -934,7 +934,7 @@ describe('applyIndexedExtractions — HEADER_FIELD_DELIMITER / HEADER_FIELD_QUOT
   });
 });
 
-describe('applyIndexedExtractions — HEADER_FIELD_ACCEPTABLE_SPECIAL_CHARACTERS (#272)', () => {
+describe('applyIndexedExtractions — HEADER_FIELD_ACCEPTABLE_SPECIAL_CHARACTERS (propslab#272)', () => {
   it('cleans field.name to field_name by default, as the spec example says', () => {
     const events = applyIndexedExtractions([event('field.name'), event('v')], [dir('csv')], runCtx(FIXED_NOW));
     expect(events[0]!.fields['field_name']).toBe('v');
@@ -970,7 +970,7 @@ describe('applyIndexedExtractions — HEADER_FIELD_ACCEPTABLE_SPECIAL_CHARACTERS
   });
 });
 
-describe('applyIndexedExtractions — MISSING_VALUE_REGEX (#272)', () => {
+describe('applyIndexedExtractions — MISSING_VALUE_REGEX (propslab#272)', () => {
   it('extracts no field for a value matching the placeholder', () => {
     const events = applyIndexedExtractions(
       [event('a,b,c'), event('1,-,NULL')],
@@ -990,7 +990,7 @@ describe('applyIndexedExtractions — MISSING_VALUE_REGEX (#272)', () => {
 
 // Doc-derived (props.conf.spec 10.4.3, JSON_TRIM_BRACES_IN_ARRAY_NAMES): the
 // assertions stay close to the spec's own example and the default.
-describe('applyIndexedExtractions — JSON_TRIM_BRACES_IN_ARRAY_NAMES (#274)', () => {
+describe('applyIndexedExtractions — JSON_TRIM_BRACES_IN_ARRAY_NAMES (propslab#274)', () => {
   const raw = '{"data":{"mount_point":["/","/home"]}}';
 
   it('keeps the {} marker by default', () => {
@@ -1045,7 +1045,7 @@ describe('applyIndexedExtractions — JSON_TRIM_BRACES_IN_ARRAY_NAMES (#274)', (
 // HEADER_FIELD_DELIMITER, HEADER_FIELD_QUOTE,
 // HEADER_FIELD_ACCEPTABLE_SPECIAL_CHARACTERS and MISSING_VALUE_REGEX, as the
 // section above reads them, set from a props.conf stanza.
-describe('header-side delimited overrides through the pipeline (#272)', () => {
+describe('header-side delimited overrides through the pipeline (propslab#272)', () => {
   /** A csv stanza with `body` appended; every event's fields, header line consumed. */
   const fieldsOf = (raw: string, body: string) =>
     runPipeline(
@@ -1087,7 +1087,7 @@ describe('header-side delimited overrides through the pipeline (#272)', () => {
 
 // ---------------------------------------------------------------------------
 // Where the header is, which values are missing, and rows that span lines
-// (#449).
+// (propslab#449).
 // ---------------------------------------------------------------------------
 
 /** Events for a csv stanza with `body` appended. */
@@ -1100,7 +1100,7 @@ const csvEvents = (raw: string, body = '') =>
     { perEventPipeline: false, captureOffsets: false, now: Date.parse('2026-10-01T00:00:00Z') },
   ).result.events;
 
-describe('HEADER_FIELD_LINE_NUMBER counts the lines of the input (#449)', () => {
+describe('HEADER_FIELD_LINE_NUMBER counts the lines of the input (propslab#449)', () => {
   const row = { ts: '2026-01-15T10:00:00Z', user: 'alice', status: '200' };
 
   it('counts a blank line', () => {
@@ -1178,11 +1178,11 @@ describe('HEADER_FIELD_LINE_NUMBER counts the lines of the input (#449)', () => 
   });
 });
 
-// #449, and Getting Data In: "If Splunk software finds data that matches the
+// propslab#449, and Getting Data In: "If Splunk software finds data that matches the
 // specified regular expression in the structured data file, it considers the
 // value for the field in the row to be empty." The match is of the whole
 // value, not of part of it.
-describe('values without a header name (#449)', () => {
+describe('values without a header name (propslab#449)', () => {
   it('names a value past the end of the header by its column', () => {
     const [e] = csvEvents('ts,user,status\n2026-01-15T10:00:00Z,alice,200,extra4,extra5\n');
     expect(e!.fields).toMatchObject({
@@ -1201,7 +1201,7 @@ describe('values without a header name (#449)', () => {
   });
 });
 
-describe('MISSING_VALUE_REGEX matches the whole value (#449)', () => {
+describe('MISSING_VALUE_REGEX matches the whole value (propslab#449)', () => {
   // A value matched in the middle, at the start only, at the end only, and not at all.
   const raw = 'ts,code,note,lead,trail,other\n2026-01-15,-,a-b,-a,a-,x\n';
 
@@ -1230,7 +1230,7 @@ describe('MISSING_VALUE_REGEX matches the whole value (#449)', () => {
   });
 });
 
-describe('a quoted value that holds a line break stays in its row (#449)', () => {
+describe('a quoted value that holds a line break stays in its row (propslab#449)', () => {
   it.each([
     ['CRLF', '\r\n'],
     ['LF', '\n'],
@@ -1262,7 +1262,7 @@ describe('a quoted value that holds a line break stays in its row (#449)', () =>
     expect(next!.fields['msg']).toBe('x');
   });
 
-  // #449: only a quote at the start of a field opens a quoted value.
+  // propslab#449: only a quote at the start of a field opens a quoted value.
   it('keeps a quote in the middle of a field as a literal, which joins no rows', () => {
     const events = csvEvents(
       'ts,height,user\n2026-01-15T10:00:00Z,5\'10",alice\n2026-01-15T11:00:00Z,6,bob\n2026-01-15T12:00:00Z,7,carol\n',
@@ -1277,7 +1277,7 @@ describe('a quoted value that holds a line break stays in its row (#449)', () =>
     expect(e!.fields).toMatchObject({ a: 'xy"z', b: 'v' });
   });
 
-  // #449: spaces or tabs before the opening quote are allowed, and are not
+  // propslab#449: spaces or tabs before the opening quote are allowed, and are not
   // part of the value.
   it.each([
     ['a space', ' '],
@@ -1353,7 +1353,7 @@ describe('the trace step each format records', () => {
     });
   });
 
-  // #444 put a step after this one: w3c reads its timestamp from the date and
+  // propslab#444 put a step after this one: w3c reads its timestamp from the date and
   // time columns without TIMESTAMP_FIELDS, so the extraction is no longer the
   // last step of a w3c row.
   it('w3c names the fields it extracted, leaving out a value of -', () => {

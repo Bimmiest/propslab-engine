@@ -52,9 +52,9 @@ describe('getStagesForDirective', () => {
   });
 });
 
-// The stages added for #511 each get their own stage, so the stage that holds
+// The stages added for propslab#511 each get their own stage, so the stage that holds
 // TRANSFORMS keeps only the directives that route.
-describe('stages for directives the pipeline runs but the reference once omitted (#511)', () => {
+describe('stages for directives the pipeline runs but the reference once omitted (propslab#511)', () => {
   it.each([
     ['ANNOTATE_PUNCT', 'Punctuation Annotation', 'index-time'],
     ['CLONE_SOURCETYPE', 'Clone Sourcetype', 'index-time'],

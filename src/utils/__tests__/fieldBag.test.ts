@@ -45,7 +45,7 @@ describe('fieldBag', () => {
   });
 });
 
-describe('addFieldValue — never mutates a caller-shared array (#63)', () => {
+describe('addFieldValue — never mutates a caller-shared array (propslab#63)', () => {
   it('replaces the array instead of pushing into it', () => {
     const shared = ['one'];
     const source = { f: shared };

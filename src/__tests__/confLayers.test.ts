@@ -17,7 +17,7 @@ const directive = (parsed: { stanzas: ConfStanza[] }, name: string, key: string)
 const resolved = (parsed: { stanzas: ConfStanza[] }, key: string) =>
   mergeDirectives(matchStanzas(parsed.stanzas, META)).find((d) => d.key === key);
 
-describe('parseConf — layered input is opt-in and additive (#115)', () => {
+describe('parseConf — layered input is opt-in and additive (propslab#115)', () => {
   it('adds no provenance fields when given a plain string', () => {
     const parsed = parseConf('[st]\nKV_MODE = json\nKV_MODE = none', 'props.conf');
     const s = stanza(parsed, 'st');
@@ -57,7 +57,7 @@ describe('parseConf — layered input is opt-in and additive (#115)', () => {
   });
 });
 
-describe('parseConf — default/ and local/ merge per attribute (#115)', () => {
+describe('parseConf — default/ and local/ merge per attribute (propslab#115)', () => {
   const layers = [
     { layer: 'default', text: '[st]\nKV_MODE = json\nTZ = UTC\nSHOULD_LINEMERGE = false' },
     { layer: 'local', text: '[st]\nKV_MODE = none' },
@@ -179,7 +179,7 @@ describe('parseConf — default/ and local/ merge per attribute (#115)', () => {
   });
 });
 
-describe('parseConf — stanza-level layer origins (#115)', () => {
+describe('parseConf — stanza-level layer origins (propslab#115)', () => {
   it('records every layer that defines a stanza, lowest precedence first', () => {
     const parsed = parseConf(
       [
@@ -228,7 +228,7 @@ describe('parseConf — stanza-level layer origins (#115)', () => {
   });
 });
 
-describe('parseConf — diagnostics name their layer (#115)', () => {
+describe('parseConf — diagnostics name their layer (propslab#115)', () => {
   it('attaches the layer to a parse warning so line numbers stay unambiguous', () => {
     const parsed = parseConf(
       [
@@ -261,7 +261,7 @@ describe('parseConf — diagnostics name their layer (#115)', () => {
   });
 });
 
-describe('runPipeline — accepts layered confs (#115)', () => {
+describe('runPipeline — accepts layered confs (propslab#115)', () => {
   const RAW = 'user=alice action=login';
 
   it('applies the local override end-to-end', () => {
@@ -331,7 +331,7 @@ describe('runPipeline — accepts layered confs (#115)', () => {
   });
 });
 
-describe('the merged value of a key — last definition in a stanza wins (#115)', () => {
+describe('the merged value of a key — last definition in a stanza wins (propslab#115)', () => {
   const value = (stanzas: ConfStanza[], key: string) => effectiveDirective(mergeDirectives(stanzas), key)?.value;
 
   it('returns the higher layer’s value, not the one it overrode', () => {

@@ -23,7 +23,7 @@ describe('matchInputs', () => {
     expect(r!.groups).toEqual({ num: '7' });
   });
 
-  it('runs a backtracking-prone pattern, which only a PCRE limit stops (#368)', () => {
+  it('runs a backtracking-prone pattern, which only a PCRE limit stops (propslab#368)', () => {
     // Valid PCRE that Splunk runs, so it is not refused.
     expect(matchInputs('(a+)+$', ['aaaa'])).toEqual([{ index: 0, match: 'aaaa', groups: {}, groupSpans: {} }]);
     // Past MATCH_LIMIT's default it is no match, as an EXTRACT would be.
@@ -40,7 +40,7 @@ describe('matchInputs', () => {
     expect(r!.groupSpans['a']).toBeUndefined();
   });
 
-  it('keeps a group named __proto__ (#430)', () => {
+  it('keeps a group named __proto__ (propslab#430)', () => {
     const [r] = matchInputs('(?<__proto__>\\w+)=(?<v>\\d+)', ['x=1'])!;
     expect(Object.keys(r!.groups)).toEqual(['__proto__', 'v']);
     expect(Object.getOwnPropertyDescriptor(r!.groups, '__proto__')?.value).toBe('x');

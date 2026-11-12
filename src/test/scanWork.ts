@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // scanWork.ts
-// A count of the work a function does, for tests of a linear-time claim (#507).
+// A count of the work a function does, for tests of a linear-time claim (propslab#507).
 //
 // A stopwatch assertion is a coin flip on a loaded runner: it fails when the
 // machine is slow and passes when it is fast, whatever the code does. What a

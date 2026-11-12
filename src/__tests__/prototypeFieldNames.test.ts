@@ -7,7 +7,7 @@ import { applyIndexedExtractions } from '../processors/indexedExtractions';
 import { hasField } from '../utils/fieldBag';
 import type { ConfDirective, SplunkEvent } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 // A plain object inherits every Object.prototype member, so `fields[name]`
 // reads back a FUNCTION for names like `toString` / `constructor`. Every
@@ -27,7 +27,7 @@ const dir = (key: string, value: string, directiveType: string, className?: stri
   ...(className ? { className } : {}),
 });
 
-describe('EXTRACT — a capture group named after an Object.prototype member (#120)', () => {
+describe('EXTRACT — a capture group named after an Object.prototype member (propslab#120)', () => {
   it.each(PROTO_NAMES)('extracts (?<%s>…) as an ordinary field', (name) => {
     const r = extractFields(
       [ev('v=hello')],
@@ -48,7 +48,7 @@ describe('EXTRACT — a capture group named after an Object.prototype member (#1
   });
 });
 
-describe('FIELDALIAS — never binds an inherited member (#120)', () => {
+describe('FIELDALIAS — never binds an inherited member (propslab#120)', () => {
   it('does not alias a field that does not exist', () => {
     const r = applyFieldAliases(
       [ev('hello')],
@@ -79,7 +79,7 @@ describe('FIELDALIAS — never binds an inherited member (#120)', () => {
   });
 });
 
-describe('EVAL — reads and writes such names as fields (#120)', () => {
+describe('EVAL — reads and writes such names as fields (propslab#120)', () => {
   it('isnull() on a non-existent prototype-named field is true', () => {
     const r = applyEvalExpressions(
       [ev('x')],
@@ -99,7 +99,7 @@ describe('EVAL — reads and writes such names as fields (#120)', () => {
   });
 });
 
-describe('INGEST_EVAL / INDEXED_EXTRACTIONS — same names, same treatment (#120)', () => {
+describe('INGEST_EVAL / INDEXED_EXTRACTIONS — same names, same treatment (propslab#120)', () => {
   it('INGEST_EVAL assigns a prototype-colliding field', () => {
     const r = applyIngestEval([ev('x')], [dir('INGEST_EVAL', 'valueOf="v"', 'INGEST_EVAL')], runCtx(FIXED_NOW))[0]!;
     expect(r.fields.valueOf).toBe('v');

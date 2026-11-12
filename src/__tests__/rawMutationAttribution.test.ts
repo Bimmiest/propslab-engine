@@ -175,7 +175,7 @@ describe('DEST_KEY = _raw field attribution', () => {
   });
 });
 
-describe('INGEST_EVAL _raw= field attribution (#346)', () => {
+describe('INGEST_EVAL _raw= field attribution (propslab#346)', () => {
   // INGEST_EVAL's `_raw=` rewrites the event exactly as DEST_KEY = _raw does,
   // so it must be attributed the same way, naming the fields it destroyed.
   const propsConf = props('TRANSFORMS-m = scrub', 'EXTRACT-s = secret=(?<secret>\\S+)');

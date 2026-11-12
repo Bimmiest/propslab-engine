@@ -75,7 +75,7 @@ describe('disabled — a stanza switched off takes no part in resolution', () =>
   });
 });
 
-describe('priority — orders stanzas within a kind, and cannot reach across kinds (#198)', () => {
+describe('priority — orders stanzas within a kind, and cannot reach across kinds (propslab#198)', () => {
   it('leaves the usual ranking alone when nothing declares a priority', () => {
     const names = matchedNames(
       '[original]\nEVAL-a = 1\n\n[host::web01]\nEVAL-b = 1\n\n[source::/var/log/app.log]\nEVAL-c = 1\n',
@@ -214,7 +214,7 @@ describe('rename — a search-time-only sourcetype change', () => {
 
   // Doc-derived (props.conf.spec, rename): with renaming, a search finds the
   // events by sourcetype=<the new name>, and the original name is in the
-  // _sourcetype field (#757).
+  // _sourcetype field (propslab#757).
   describe('the search-time sourcetype field', () => {
     const props =
       '[original]\nrename = renamed\n\n' +

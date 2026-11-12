@@ -128,7 +128,7 @@ function evalIn(node: NodeOf<'in'>, ctx: EvalCtx): EvalValue {
   if (Array.isArray(left) && left.length === 0) return null;
   // A multivalue value is in the list when any of its values is (see compare);
   // a number in the list never matches one of two or more values, so
-  // `mv IN (5)` is false where `mv IN ("5")` may be true (#522).
+  // `mv IN (5)` is false where `mv IN ("5")` may be true (propslab#522).
   // `some` stops at the first match — no need to evaluate the rest of the list.
   const type = staticType(node.value);
   const match = node.list.some((n) => compare(left, evalNode(n, ctx), '=', type, staticType(n)) === true);
@@ -229,7 +229,7 @@ function evalCall(name: string, argNodes: Node[], ctx: EvalCtx): EvalValue {
       // The only function that needs its operand's static type: a field, or a
       // function passing one through, holding numeric-looking text is a Number
       // (typeof(a) for a = 10), while a string literal or a text function's
-      // result is a String whatever it holds (#522).
+      // result is a String whatever it holds (propslab#522).
       const args = argNodes.map((n) => evalNode(n, ctx));
       const [node] = argNodes;
       const [value] = args;

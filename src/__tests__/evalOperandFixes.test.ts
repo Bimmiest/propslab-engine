@@ -1,15 +1,15 @@
-// Eval operand handling: trim's character set (#474), multivalue operands in
-// comparisons and IN (#475, #522), and the expression parser's limits and
-// literals (#485).
+// Eval operand handling: trim's character set (propslab#474), multivalue operands in
+// comparisons and IN (propslab#475, propslab#522), and the expression parser's limits and
+// literals (propslab#485).
 //
 // Doc-derived (Splunk eval function and operator reference), so each assertion
 // is kept to the documented behaviour. The multivalue operators the reference
-// does not cover cite #522.
+// does not cover cite propslab#522.
 import { describe, it, expect } from 'vitest';
 import { evaluateExpression } from '../processors/eval/evaluator';
 import { runPipeline } from '../pipeline';
 import type { SplunkEvent } from '../types';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(fields: Record<string, string | string[]> = {}): SplunkEvent {
   return makeEvent('raw', { fields });
@@ -18,7 +18,7 @@ function event(fields: Record<string, string | string[]> = {}): SplunkEvent {
 const value = (expr: string, fields: Record<string, string | string[]> = {}) =>
   evaluateExpression(expr, event(fields), undefined, 0);
 
-describe('trim(X, Y) removes the characters in Y from both sides (#474)', () => {
+describe('trim(X, Y) removes the characters in Y from both sides (propslab#474)', () => {
   // Splunk eval functions: trim(<str>,<trim_chars>) "removes the characters in
   // trim_chars from both sides of the string".
   it.each([
@@ -42,7 +42,7 @@ describe('trim(X, Y) removes the characters in Y from both sides (#474)', () => 
   });
 });
 
-describe('multivalue operands match when any value does (#475)', () => {
+describe('multivalue operands match when any value does (propslab#475)', () => {
   const mv = { mv: ['a', 'b'] };
 
   it.each([
@@ -54,7 +54,7 @@ describe('multivalue operands match when any value does (#475)', () => {
     ['"a" == mv', true],
     ['mv = "a"', true],
     ['mv != "c"', true],
-    // != is the complement of ==, not "some value differs" (#522 confirmed it).
+    // != is the complement of ==, not "some value differs" (propslab#522 confirmed it).
     ['mv != "a"', false],
     ['mv IN ("a")', true],
     ['mv IN ("c", "b")', true],
@@ -80,11 +80,11 @@ describe('multivalue operands match when any value does (#475)', () => {
   });
 });
 
-// #522 corrected the old reading, under which `<`, `>`, `<=` and `>=` held when
+// propslab#522 corrected the old reading, under which `<`, `>`, `<=` and `>=` held when
 // any value satisfied them (`mv > "a"` was true for a, b), a number on the
 // other side was compared like a string (`n == 5` was true for 1, 5), and two
 // multivalues were equal when any pair of their values was.
-describe('a multivalue operand under an ordering operator, or against a number, is NULL (#522)', () => {
+describe('a multivalue operand under an ordering operator, or against a number, is NULL (propslab#522)', () => {
   const mv = { mv: ['a', 'b'] };
   const n = { n: ['1', '5'] };
 
@@ -186,7 +186,7 @@ describe('a multivalue operand under an ordering operator, or against a number, 
   });
 });
 
-describe('expression size limit (#485)', () => {
+describe('expression size limit (propslab#485)', () => {
   it('rejects a 200k-term chain with a clear diagnostic, not a stack overflow', () => {
     const chain = Array.from({ length: 200_000 }, () => '1').join('+');
     expect(() => value(chain)).toThrow(/too long or deeply nested/);
@@ -229,7 +229,7 @@ describe('expression size limit (#485)', () => {
   });
 });
 
-describe('exponent literals (#485)', () => {
+describe('exponent literals (propslab#485)', () => {
   // The string "1e3" already coerces to 1000 (parseDecimal); the literal now
   // means the same thing.
   it.each([
@@ -245,7 +245,7 @@ describe('exponent literals (#485)', () => {
   });
 
   it('agrees with the coercion of the same text in a field', () => {
-    // A string literal beside a number is a type error, NULL here (#522).
+    // A string literal beside a number is a type error, NULL here (propslab#522).
     expect(value('x + 1', { x: '1e3' })).toBe(value('1e3 + 1'));
   });
 
@@ -255,7 +255,7 @@ describe('exponent literals (#485)', () => {
   });
 });
 
-describe('unary minus repeats (#485)', () => {
+describe('unary minus repeats (propslab#485)', () => {
   it.each([
     ['- - 3', 3],
     ['- - - 3', -3],

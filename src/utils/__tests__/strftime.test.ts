@@ -11,7 +11,7 @@ import {
   supportedSpecifiers,
   unsupportedSpecifiers,
 } from '../strftime';
-import { fcSeed } from '../../../test/fcSeed';
+import { fcSeed } from '../../test/fcSeed';
 
 /** Helper: ISO string of a parsed timestamp, or null. */
 function iso(text: string, format: string, tz?: string): string | null {
@@ -32,7 +32,7 @@ describe('strftime — baseline directives (regression)', () => {
     expect(iso('2024-01-15T10:00:00+05:30', '%Y-%m-%dT%H:%M:%S%z')).toBe('2024-01-15T04:30:00.000Z');
   });
 
-  it('reads a four-digit year below 100 as written, not as 19xx (#371)', () => {
+  it('reads a four-digit year below 100 as written, not as 19xx (propslab#371)', () => {
     expect(iso('0050-06-01 12:00:00', '%Y-%m-%d %H:%M:%S')).toBe('0050-06-01T12:00:00.000Z');
   });
 
@@ -41,12 +41,12 @@ describe('strftime — baseline directives (regression)', () => {
     expect(parseTimestamp('2024-01-32 10:00:00', '%Y-%m-%d %H:%M:%S')).toBeNull();
   });
 
-  it('carries a leap second into the next day rather than back to the start of its own (#619)', () => {
+  it('carries a leap second into the next day rather than back to the start of its own (propslab#619)', () => {
     expect(iso('2016-12-31 23:59:60', '%Y-%m-%d %H:%M:%S', 'UTC')).toBe('2017-01-01T00:00:00.000Z');
     expect(iso('2026-06-30 23:59:60', '%Y-%m-%d %H:%M:%S', 'UTC')).toBe('2026-07-01T00:00:00.000Z');
   });
 
-  it('rejects a %j day the year does not have instead of clamping it (#619)', () => {
+  it('rejects a %j day the year does not have instead of clamping it (propslab#619)', () => {
     for (const doy of ['000', '366', '999']) {
       expect(parseTimestamp(`2026 ${doy} 10:00:00`, '%Y %j %H:%M:%S', 'UTC'), doy).toBeNull();
     }
@@ -59,7 +59,7 @@ describe('strftime — baseline directives (regression)', () => {
   });
 });
 
-describe('#69.1 — Splunk enhanced-strptime specifiers', () => {
+describe('propslab#69.1 — Splunk enhanced-strptime specifiers', () => {
   it('supports %:z (offset with a colon)', () => {
     expect(iso('2024-01-02T03:04:05+05:30', '%Y-%m-%dT%H:%M:%S%:z')).toBe('2024-01-01T21:34:05.000Z');
   });
@@ -80,7 +80,7 @@ describe('#69.1 — Splunk enhanced-strptime specifiers', () => {
   });
 });
 
-describe('%l in a TIME_FORMAT (#578)', () => {
+describe('%l in a TIME_FORMAT (propslab#578)', () => {
   // Splunk's default props.conf times its own splunkd.log with
   // `TIME_FORMAT = %m-%d-%Y %H:%M:%S.%l %z`, and the Troubleshoot HTTP Event
   // Collector page gives the same format for its metrics events: three digits
@@ -94,7 +94,7 @@ describe('%l in a TIME_FORMAT (#578)', () => {
   });
 });
 
-describe('#69.2 — %s must not discard captured subseconds', () => {
+describe('propslab#69.2 — %s must not discard captured subseconds', () => {
   it('folds %3N milliseconds into an epoch-seconds timestamp', () => {
     expect(parseTimestamp('1712345678123', '%s%3N')?.getTime()).toBe(1712345678123);
   });
@@ -105,7 +105,7 @@ describe('#69.2 — %s must not discard captured subseconds', () => {
   });
 });
 
-describe('#69.3 — numeric directives accept 1-2 unpadded digits', () => {
+describe('propslab#69.3 — numeric directives accept 1-2 unpadded digits', () => {
   it('parses US-style unpadded dates and times', () => {
     expect(iso('1/5/2024 3:04:05', '%m/%d/%Y %H:%M:%S')).toBe('2024-01-05T03:04:05.000Z');
   });
@@ -115,7 +115,7 @@ describe('#69.3 — numeric directives accept 1-2 unpadded digits', () => {
   });
 });
 
-describe('#69.4 — %y century pivot (POSIX)', () => {
+describe('propslab#69.4 — %y century pivot (POSIX)', () => {
   it('maps 69 to 1969', () => {
     expect(iso('69-01-02', '%y-%m-%d')).toBe('1969-01-02T00:00:00.000Z');
   });
@@ -129,7 +129,7 @@ describe('#69.4 — %y century pivot (POSIX)', () => {
   });
 });
 
-describe('#69.5 — %%T must not corrupt into %H handling', () => {
+describe('propslab#69.5 — %%T must not corrupt into %H handling', () => {
   it('treats %%T as a literal percent followed by T', () => {
     expect(strftimeToRegex('%%T').source).toBe('%T');
   });
@@ -143,7 +143,7 @@ describe('#69.5 — %%T must not corrupt into %H handling', () => {
   });
 });
 
-describe('#159 — IANA zone names resolve against real zone data', () => {
+describe('propslab#159 — IANA zone names resolve against real zone data', () => {
   const FMT = '%Y-%m-%d %H:%M:%S';
 
   it('applies a named zone rather than assuming UTC', () => {
@@ -218,7 +218,7 @@ describe('#159 — IANA zone names resolve against real zone data', () => {
     expect(seen).toEqual([]);
   });
 
-  it('reads a stanza TZ that tzdata names as that zone, summer time included (#470)', () => {
+  it('reads a stanza TZ that tzdata names as that zone, summer time included (propslab#470)', () => {
     // Doc-derived: props.conf.spec takes TZ from the zoneinfo database, where
     // CET, EET, WET and MET are zones with DST, like Europe/Paris.
     expect(iso('2026-07-01 10:00:00', FMT, 'CET')).toBe('2026-07-01T08:00:00.000Z');
@@ -231,7 +231,7 @@ describe('#159 — IANA zone names resolve against real zone data', () => {
     expect(iso('2026-07-01 10:00:00', FMT, 'EST')).toBe('2026-07-01T15:00:00.000Z');
   });
 
-  it('keeps a %Z abbreviation fixed, and a stanza abbreviation tzdata has no zone for (#470)', () => {
+  it('keeps a %Z abbreviation fixed, and a stanza abbreviation tzdata has no zone for (propslab#470)', () => {
     // An event that writes CET says standard time, whatever the date.
     expect(iso('2026-07-01 10:00:00 CET', `${FMT} %Z`)).toBe('2026-07-01T09:00:00.000Z');
     expect(iso('2026-07-01 10:00:00 CET', `${FMT} %Z`, 'CET')).toBe('2026-07-01T09:00:00.000Z');
@@ -252,7 +252,7 @@ describe('#159 — IANA zone names resolve against real zone data', () => {
 
 // The zone-spec forms TZ_ALIAS targets are written in, and the table that
 // parses them. Doc-derived from props.conf.spec's own `EST=GMT-5:00` example.
-describe('strftime — GMT-relative zone specs (#227)', () => {
+describe('strftime — GMT-relative zone specs (propslab#227)', () => {
   const FMT = '%Y-%m-%d %H:%M:%S';
 
   it("reads GMT-5:00 as UTC-5, the sign meaning Splunk's example relies on", () => {
@@ -282,7 +282,7 @@ describe('strftime — GMT-relative zone specs (#227)', () => {
   });
 });
 
-describe('parseTzAlias (#227)', () => {
+describe('parseTzAlias (propslab#227)', () => {
   it('reads the comma-separated pairs from the spec example', () => {
     const { aliases, invalid } = parseTzAlias('EST=GMT-5:00,METT=GMT+1:00');
     expect(aliases.get('EST')).toBe('GMT-5:00');
@@ -317,7 +317,7 @@ describe('parseTzAlias (#227)', () => {
   });
 });
 
-describe('strftime — the year of a yearless timestamp (#356)', () => {
+describe('strftime — the year of a yearless timestamp (propslab#356)', () => {
   const SYSLOG = '%b %d %H:%M:%S';
   const at = (text: string, now: string, format = SYSLOG) =>
     parseTimestamp(text, format, undefined, undefined, undefined, new Date(now))?.toISOString() ?? null;
@@ -380,7 +380,7 @@ describe('strftime — the year of a yearless timestamp (#356)', () => {
   });
 });
 
-describe('strftime — month and weekday names accept either length (#356)', () => {
+describe('strftime — month and weekday names accept either length (propslab#356)', () => {
   // Doc-derived: POSIX strptime defines %b/%B (and %a/%A) as equivalent, each
   // matching the full or the abbreviated name.
   it('reads a full month name with %b and an abbreviation with %B', () => {
@@ -395,8 +395,8 @@ describe('strftime — month and weekday names accept either length (#356)', () 
   });
 });
 
-describe('formatStrftime — every parsed specifier renders (#429)', () => {
-  // Built from local parts, so it renders as these fields on any machine (#407).
+describe('formatStrftime — every parsed specifier renders (propslab#429)', () => {
+  // Built from local parts, so it renders as these fields on any machine (propslab#407).
   const at = new Date(2024, 6, 1, 7, 5, 9, 42);
 
   it('renders the subsecond family at its Splunk width', () => {
@@ -409,7 +409,7 @@ describe('formatStrftime — every parsed specifier renders (#429)', () => {
     expect(formatStrftime(new Date(2024, 6, 1, 19), '[%k] [%l]', 'eval')).toBe('[19] [ 7]');
   });
 
-  it('renders %l as milliseconds in a TIME_FORMAT, which is how TIME_FORMAT reads it (#578)', () => {
+  it('renders %l as milliseconds in a TIME_FORMAT, which is how TIME_FORMAT reads it (propslab#578)', () => {
     expect(formatStrftime(at, '%H:%M:%S.%l')).toBe('07:05:09.042');
     expect(formatStrftime(at, '%%l %l', 'eval')).toBe('%l  7');
   });
@@ -435,7 +435,7 @@ describe('formatStrftime — every parsed specifier renders (#429)', () => {
   });
 });
 
-describe('formatStrftime then parseTimestamp agree for every specifier (#429)', () => {
+describe('formatStrftime then parseTimestamp agree for every specifier (propslab#429)', () => {
   // Each specifier sits in a format that pins the instant, so its value is
   // load-bearing (or, for %a/%A, at least has to be read back). Rendered and
   // read in the host's real zone, which %z/%Z carry across.
@@ -487,7 +487,7 @@ describe('formatStrftime then parseTimestamp agree for every specifier (#429)', 
   });
 });
 
-describe('#872 — a run of spaces compiles to one quantifier', () => {
+describe('propslab#872 — a run of spaces compiles to one quantifier', () => {
   it('writes n spaces as one \\s{n,}, and one space as \\s+', () => {
     expect(strftimeToRegex('%Y      %m').source).toBe('(\\d{4})\\s{6,}(\\d{1,2})');
     expect(strftimeToRegex('%Y %m').source).toBe('(\\d{4})\\s+(\\d{1,2})');
@@ -519,7 +519,7 @@ describe('#872 — a run of spaces compiles to one quantifier', () => {
   });
 });
 
-describe('tokenise cache (#436)', () => {
+describe('tokenise cache (propslab#436)', () => {
   it('stays bounded, keeps recently used formats, and re-tokenises an evicted one', () => {
     const cold = strftimeToRegex('%Y-%m-%d cold');
     const hot = strftimeToRegex('%Y-%m-%d hot');
@@ -535,7 +535,7 @@ describe('tokenise cache (#436)', () => {
   });
 });
 
-describe('zone formatter cache (#480)', () => {
+describe('zone formatter cache (propslab#480)', () => {
   it('stays bounded, keeps a zone in use, and rebuilds an evicted one', () => {
     // Zone names come from the data (%Z, TZ_ALIAS targets), so every distinct
     // word is a lookup; the cache must not grow with them.
@@ -562,7 +562,7 @@ describe('zone formatter cache (#480)', () => {
   });
 });
 
-describe('formatSpecifiers (#457)', () => {
+describe('formatSpecifiers (propslab#457)', () => {
   const tokens = (format: string) =>
     formatSpecifiers(format).map((s) => `${s.index}:${s.specifier}:${s.supported ? 'y' : 'n'}`);
 

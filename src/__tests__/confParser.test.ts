@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseConf } from '../parser/confParser';
-import { expectLinearWork } from '../../test/scanWork';
+import { expectLinearWork } from '../test/scanWork';
 
 function directives(text: string, stanzaName: string) {
   const parsed = parseConf(text, 'props.conf');
@@ -27,7 +27,7 @@ describe('parseConf — basic structure', () => {
   });
 });
 
-describe('parseConf — duplicate same-name stanzas merge (last-wins) (#59.1)', () => {
+describe('parseConf — duplicate same-name stanzas merge (last-wins) (propslab#59.1)', () => {
   it('merges repeated stanzas of the same name into one', () => {
     const parsed = parseConf('[st]\nKV_MODE = json\n[st]\nSHOULD_LINEMERGE = false', 'props.conf');
     expect(parsed.stanzas).toHaveLength(1);
@@ -94,7 +94,7 @@ describe('parseConf — line continuation (SEM-18)', () => {
     expect(value(text, 's', 'OTHER')).toBe('x');
   });
 
-  it('a blank line ends the continuation and takes the backslash with it (#354)', () => {
+  it('a blank line ends the continuation and takes the backslash with it (propslab#354)', () => {
     const text = '[s]\nKEY = a\\\n\nOTHER = b';
     // The blank line is the continuation, contributing nothing — the value used
     // to keep its dangling backslash.
@@ -102,7 +102,7 @@ describe('parseConf — line continuation (SEM-18)', () => {
     expect(value(text, 's', 'OTHER')).toBe('b');
   });
 
-  it('appends a # line after a continuation instead of skipping it (#354)', () => {
+  it('appends a # line after a continuation instead of skipping it (propslab#354)', () => {
     // Doc-derived: the .conf spec continues a value onto the next line when it
     // ends in `\`, and makes no exception for a next line starting with `#`.
     // Skipping that line joined the NEXT directive into the value instead.
@@ -123,7 +123,7 @@ describe('parseConf — line continuation (SEM-18)', () => {
     expect(value('[s]\nK = a\\\nb\\\nc', 's', 'K')).toBe('abc');
   });
 
-  it('takes layers of hundreds of thousands of stanzas and errors without overflowing the stack (#517)', () => {
+  it('takes layers of hundreds of thousands of stanzas and errors without overflowing the stack (propslab#517)', () => {
     // Spreading a layer's results into push() passed each as an argument.
     const layer = (text: string) => ({ layer: 'l', text });
     const stanzas = '[s]\nk=v\n'.repeat(300_000);
@@ -134,10 +134,10 @@ describe('parseConf — line continuation (SEM-18)', () => {
     expect(parsed.stanzas[0]?.directives).toHaveLength(300_000);
   });
 
-  it('parses a long run of continuation lines in linear time (#468)', () => {
+  it('parses a long run of continuation lines in linear time (propslab#468)', () => {
     // Appending each line to the whole value re-copied it every time, which
     // took minutes just under the MCP server's two-million-character conf
-    // limit. Counted, not timed (#507): the length scanned by slices and joins
+    // limit. Counted, not timed (propslab#507): the length scanned by slices and joins
     // must not much more than double when the number of lines does.
     const conf = (lines: number) => `[st]\nEXTRACT-a = x\\\n${'a\\\n'.repeat(lines)}`;
     expectLinearWork((lines) => {
@@ -149,7 +149,7 @@ describe('parseConf — line continuation (SEM-18)', () => {
   });
 });
 
-describe('parseConf — class-directive prefixes are case-sensitive (#60)', () => {
+describe('parseConf — class-directive prefixes are case-sensitive (propslab#60)', () => {
   it('does not classify a mis-cased prefix as a class directive', () => {
     const conf = parseConf('[st]\nextract-f = (?<a>\\d+)', 'props.conf');
     const dir = conf.stanzas[0]!.directives[0]!;
@@ -178,7 +178,7 @@ describe('parseConf — class-directive prefixes are case-sensitive (#60)', () =
   });
 });
 
-describe('parseConf — leading UTF-8 BOM (#873)', () => {
+describe('parseConf — leading UTF-8 BOM (propslab#873)', () => {
   it.each(['props.conf', 'transforms.conf'] as const)('keeps the first stanza of %s', (file) => {
     const parsed = parseConf('﻿[other]\nSEDCMD-x = s/a/b/g\n', file);
     expect(parsed.errors).toEqual([]);

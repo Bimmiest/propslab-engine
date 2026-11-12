@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { expectedChecksum, verifyChecksum } from './wasmChecksum.mjs';
 
-// The comparison behind scripts/check-wasm-checksum.mjs (#504); locating the
+// The comparison behind scripts/check-wasm-checksum.mjs (propslab#504); locating the
 // installed package is the script's own.
 const BYTES = new TextEncoder().encode('not really wasm');
 const OTHER = 'b'.repeat(64);

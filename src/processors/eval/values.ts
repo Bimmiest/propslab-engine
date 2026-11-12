@@ -6,7 +6,7 @@ export type EvalValue = string | number | boolean | null | string[];
 
 /**
  * What an operand is known to be before it is evaluated, which decides how the
- * comparison operators and `+` read it (#522, #446). A string literal, a `.`
+ * comparison operators and `+` read it (propslab#522, propslab#446). A string literal, a `.`
  * concatenation and a function that always produces text are a `string`; a
  * number literal, arithmetic and a function that always produces a number are
  * a `number`. A field is `dynamic`: at run time a value that looks numeric
@@ -60,7 +60,7 @@ const NON_FINITE_TEXT: ReadonlyMap<string, number> = new Map([
  * functions: a decimal ({@link parseDecimal}), or exactly "Infinity",
  * "-Infinity" or "NaN", the text a non-finite result is shown as. So a field
  * holding "Infinity" reads back as the number, while "inf" and "nan" are not
- * numbers. tonumber() reads none of the three (#446).
+ * numbers. tonumber() reads none of the three (propslab#446).
  */
 export function parseNumber(s: string): number | null {
   return NON_FINITE_TEXT.get(s) ?? parseDecimal(s);
@@ -103,7 +103,7 @@ function textAgainstNumber(lt: StaticType, rt: StaticType): boolean {
  * field that is not numeric giving NULL (`c + 1` is NULL for c = abc). Two
  * fields add when both look numeric and concatenate otherwise: fields holding
  * 5 and 1 give 6, and 5 and abc give "5abc". Text against a number is a type
- * error in Splunk, and NULL here. (#446, #522)
+ * error in Splunk, and NULL here. (propslab#446, propslab#522)
  */
 export function addOrConcat(l: EvalArg, r: EvalArg, lt: StaticType = 'dynamic', rt: StaticType = 'dynamic'): EvalValue {
   if (l === null || l === undefined || r === null || r === undefined) return null;
@@ -136,7 +136,7 @@ export function strArg(v: EvalArg): string | null {
  * does NOT coerce a non-numeric value to 0 — it returns null so the caller can
  * propagate NULL the way Splunk does (`"abc" * 2` and `abs("foo")` are null, not
  * 0). Booleans still coerce (true→1, false→0), matching Splunk. A number is
- * taken as it is, Infinity and NaN included: they are numbers, not NULL (#446).
+ * taken as it is, Infinity and NaN included: they are numbers, not NULL (propslab#446).
  */
 export function numArg(v: EvalArg): number | null {
   if (v === null || v === undefined) return null;
@@ -151,7 +151,7 @@ export function numArg(v: EvalArg): number | null {
  * Division by zero is NULL, as the Search Reference's eval page says. Otherwise
  * the result is what floating point gives, special values included: `1e308 * 10`
  * is Infinity and `exp(1000) - exp(1000)` is NaN, numbers that a field shows as
- * "Infinity" and "NaN" (#446; the eval page names them "inf" and "nan").
+ * "Infinity" and "NaN" (propslab#446; the eval page names them "inf" and "nan").
  */
 export function arith(l: EvalArg, r: EvalArg, op: '-' | '*' | '/' | '%'): EvalValue {
   const a = numArg(l);
@@ -179,7 +179,7 @@ export function toMv(v: EvalArg): string[] {
  * True when the value is genuinely numeric — a number, or a string that parses
  * cleanly as one. Used by isnum()/isint(); unlike toNum() it does not coerce
  * non-numeric input to 0 (which made isnum("abc") wrongly return true). Every
- * number counts, Infinity and NaN included, which typeof() calls "Number" (#446).
+ * number counts, Infinity and NaN included, which typeof() calls "Number" (propslab#446).
  */
 export function isNumericValue(v: EvalArg): boolean {
   return numericValue(v) !== null;
@@ -193,7 +193,7 @@ function numericValue(v: EvalArg): number | null {
 
 /**
  * A multivalue with exactly one value stands for that value: in a comparison,
- * `split("5", ",") == 5` is true (#522), and `+` reads it the same way.
+ * `split("5", ",") == 5` is true (propslab#522), and `+` reads it the same way.
  */
 function oneValue(v: EvalValue): EvalValue {
   return Array.isArray(v) && v.length === 1 ? (v[0] ?? null) : v;
@@ -242,7 +242,7 @@ export function toTri(v: EvalArg): boolean | null {
 }
 
 /**
- * Comparison of two single values, by their {@link StaticType}s (#522, #446):
+ * Comparison of two single values, by their {@link StaticType}s (propslab#522, propslab#446):
  *
  * - Against a side that is statically a number, the other is read as a number,
  *   and a field that is not numeric is NULL for every operator: for fields
@@ -291,13 +291,13 @@ const EQUALITY_OPS = new Set(['==', '=', '!=']);
 /**
  * A comparison of `values`, a multivalue of two or more values, with `other`,
  * on either side of the operator. Only equality is answered: `<`, `>`, `<=`
- * and `>=` are NULL (#522). Against a single value, `==` holds when ANY value
+ * and `>=` are NULL (propslab#522). Against a single value, `==` holds when ANY value
  * equals it (a field with values a and b satisfies `f == "a"`), never as the
- * space-joined string of them (#475); a side that is statically a number is
+ * space-joined string of them (propslab#475); a side that is statically a number is
  * NULL for every operator, so `mv == 5` is NULL where `mv == "5"` matches
- * (#522). Between two multivalues, `==` holds when both hold the same values
- * in the same order (#522). `!=` is the complement of `==` rather than "some
- * value differs", so it agrees with NOT IN and with `NOT (f == "a")` (#522).
+ * (propslab#522). Between two multivalues, `==` holds when both hold the same values
+ * in the same order (propslab#522). `!=` is the complement of `==` rather than "some
+ * value differs", so it agrees with NOT IN and with `NOT (f == "a")` (propslab#522).
  */
 function compareMultivalue(values: string[], other: EvalValue, otherType: StaticType, op: string): boolean | null {
   if (!EQUALITY_OPS.has(op)) return null;

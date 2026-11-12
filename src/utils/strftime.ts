@@ -79,12 +79,12 @@ interface DirectiveMeta {
   /**
    * The directive rendered for a Date, in local time: what `regex` reads back.
    * Kept beside the regex so parsing and formatting cannot drift apart.
-   * See docs/adr/0003-one-strftime-directive-table.md.
+   * See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0003-one-strftime-directive-table.md.
    */
   format: (date: Date) => string;
   /**
    * How eval's `strftime()` renders the directive, where that differs from what
-   * TIME_FORMAT reads. See docs/adr/0018-time-format-reads-l-as-milliseconds.md.
+   * TIME_FORMAT reads. See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0018-time-format-reads-l-as-milliseconds.md.
    */
   evalFormat?: (date: Date) => string;
 }
@@ -159,7 +159,7 @@ function buildDirectiveMap(): Record<string, DirectiveMeta> {
     '%k': { regex: '(\\s?\\d{1,2})', capture: 'hour24', format: (d) => spacePad(d.getHours()) },
     // TIME_FORMAT reads %l as milliseconds: Splunk's own [splunkd] stanza is
     // `%m-%d-%Y %H:%M:%S.%l %z`. eval's strftime() keeps C's space-padded
-    // 12-hour clock. See docs/adr/0018-time-format-reads-l-as-milliseconds.md.
+    // 12-hour clock. See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0018-time-format-reads-l-as-milliseconds.md.
     '%l': {
       regex: '(\\d{3})',
       capture: 'milliseconds',
@@ -221,7 +221,7 @@ interface TokenisedFormat {
 
 /**
  * A string-keyed cache of at most `limit` entries, least recently used evicted
- * first. See docs/adr/0004-bounded-time-format-cache.md.
+ * first. See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0004-bounded-time-format-cache.md.
  */
 class BoundedLru<V> {
   private readonly map = new Map<string, V>();
@@ -328,7 +328,7 @@ function tokeniseUncached(format: string): TokenisedFormat {
       // more. A run of n spaces is one `\s{n,}`, which matches what n
       // adjacent `\s+` match; those backtrack polynomially over a long run of
       // whitespace that fails the match, and a JS RegExp has no match limit
-      // to stop it (#872).
+      // to stop it (propslab#872).
       if (expanded.charAt(i) === ' ') {
         const runStart = i;
         while (expanded.charAt(i) === ' ') i += 1;
@@ -449,7 +449,7 @@ function buildIanaFormatter(tz: string): Intl.DateTimeFormat | null {
  * `Date.UTC`, without its mapping of years 0-99 onto 1900-1999: `%Y` reading
  * `0050` means the year 50. The time of day is added after the date is set,
  * because setting the date writes the day back over a rollover: `23:59:60`
- * on 31 December would otherwise land at the start of that day (#619).
+ * on 31 December would otherwise land at the start of that day (propslab#619).
  */
 function utcMs(year: number, month: number, day: number, hour: number, minute: number, second: number, ms = 0): number {
   const d = new Date(Date.UTC(2000, month, day));
@@ -495,7 +495,7 @@ function ianaOffsetAt(formatter: Intl.DateTimeFormat, atMs: number): number {
  * to the first occurrence, which is what most strptime implementations do and
  * what a user comparing against a real indexer will usually see. Both depend
  * only on the offsets, not on which side of UTC the zone is.
- * See docs/adr/0006-time-zone-resolution.md.
+ * See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0006-time-zone-resolution.md.
  */
 function ianaWallClockToEpoch(formatter: Intl.DateTimeFormat, wallAsUtcMs: number): number {
   const before = ianaOffsetAt(formatter, wallAsUtcMs - 86_400_000);
@@ -531,7 +531,7 @@ function resolveTzOffsetMinutes(tz: string): number | null {
   // GMT-relative form, as props.conf.spec writes TZ_ALIAS targets
   // (`EST=GMT-5:00`). The hour may be one digit here, unlike the %z branch
   // below. The sign is plain arithmetic, not POSIX's inverted one, so `GMT-5`
-  // is UTC-5. See docs/adr/0006-time-zone-resolution.md.
+  // is UTC-5. See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0006-time-zone-resolution.md.
   const gmtRelative = /^(?:GMT|UTC)([+-])(\d{1,2})(?::?(\d{2}))?$/.exec(upper);
   if (gmtRelative) {
     const sign = gmtRelative[1] === '+' ? 1 : -1;
@@ -711,7 +711,7 @@ export function parseTimestampDetailed(
   // A date written without a year is the most recent one it can be (the syslog
   // convention). A stamp slightly ahead of the clock
   // (skew) stays in this year. See
-  // docs/adr/0005-yearless-timestamps-take-the-most-recent-year.md.
+  // https://github.com/Bimmiest/propslab/blob/main/docs/adr/0005-yearless-timestamps-take-the-most-recent-year.md.
   const latest = now.getTime() + YEARLESS_FUTURE_TOLERANCE_MS;
   const fits = (p: ParsedTimestamp | null): p is ParsedTimestamp => p !== null && p.date.getTime() <= latest;
   if (fits(current)) {
@@ -880,7 +880,7 @@ function resolveZone(
   // A zone written in the event (%Z) beats the stanza's TZ, and an explicit
   // numeric offset (%z) beats both — it needs no resolution at all.
   // TZ_ALIAS rewrites only the zone read out of the event, never the stanza's
-  // TZ. See docs/adr/0006-time-zone-resolution.md.
+  // TZ. See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0006-time-zone-resolution.md.
   const aliased = bag.tzName === undefined ? undefined : tzAlias?.get(bag.tzName.toUpperCase());
   const zoneName = aliased ?? bag.tzName ?? tz;
 
@@ -979,13 +979,13 @@ function assembleTimestamp(
 
 // ---------------------------------------------------------------------------
 // Formatting (the inverse of the parsing above), shared by eval strftime() and
-// the editor's TIME_FORMAT preview. See docs/adr/0003-one-strftime-directive-table.md.
+// the editor's TIME_FORMAT preview. See https://github.com/Bimmiest/propslab/blob/main/docs/adr/0003-one-strftime-directive-table.md.
 // ---------------------------------------------------------------------------
 /**
  * Format a Date with a Splunk strftime string. Uses the time zone of the host
  * (the browser, or the MCP server process), because a run has no zone input and
  * Splunk's user time zone setting is not modelled. docs/fidelity.md, "Time zone
- * of `strftime()`", gives the divergence (#877). Renders every specifier the parser reads, from the same table; anything
+ * of `strftime()`", gives the divergence (propslab#877). Renders every specifier the parser reads, from the same table; anything
  * else is left as literal text, which unsupportedSpecifiers flags. `dialect`
  * says whose reading a directive takes where TIME_FORMAT and eval's
  * `strftime()` differ (`%l`).

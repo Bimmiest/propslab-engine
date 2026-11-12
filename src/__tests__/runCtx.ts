@@ -1,6 +1,6 @@
 // A RunContext for calling one stage directly, as a test does, and the options
 // for a whole runPipeline. Production code has no default clock or diagnostics
-// list; a test says which clock it runs under (#507), so a result that depends
+// list; a test says which clock it runs under (propslab#507), so a result that depends
 // on the date can be traced to the line that chose it rather than to a default
 // in this file.
 import { createRunContext, type RunContext } from '../runContext';

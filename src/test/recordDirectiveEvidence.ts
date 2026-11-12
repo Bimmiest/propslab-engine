@@ -1,26 +1,26 @@
 // Setup file: records which directive keys each test file actually feeds to
-// `runPipeline`, for `src/engine/__tests__/directiveEvidence.test.ts`.
+// `runPipeline`, for `src/__tests__/directiveEvidence.test.ts`.
 //
 // Why a recorder rather than a search of the test sources. "This directive is
 // exercised" used to mean "its name followed by `=` appears somewhere in any
 // test file", which a lint test, a registry test or a comment satisfies without
-// the engine ever running the directive (#505). What counts is the parsed conf
+// the engine ever running the directive (propslab#505). What counts is the parsed conf
 // that reaches the pipeline, so that is what is recorded: `runPipeline` is
 // wrapped, each conf it is handed is run through the real `parseConf`, and the
 // directive keys found go to a file named for the calling test file.
 //
-// Only the stanzas that applied count (#569). A key in a props stanza that
+// Only the stanzas that applied count (propslab#569). A key in a props stanza that
 // matched none of the run's metadata, or in a transforms stanza that no applied
 // props stanza names, never ran, so it is no evidence. The metadata are the
 // input's, each event's as the run left it (a CLONE_SOURCETYPE copy, a
 // DEST_KEY = MetaData:* rewrite) and a `rename` target. This is still a proxy:
 // it does not see whether the directive changed anything, or whether the test
 // asserted on it. The trace has a step per processor, not per directive, so
-// that would take a second run without each directive; #569 chose not to pay
+// that would take a second run without each directive; propslab#569 chose not to pay
 // for that on every full run.
 //
 // Keys are recorded per test as well as per file, so a citation counts only
-// for the tests it sits above (#569). Only engine test files are recorded:
+// for the tests it sits above (propslab#569). Only engine test files are recorded:
 // they are the only ones the gate counts, and parsing every conf a component
 // test runs cost time for nothing.
 //
@@ -48,10 +48,10 @@ const recorded = vi.hoisted(() => ({ keys: new Set<string>(), tests: new Map<str
 /** props.conf keys whose value names transforms.conf stanzas. */
 const REFERENCES = new Set(['TRANSFORMS', 'REPORT', 'RULESET']);
 
-vi.mock('../engine/pipeline', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../engine/pipeline')>();
-  const { parseConf } = await import('../engine/parser/confParser');
-  const { matchStanzas, resolveStanzasForEvent } = await import('../engine/parser/stanzaMatcher');
+vi.mock('../pipeline', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../pipeline')>();
+  const { parseConf } = await import('../parser/confParser');
+  const { matchStanzas, resolveStanzasForEvent } = await import('../parser/stanzaMatcher');
   const { env } = (globalThis as unknown as { process: { env: Record<string, string | undefined> } }).process;
   const dir = env['PROPSLAB_EVIDENCE_DIR'];
   if (!dir) return actual;
@@ -60,7 +60,7 @@ vi.mock('../engine/pipeline', async (importOriginal) => {
     const output = actual.runPipeline(...args);
     const [, metadata, props, transforms] = args;
     const { testPath, currentTestName } = expect.getState();
-    if (!testPath?.includes('/src/engine/')) return output;
+    if (!testPath?.includes('/src/')) return output;
     const testKeys = recorded.tests.get(currentTestName ?? '') ?? new Set<string>();
     recorded.tests.set(currentTestName ?? '', testKeys);
     const record = (key: string) => {

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// safeProcessor catches per event (#452): a stage that throws on one event is
+// safeProcessor catches per event (propslab#452): a stage that throws on one event is
 // re-run one event at a time, so only that event misses the stage. A stage
 // that reads across events falls back as a whole, as before.
 // ---------------------------------------------------------------------------

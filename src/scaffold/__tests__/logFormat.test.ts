@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
 // logFormat.test.ts
-// The format named on the Raw Log chip (#742): the formats a line shows by
+// The format named on the Raw Log chip (propslab#742): the formats a line shows by
 // itself, then the Scaffold's structural ones, and which wins when a sample
 // shows both.
 // ---------------------------------------------------------------------------

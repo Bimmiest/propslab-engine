@@ -5,7 +5,7 @@ import { breakLines } from '../processors/lineBreaker';
 import { detectTimestamp } from '../scaffold/analyzers/timestamp';
 import type { ConfDirective, EventMetadata, SplunkEvent } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 // Doc- and convention-derived. What these tests pin is that the three
 // consumers of the recogniser -- line breaking, extraction and the scaffold --

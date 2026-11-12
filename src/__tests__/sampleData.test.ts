@@ -10,7 +10,7 @@ import { AT_FIXED_NOW } from './runCtx';
  * The bundled samples are example configs users copy from, so a wrong field
  * mapping teaches a wrong mapping for a very common data source.
  */
-describe('sampleData — Palo Alto byte columns (#76)', () => {
+describe('sampleData — Palo Alto byte columns (propslab#76)', () => {
   const pan = SAMPLE_CONFIGS.find((s) => s.name === 'Palo Alto Firewall')!;
   const meta: EventMetadata = { index: 'main', host: 'fw01', source: '/var/log/pan', sourcetype: 'pan:traffic' };
 
@@ -33,11 +33,11 @@ describe('sampleData — Palo Alto byte columns (#76)', () => {
 
 /**
  * Each example is the first thing a new user runs, so it must load clean and
- * show what its description promises (#666). The examples are dated
+ * show what its description promises (propslab#666). The examples are dated
  * 25 October 2026; the clock here is the day after, so a yearless syslog date
  * takes 2026 and nothing lands past MAX_DAYS_HENCE.
  */
-describe('the bundled examples (#666)', () => {
+describe('the bundled examples (propslab#666)', () => {
   const now = Date.UTC(2026, 9, 26);
   const run = (s: (typeof SAMPLE_CONFIGS)[number]) =>
     runPipeline(s.rawData, s.metadata, s.propsConf, s.transformsConf, { perEventPipeline: false, now });

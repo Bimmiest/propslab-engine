@@ -258,7 +258,7 @@ describe('FIELDALIAS through the pipeline', () => {
 // Doc-derived (props.conf.spec, FIELDALIAS): with AS, "If the <orig_field_name>
 // field has no value or does not exist, the <new_field_name> is removed"; with
 // ASNEW, "If the <orig_field_name> field has no value or does not exist, the
-// <new_field_name> is kept" (#445). Automatic key/value extraction supplies
+// <new_field_name> is kept" (propslab#445). Automatic key/value extraction supplies
 // `src`; nothing supplies `src_ip`.
 describe('FIELDALIAS through the pipeline, when the original field does not exist', () => {
   const raw = '2026-01-15T10:00:00Z src=1.2.3.4 action=allowed';
@@ -335,7 +335,7 @@ describe('FIELD_NAMES through the pipeline', () => {
 
 // Doc-derived (props.conf.spec, HEADER_FIELD_LINE_NUMBER): "The line number of
 // the line within the specified file or source that contains the header
-// fields." A line of the input, then, not an event; #449 confirms that blank
+// fields." A line of the input, then, not an event; propslab#449 confirms that blank
 // and preamble lines count.
 describe('HEADER_FIELD_LINE_NUMBER through the pipeline', () => {
   it('reads the header from the named line', () => {
@@ -466,7 +466,7 @@ describe('CLEAN_KEYS through the pipeline', () => {
 // default false, and "does not apply to field/value pairs that are generated
 // by Splunk software autokv extraction. Autokv ignores field/value pairs with
 // empty values." Asserted for REGEX extractions; DELIMS is an exception the
-// spec does not state (#450, in transformsProcessor.test.ts).
+// spec does not state (propslab#450, in transformsProcessor.test.ts).
 describe('KEEP_EMPTY_VALS through the pipeline', () => {
   const raw = '2026-01-15T10:00:00Z;a=1;b=;c=3';
   const pairs = '[t]\nREGEX = (\\w+)=(\\w*)\nFORMAT = $1::$2\n';

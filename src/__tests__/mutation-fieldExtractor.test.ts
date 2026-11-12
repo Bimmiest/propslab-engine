@@ -1,11 +1,11 @@
-// Tests written against mutants that survived `npm run test:mutation` (#370):
+// Tests written against mutants that survived `npm run test:mutation` (propslab#370):
 // each one pins a behaviour of EXTRACT- that the suite ran but never asserted,
 // so a change that broke it would have passed. Grouped by the branch they hold.
 import { describe, it, expect } from 'vitest';
 import { extractFields, parseExtractValue } from '../processors/fieldExtractor';
 import type { SplunkEvent, ConfDirective, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 function event(raw: string, fields: Record<string, string | string[]> = {}): SplunkEvent {
   return makeEvent(raw, { fields });
@@ -124,13 +124,13 @@ describe('EXTRACT — what a match leaves behind', () => {
     ]);
   });
 
-  it('explains a match with no named group as that, not as a pattern that missed (#616)', () => {
+  it('explains a match with no named group as that, not as a pattern that missed (propslab#616)', () => {
     const e = extractFields([event('user=bob action=login')], [dir('u', 'user=\\w+')], runCtx(FIXED_NOW))[0]!;
     expect(e.fields).toEqual({});
     expect(e.noOps?.map((n) => n.reason)).toEqual([{ kind: 'no-named-groups' }]);
   });
 
-  it('explains a match whose named groups all sat out (#616)', () => {
+  it('explains a match whose named groups all sat out (propslab#616)', () => {
     const e = extractFields([event('user=bob')], [dir('u', '(?:(?<a>zzz)|user=\\w+)')], runCtx(FIXED_NOW))[0]!;
     expect(e.fields).toEqual({});
     expect(e.noOps?.map((n) => n.reason)).toEqual([{ kind: 'groups-unset', fields: ['a'] }]);

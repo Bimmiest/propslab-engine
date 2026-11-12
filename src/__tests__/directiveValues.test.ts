@@ -29,7 +29,7 @@ import { lintMatchedDirectives } from '../configLint';
 import { runPipeline } from '../pipeline';
 import type { ConfDirective, ConfStanza, EventMetadata, SplunkEvent, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW, AT_FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 const META: EventMetadata = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
 
@@ -192,7 +192,7 @@ describe('default-true settings accept every false spelling (was: exactly "false
 
   // Doc-derived: props.conf.spec says `rename` makes an event use the target
   // sourcetype's SEARCH-TIME settings. KV_MODE and AUTO_KV_JSON are read there;
-  // INDEXED_EXTRACTIONS is an index-time setting of the original stanza (#477).
+  // INDEXED_EXTRACTIONS is an index-time setting of the original stanza (propslab#477).
   describe('the INDEXED_EXTRACTIONS = json duplicate warning under rename', () => {
     const props = (renamed: string) => `[raw]\nINDEXED_EXTRACTIONS = json\nrename = r2\n[r2]\n${renamed}\n`;
     const dup = (conf: string) =>
@@ -231,7 +231,7 @@ describe('transforms diagnostics point at the definition that took effect (was: 
     }).diagnostics;
 
   it('an unknown DEST_KEY is reported on the line that set it', () => {
-    // The config-time lint is the one report: the router no longer adds its own (#477).
+    // The config-time lint is the one report: the router no longer adds its own (propslab#477).
     const diags = run('[t1]\nREGEX = (\\w+)\nDEST_KEY = queue\nDEST_KEY = not_a_key\nFORMAT = x\n').filter((x) =>
       /not a recogni[sz]ed Splunk DEST_KEY/.test(x.message),
     );
@@ -255,9 +255,9 @@ describe('transforms diagnostics point at the definition that took effect (was: 
   });
 });
 
-// ── One rule for every boolean (#473) ───────────────────────────────────────
+// ── One rule for every boolean (propslab#473) ───────────────────────────────────────
 
-describe('every boolean directive follows one rule (#473)', () => {
+describe('every boolean directive follows one rule (propslab#473)', () => {
   const spellings = [...TRUE_SPELLINGS, ...FALSE_SPELLINGS];
   const value = fc.oneof(
     fc.constantFrom(...spellings, 'nope', 'maybe', '2', 'truee', 'onn'),

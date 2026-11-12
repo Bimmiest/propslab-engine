@@ -17,7 +17,7 @@ import { runPipeline } from '../pipeline';
 import { describeNoOp } from '../noOpExplainer';
 import type { ConfDirective, EventMetadata, SplunkEvent } from '../types';
 import { runCtx, FIXED_NOW, AT_FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 const META: EventMetadata = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
 
@@ -108,7 +108,7 @@ describe("transforms.conf REGEX under its own stanza's limits", () => {
   });
 });
 
-describe('#874 — a scan for every match that stops at a limit after the first match', () => {
+describe('propslab#874 — a scan for every match that stops at a limit after the first match', () => {
   // `x` matches at once; at the run of a's, `(?:a+)+b` tries about 2^n ways
   // before it fails, which passes both Splunk's default MATCH_LIMIT and PCRE2's
   // own. So the scan finds the first two x's, stops, and never reaches the last.

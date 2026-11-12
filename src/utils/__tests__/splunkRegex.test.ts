@@ -89,7 +89,7 @@ describe('PCRE syntax compiles and means what it means in PCRE', () => {
     expect(/bar$/.test('foo bar\n')).toBe(false);
   });
 
-  it('ends a repeated group on an empty iteration, where a JS regex backtracks into it (#584)', () => {
+  it('ends a repeated group on an empty iteration, where a JS regex backtracks into it (propslab#584)', () => {
     const first = (pattern: string, s: string) => {
       const m = safeRegex(pattern)!.exec(s);
       return m && [m.index, m[0]];
@@ -100,7 +100,7 @@ describe('PCRE syntax compiles and means what it means in PCRE', () => {
     expect(/([^a]*?)*/.exec('*')?.[0]).toBe('*');
   });
 
-  it('keeps a leading (?i) and a \\B across every alternative (#585)', () => {
+  it('keeps a leading (?i) and a \\B across every alternative (propslab#585)', () => {
     const m = safeRegex('(?i)[a^]|\\Bb')!.exec('aB', 1);
     expect(m && [m.index, m[0]]).toEqual([1, 'B']);
     expect(safeRegex('(?i)[a^]|\\Bb')!.exec('-B', 1)).toBeNull();
@@ -221,7 +221,7 @@ describe('validation', () => {
 describe('MATCH_LIMIT and DEPTH_LIMIT', () => {
   const runaway = `${'a'.repeat(30)}b`;
 
-  it("uses Splunk defaults when unset, and caps 0 (no limit) and larger values at PCRE2's default (#560)", () => {
+  it("uses Splunk defaults when unset, and caps 0 (no limit) and larger values at PCRE2's default (propslab#560)", () => {
     expect(extractionLimits()).toEqual({ matchLimit: DEFAULT_MATCH_LIMIT, depthLimit: DEFAULT_DEPTH_LIMIT });
     expect(extractionLimits('500000', '5000')).toEqual({ matchLimit: 500000, depthLimit: 5000 });
     expect(MAX_REGEX_LIMIT).toBe(10_000_000);
@@ -288,7 +288,7 @@ describe('compiled-pattern cache', () => {
     expect(first.exec('first7')?.[1]).toBe('7');
   });
 
-  it('compiles each pattern once when a run uses more than 256 of them (#614)', () => {
+  it('compiles each pattern once when a run uses more than 256 of them (propslab#614)', () => {
     const patterns = Array.from({ length: 300 }, (_, i) => `k${i}=(?<k${i}>\\d+)`);
     const run = () => {
       for (let event = 0; event < 20; event++) for (const p of patterns) new SplunkRegex(p).exec(`k${event}=1`);
@@ -299,7 +299,7 @@ describe('compiled-pattern cache', () => {
     expect(regexCompileCount() - before).toBe(0);
   });
 
-  it('keeps diagnostic probes out of the shared cache (#415)', () => {
+  it('keeps diagnostic probes out of the shared cache (propslab#415)', () => {
     const before = cachedRegexCount();
     for (let i = 0; i < 400; i++) expect(safeProbeRegex(`probe${i}`)?.test(`probe${i}`)).toBe(true);
     expect(cachedRegexCount()).toBe(before);
@@ -326,7 +326,7 @@ describe('a second engine init', () => {
   });
 });
 
-describe('withRegexDeadline (#560)', () => {
+describe('withRegexDeadline (propslab#560)', () => {
   it('refuses every call once the deadline passes, and only inside it', () => {
     const re = safeRegex('a')!;
     const past = Date.now() - 1;

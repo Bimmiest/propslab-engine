@@ -1,7 +1,7 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { orExit } from './orExit.mjs';
 
-// The read-or-exit step of the scripts in scripts/ (#865).
+// The read-or-exit step of the scripts in scripts/ (propslab#865).
 describe('orExit', () => {
   afterEach(() => {
     vi.restoreAllMocks();

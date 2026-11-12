@@ -3,7 +3,7 @@ import { extractFields } from '../fieldExtractor';
 import { applySedCommands } from '../sedCmd';
 import type { SplunkEvent, ConfDirective } from '../../types';
 import { runCtx, FIXED_NOW } from '../../__tests__/runCtx';
-import { makeEvent } from '../../../test/makeEvent';
+import { makeEvent } from '../../test/makeEvent';
 
 // Zero-based line numbers and this metadata are what this file always built.
 function event(raw: string): SplunkEvent {

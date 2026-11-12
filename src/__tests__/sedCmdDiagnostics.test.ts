@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { applySedCommands } from '../processors/sedCmd';
 import type { ConfDirective, SplunkEvent, ValidationDiagnostic } from '../types';
 import { runCtx, FIXED_NOW } from './runCtx';
-import { makeEvent } from '../../test/makeEvent';
+import { makeEvent } from '../test/makeEvent';
 
 const ev = (raw: string): SplunkEvent => makeEvent(raw);
 const sed = (value: string, className = 'x'): ConfDirective => ({
@@ -21,7 +21,7 @@ function run(value: string, raw: string) {
 
 // `\0` is the whole match; `$0` is not a JS substitution, so mapping to it
 // would write the marker itself into the event text.
-describe('SEDCMD replacement — whole-match references (#121)', () => {
+describe('SEDCMD replacement — whole-match references (propslab#121)', () => {
   it('\\0 expands to the whole match', () => {
     expect(run('s/b/[\\0]/', 'abc').raw).toBe('a[b]c');
   });
@@ -44,8 +44,8 @@ describe('SEDCMD replacement — whole-match references (#121)', () => {
 });
 
 // A pattern safeRegex refuses is reported.
-describe('SEDCMD — an uncompilable pattern warns rather than vanishing (#122)', () => {
-  it('runs a backtracking-prone pattern rather than refusing it (#368)', () => {
+describe('SEDCMD — an uncompilable pattern warns rather than vanishing (propslab#122)', () => {
+  it('runs a backtracking-prone pattern rather than refusing it (propslab#368)', () => {
     const { raw, diagnostics } = run('s/(a+)+$/Z/', 'aaaa');
     expect(raw).toBe('Z');
     expect(diagnostics).toEqual([]);
@@ -63,7 +63,7 @@ describe('SEDCMD — an uncompilable pattern warns rather than vanishing (#122)'
 
 // Doc-derived: SEDCMD takes sed syntax, s/<regex>/<replacement>/<flags>, and
 // props.conf.spec gives no form without the closing delimiter.
-describe('SEDCMD — the closing delimiter is required (#477)', () => {
+describe('SEDCMD — the closing delimiter is required (propslab#477)', () => {
   it.each(['s/foo/bar', 's/foo/', 's/foo', 'y/abc/xyz', 's/foo/bar\\/'])('rejects %s and says why', (value) => {
     const { raw, diagnostics } = run(value, 'foo abc');
     expect(raw).toBe('foo abc');
@@ -84,7 +84,7 @@ describe('SEDCMD — the closing delimiter is required (#477)', () => {
 });
 
 // Ordinary values that merely start like a sed command are not read as one.
-describe('SEDCMD — command detection requires a real delimiter (#126)', () => {
+describe('SEDCMD — command detection requires a real delimiter (propslab#126)', () => {
   it('does not report "yes" as y/// transliteration', () => {
     const { diagnostics } = run('yes', 'abc');
     expect(diagnostics.some((d) => /transliteration/.test(d.message))).toBe(false);
