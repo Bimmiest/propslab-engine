@@ -8,6 +8,8 @@ A release changes `Unreleased` to `x.y.z — YYYY-MM-DD`, and adds a new `Unrele
 
 ## Unreleased
 
+## 0.4.0 — 2026-11-13
+
 ### Added
 
 - The `exports` map names `./package.json`. Thus a consumer can resolve
