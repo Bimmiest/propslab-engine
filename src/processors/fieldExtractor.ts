@@ -36,6 +36,7 @@ export function extractFields(events: SplunkEvent[], directives: ConfDirective[]
     // An extraction that does not compile is skipped, so surface it.
     if (pattern && !regex) {
       diagnostics.push({
+        code: 'regex-invalid',
         level: 'warning',
         message: `EXTRACT-${dir.className ?? ''} was skipped: its pattern does not compile (${validateRegex(pattern) ?? 'invalid regex'}). No fields were extracted.`,
         file: 'props.conf',
@@ -134,6 +135,7 @@ function warnStrippedSourceRef(
   if (!stripped || !hasField(fields, stripped)) return;
   reportedStrippedRefs.add(sourceField);
   diagnostics.push({
+    code: 'leading-underscore-stripped',
     level: 'warning',
     message: `EXTRACT-${directive.className ?? ''} references source field "${sourceField}", but index-time extractions strip leading underscores — Splunk will resolve this as "${stripped}".`,
     file: 'props.conf',

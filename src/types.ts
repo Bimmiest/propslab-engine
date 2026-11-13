@@ -255,7 +255,74 @@ export type DiagnosticLevel = 'error' | 'warning' | 'info';
  */
 export type DiagnosticTarget = 'props.conf' | 'transforms.conf' | 'raw';
 
+/**
+ * What a diagnostic is about, for a caller that acts on it without reading the
+ * message. docs/api.md says what each code means. A code is public after its
+ * first release, so to rename or remove one is a major version (#4).
+ */
+export type DiagnosticCode =
+  // The conf text
+  | 'malformed-line'
+  | 'directive-miscased'
+  | 'directive-misspelled'
+  | 'directive-in-wrong-file'
+  | 'directive-unclassified'
+  | 'directive-not-simulated'
+  | 'stanza-pattern-invalid'
+  | 'transform-not-found'
+  | 'transform-unreferenced'
+  | 'setting-inert-in-phase'
+  | 'repeat-match-ignored'
+  | 'value-not-boolean'
+  | 'value-not-integer'
+  | 'value-negative'
+  | 'value-not-in-enum'
+  | 'route-age-invalid'
+  | 'tz-alias-invalid'
+  | 'regex-limit-capped'
+  | 'dest-key-unknown'
+  | 'dest-key-not-simulated'
+  | 'format-prefix-missing'
+  | 'format-has-index-prefix'
+  | 'json-extracted-twice'
+  | 'xml-pipeline-missing'
+  | 'line-breaker-no-capture-group'
+  | 'field-alias-wildcard'
+  | 'field-name-needs-quotes'
+  | 'leading-underscore-stripped'
+  | 'sed-not-an-expression'
+  | 'sed-delimiter-missing'
+  | 'sed-sets-unequal-length'
+  | 'sed-flag-not-simulated'
+  | 'transform-no-write-meta'
+  | 'report-no-format'
+  // Patterns and expressions
+  | 'regex-invalid'
+  | 'regex-limit-reached'
+  | 'eval-error'
+  | 'eval-function-not-simulated'
+  // What happened to the events
+  | 'json-invalid'
+  | 'extraction-failed'
+  | 'kv-maxchars-reached'
+  | 'timezone-unresolved'
+  | 'timestamp-out-of-bounds'
+  | 'epoch-out-of-range'
+  | 'meta-fields-dropped'
+  | 'raw-text-dropped'
+  | 'clone-loop'
+  | 'sourcetype-assigned'
+  | 'sourcetype-renamed'
+  | 'clones-not-rematched'
+  | 'rewrites-not-rematched'
+  // The run
+  | 'input-truncated'
+  | 'event-limit-reached'
+  | 'time-budget-reached'
+  | 'processor-failed';
+
 export interface ValidationDiagnostic {
+  code: DiagnosticCode;
   level: DiagnosticLevel;
   message: string;
   file: DiagnosticTarget;

@@ -298,7 +298,7 @@ describe('applyDestKey — _time out of the Date range (propslab#417)', () => {
       AT_FIXED_NOW,
     );
     for (const ev of out.events) expect(ev._time?.toISOString()).toMatch(/^2026-01-02T/);
-    const warnings = diagnostics.filter((d) => d.message.includes('out of range'));
+    const warnings = diagnostics.filter((d) => d.code === 'epoch-out-of-range');
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toMatchObject({ level: 'warning', file: 'transforms.conf', line: 4 });
     expect(warnings[0]!.message).toBe(

@@ -105,6 +105,7 @@ export function applyKvMode(events: SplunkEvent[], directives: ConfDirective[], 
   if (failed !== undefined) {
     const n = failures.length;
     diagnostics.push({
+      code: 'extraction-failed',
       level: 'error',
       file: 'raw',
       line: failed.line,
@@ -119,6 +120,7 @@ export function applyKvMode(events: SplunkEvent[], directives: ConfDirective[], 
     // the Raw Log panel and point `line` at the offending input line so the user
     // can jump straight to it.
     diagnostics.push({
+      code: 'json-invalid',
       level: 'warning',
       file: 'raw',
       line: first.line,
@@ -333,6 +335,7 @@ function capNote(missed: string[]): string {
 function reportCap(diagnostics: RunContext['diagnostics'], mode: string, line: number, missed: string[]): void {
   if (missed.length === 0) return;
   diagnostics.report('kvMode|maxchars', {
+    code: 'kv-maxchars-reached',
     level: 'info',
     file: 'raw',
     line,

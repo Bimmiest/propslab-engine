@@ -193,7 +193,7 @@ describe('runPipeline — INGEST_EVAL metadata rewrites re-match stanzas (propsl
     });
     expect(result.events[0]!.metadata.sourcetype).toBe('new_st');
     expect(result.events[0]!.fields['seen']).toBeUndefined();
-    expect(diagnostics.some((d) => d.message.includes('sourcetype/host/source rewritten'))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).toContain('rewrites-not-rematched');
   });
 });
 
@@ -306,16 +306,13 @@ describe('INGEST_EVAL _time out of the Date range (propslab#417)', () => {
       for (const ev of result.events) {
         expect(ev._time?.toISOString()).toMatch(/^2026-01-02T/);
       }
-      const warnings = diagnostics.filter((d) => d.message.includes('out of range'));
+      const warnings = diagnostics.filter((d) => d.code === 'epoch-out-of-range');
       expect(warnings).toHaveLength(1);
       expect(warnings[0]).toMatchObject({
         level: 'warning',
         file: 'transforms.conf',
         directiveKey: 'INGEST_EVAL',
       });
-      expect(warnings[0]!.message).toMatch(
-        /^INGEST_EVAL _time: timestamp \S+ is out of range; the event keeps its previous _time$/,
-      );
     },
   );
 
@@ -343,10 +340,10 @@ describe('runPipeline — INGEST_EVAL reports each problem once per run (propsla
     const { result, diagnostics } = runPipeline(raw, meta, props, transforms, { perEventPipeline, now: FIXED_NOW });
     expect(result.events).toHaveLength(5);
     const count = (pred: (d: ValidationDiagnostic) => boolean) => diagnostics.filter(pred).length;
-    expect(count((d) => d.message.startsWith('md5() is not fully simulated'))).toBe(1);
-    expect(count((d) => d.level === 'error' && d.message.startsWith('INGEST_EVAL b:'))).toBe(1);
-    expect(count((d) => d.message.startsWith('INGEST_EVAL r:'))).toBe(1);
-    expect(count((d) => d.message.includes('INGEST_EVAL _time'))).toBe(1);
+    expect(count((d) => d.code === 'eval-function-not-simulated')).toBe(1);
+    expect(count((d) => d.code === 'eval-error')).toBe(1);
+    expect(count((d) => d.code === 'regex-invalid')).toBe(1);
+    expect(count((d) => d.code === 'epoch-out-of-range')).toBe(1);
   });
 });
 
@@ -361,7 +358,7 @@ describe('INGEST_EVAL errors are keyed by where the directive is (propslab#477)'
         perEventPipeline,
         now: FIXED_NOW,
       });
-      const errors = diagnostics.filter((d) => d.level === 'error' && d.message.startsWith('INGEST_EVAL x:'));
+      const errors = diagnostics.filter((d) => d.code === 'eval-error');
       expect(errors).toHaveLength(2);
       expect(new Set(errors.map((d) => d.line)).size).toBe(2);
     }
@@ -397,7 +394,7 @@ describe('runPipeline — CLONE_SOURCETYPE does not repeat INGEST_EVAL problems 
       now: FIXED_NOW,
     });
     expect(result.events.filter((e) => e.clonedFrom !== undefined)).toHaveLength(3);
-    expect(diagnostics.filter((d) => d.message.startsWith('INGEST_EVAL b:'))).toHaveLength(1);
+    expect(diagnostics.filter((d) => d.code === 'eval-error')).toHaveLength(1);
   });
 });
 

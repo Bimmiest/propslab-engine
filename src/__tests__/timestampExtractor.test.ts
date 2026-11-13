@@ -267,6 +267,7 @@ describe('extractTimestamps — TZ_ALIAS (propslab#227)', () => {
     expect(iso(e._time)).toBe('2024-01-15T15:00:00.000Z');
     const warning = diags.find((d) => d.directiveKey === 'TZ_ALIAS');
     expect(warning?.level).toBe('warning');
+    expect(warning?.code).toBe('tz-alias-invalid');
     expect(warning?.message).toContain('"GMT-6:00"');
   });
 
@@ -281,7 +282,7 @@ describe('extractTimestamps — TZ_ALIAS (propslab#227)', () => {
     expect(iso(e._time)).toBe('2024-01-15T10:00:00.000Z');
     // Reporting only the target would name a string the operator never wrote in
     // an event; reporting only EST would hide which half is broken.
-    const warning = diags.find((d) => /could not be resolved/.test(d.message));
+    const warning = diags.find((d) => d.code === 'timezone-unresolved');
     expect(warning?.message).toContain('EST');
     expect(warning?.message).toContain('Middle/Earth');
   });
@@ -301,7 +302,7 @@ describe('extractTimestamps — timezone resolution (propslab#12)', () => {
       runCtx(FIXED_NOW, diags),
     )[0]!;
     expect(iso(e._time)).toBe('2024-01-15T10:00:00.000Z');
-    expect(diags.some((d) => d.level === 'warning' && /Middle\/Earth/.test(d.message))).toBe(true);
+    expect(diags.map((d) => [d.code, d.level, d.directiveKey])).toEqual([['timezone-unresolved', 'warning', 'TZ']]);
   });
 
   it('resolves an IANA zone name against its real offset, without warning (propslab#159)', () => {
@@ -348,7 +349,7 @@ describe('extractTimestamps — timezone resolution (propslab#12)', () => {
       [fmt, dir('TZ', 'Middle/Earth')],
       runCtx(FIXED_NOW, diags),
     );
-    expect(diags.filter((d) => /Middle\/Earth/.test(d.message))).toHaveLength(1);
+    expect(diags.filter((d) => d.code === 'timezone-unresolved')).toHaveLength(1);
   });
 });
 
@@ -544,7 +545,7 @@ describe('propslab#85 — timestamp sanity bounds', () => {
       [fmt],
       runCtx(NOW, diagnostics),
     );
-    const bounds = diagnostics.filter((d) => d.message.includes('MAX_DAYS_HENCE'));
+    const bounds = diagnostics.filter((d) => d.code === 'timestamp-out-of-bounds');
     expect(bounds).toHaveLength(1);
     expect(bounds[0]?.level).toBe('warning');
   });
@@ -646,7 +647,7 @@ describe('propslab#286 — a TIME_PREFIX that does not compile', () => {
     expect(out.map(timeSource)).toEqual(['current-time', 'current-time']);
     const errors = diagnostics.filter((d) => d.directiveKey === 'TIME_PREFIX');
     expect(errors).toHaveLength(1);
-    expect(errors[0]?.level).toBe('error');
+    expect(errors[0]).toMatchObject({ code: 'regex-invalid', level: 'error' });
     expect(errors[0]?.message).toContain('ts=(');
   });
 

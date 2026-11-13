@@ -56,6 +56,7 @@ describe('SEDCMD — an uncompilable pattern warns rather than vanishing (propsl
     expect(raw).toBe('abc');
     expect(diagnostics).toHaveLength(1);
     expect(diagnostics[0]!.level).toBe('warning');
+    expect(diagnostics[0]!.code).toBe('regex-invalid');
     expect(diagnostics[0]!.message).toMatch(/does not compile \(missing terminating \]/);
     expect(diagnostics[0]!.directiveKey).toBe('SEDCMD-x');
   });
@@ -68,7 +69,7 @@ describe('SEDCMD — the closing delimiter is required (propslab#477)', () => {
     const { raw, diagnostics } = run(value, 'foo abc');
     expect(raw).toBe('foo abc');
     expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0]!.message).toMatch(/is missing its closing delimiter "\/" and was ignored/);
+    expect(diagnostics[0]!.code).toBe('sed-delimiter-missing');
   });
 
   it.each([
@@ -87,14 +88,13 @@ describe('SEDCMD — the closing delimiter is required (propslab#477)', () => {
 describe('SEDCMD — command detection requires a real delimiter (propslab#126)', () => {
   it('does not report "yes" as y/// transliteration', () => {
     const { diagnostics } = run('yes', 'abc');
-    expect(diagnostics.some((d) => /transliteration/.test(d.message))).toBe(false);
-    expect(diagnostics.some((d) => /is not a sed expression/.test(d.message))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).toEqual(['sed-not-an-expression']);
   });
 
   it('does not parse "something" as a substitution delimited by "o"', () => {
     const { raw, diagnostics } = run('something', 'abc');
     expect(raw).toBe('abc');
-    expect(diagnostics.some((d) => /is not a sed expression/.test(d.message))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).toContain('sed-not-an-expression');
   });
 
   it('still recognises genuine y/// transliteration', () => {
@@ -110,7 +110,7 @@ describe('SEDCMD — command detection requires a real delimiter (propslab#126)'
   it('warns when the closing delimiter is missing', () => {
     const { raw, diagnostics } = run('s/b', 'abc');
     expect(raw).toBe('abc');
-    expect(diagnostics.some((d) => /missing its closing delimiter/.test(d.message))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).toContain('sed-delimiter-missing');
   });
 
   it('an empty value is silently ignored', () => {

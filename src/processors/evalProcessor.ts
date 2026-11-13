@@ -66,6 +66,7 @@ class EvalReporter {
     if (!this.diagnostics || this.reportedStubs.has(fn)) return;
     this.reportedStubs.add(fn);
     this.diagnostics.push({
+      code: 'eval-function-not-simulated',
       level: 'warning',
       message: `${fn}() is not fully simulated — results may differ from real Splunk`,
       file: 'props.conf',
@@ -84,6 +85,7 @@ class EvalReporter {
     if (!this.diagnostics || this.reportedRegex.has(key)) return;
     this.reportedRegex.add(key);
     this.diagnostics.push({
+      code: 'regex-invalid',
       level: 'warning',
       message: `EVAL-${fieldName}: ${regexFailureMessage(fn, pattern)}`,
       file: 'props.conf',
@@ -101,6 +103,7 @@ class EvalReporter {
     if (!this.diagnostics || this.reportedRegex.has(message)) return;
     this.reportedRegex.add(message);
     this.diagnostics.push({
+      code: 'regex-limit-reached',
       level: 'warning',
       message,
       file: 'props.conf',
@@ -113,6 +116,7 @@ class EvalReporter {
     if (!this.diagnostics || this.reportedErrors.has(fieldName)) return;
     this.reportedErrors.add(fieldName);
     this.diagnostics.push({
+      code: 'eval-error',
       level: 'error',
       message: `EVAL-${fieldName}: ${msg}`,
       file: 'props.conf',

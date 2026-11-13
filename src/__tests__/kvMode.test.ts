@@ -103,7 +103,7 @@ describe('applyKvMode — json', () => {
 
     expect(diagnostics).toHaveLength(1);
     expect(diagnostics[0]!.level).toBe('warning');
-    expect(diagnostics[0]!.message).toMatch(/not valid JSON/);
+    expect(diagnostics[0]!.code).toBe('json-invalid');
     // The warning is a data problem: it targets the Raw Log panel, not props.conf,
     // and points at the offending input line.
     expect(diagnostics[0]!.file).toBe('raw');
@@ -129,6 +129,7 @@ describe('applyKvMode — json', () => {
     const r = applyKvMode([event('{"a":1,"b":<ID>}')], [], runCtx(FIXED_NOW, diagnostics))[0]!;
     expect(Object.keys(r.fields)).toHaveLength(0);
     expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]!.code).toBe('json-invalid');
     expect(diagnostics[0]!.message).toMatch(/KV_MODE = auto/);
   });
 });
@@ -176,7 +177,7 @@ describe('applyKvMode — a leading [ is not by itself JSON (propslab#289)', () 
     const diagnostics: ValidationDiagnostic[] = [];
     applyKvMode([event(raw)], [dir('json')], runCtx(FIXED_NOW, diagnostics));
     expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0]!.message).toMatch(/not valid JSON/);
+    expect(diagnostics[0]!.code).toBe('json-invalid');
   });
 
   it('still flattens a whole-event array', () => {

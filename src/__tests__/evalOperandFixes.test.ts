@@ -138,7 +138,7 @@ describe('a multivalue operand under an ordering operator, or against a number, 
     expect(result.events[0]!.fields).toMatchObject({ gt: 'n', num: 'n', str: 'y' });
     // A NULL comparison assigned directly writes no field and raises nothing.
     expect(result.events[0]!.fields['cmp']).toBeUndefined();
-    expect(diagnostics.filter((d) => d.message.includes('EVAL-cmp'))).toEqual([]);
+    expect(diagnostics.filter((d) => d.directiveKey === 'EVAL-cmp')).toEqual([]);
   });
 
   it('keeps comparing two single values as before', () => {

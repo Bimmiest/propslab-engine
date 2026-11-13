@@ -16,7 +16,12 @@ vi.mock('../processors/fieldAlias', async (importOriginal) => {
     ...actual,
     applyFieldAliases: (...args: Parameters<typeof actual.applyFieldAliases>) => {
       const [events, , ctx] = args;
-      ctx.diagnostics.push({ level: 'warning', message: 'config warning', file: 'props.conf' });
+      ctx.diagnostics.push({
+        code: 'field-alias-wildcard',
+        level: 'warning',
+        message: 'config warning',
+        file: 'props.conf',
+      });
       if (events.some((e) => e._raw.includes('boom'))) throw new Error('alias boom');
       return actual.applyFieldAliases(...args);
     },
@@ -51,7 +56,7 @@ describe('safeProcessor', () => {
 
     const errors = diagnostics.filter((d) => d.level === 'error');
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toMatchObject({ file: 'raw', line: 2 });
+    expect(errors[0]).toMatchObject({ code: 'processor-failed', file: 'raw', line: 2 });
     expect(errors[0]!.message).toBe(
       'Processor "FIELDALIAS" failed on 1 event, which passes through it unchanged (alias boom).',
     );
@@ -59,14 +64,14 @@ describe('safeProcessor', () => {
 
   it('does not repeat what the failed attempt already reported', () => {
     const { diagnostics } = run('user=a\nuser=b boom\nuser=c');
-    expect(diagnostics.filter((d) => d.message === 'config warning')).toHaveLength(1);
+    expect(diagnostics.filter((d) => d.code === 'field-alias-wildcard')).toHaveLength(1);
   });
 
   it('counts every event that still throws', () => {
     const { diagnostics } = run('user=a boom\nuser=b boom\nuser=c');
     const errors = diagnostics.filter((d) => d.level === 'error');
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toMatchObject({ file: 'raw', line: 1 });
+    expect(errors[0]).toMatchObject({ code: 'processor-failed', file: 'raw', line: 1 });
     expect(errors[0]!.message).toContain('failed on 2 events, which pass through it unchanged');
   });
 
@@ -75,7 +80,12 @@ describe('safeProcessor', () => {
     expect(events.map((e) => e.fields['account'])).toEqual(['a', undefined]);
     const errors = diagnostics.filter((d) => d.level === 'error');
     expect(errors).toEqual([
-      { level: 'error', message: 'Processor "FIELDALIAS" failed: alias boom', file: 'props.conf' },
+      {
+        code: 'processor-failed',
+        level: 'error',
+        message: 'Processor "FIELDALIAS" failed: alias boom',
+        file: 'props.conf',
+      },
     ]);
   });
 
@@ -86,7 +96,12 @@ describe('safeProcessor', () => {
     expect(events.map((e) => e._time)).toEqual([null, null]);
     const errors = diagnostics.filter((d) => d.level === 'error');
     expect(errors).toEqual([
-      { level: 'error', message: 'Processor "Timestamp" failed: timestamp boom', file: 'props.conf' },
+      {
+        code: 'processor-failed',
+        level: 'error',
+        message: 'Processor "Timestamp" failed: timestamp boom',
+        file: 'props.conf',
+      },
     ]);
   });
 });

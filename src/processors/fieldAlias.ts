@@ -146,6 +146,7 @@ function compileAliases(aliasDirectives: ConfDirective[], diagnostics?: Diagnost
         if (diagnostics && !warnedWildcard.has(key)) {
           warnedWildcard.add(key);
           diagnostics.push({
+            code: 'field-alias-wildcard',
             level: 'warning',
             message:
               `FIELDALIAS does not support wildcards — "${a.source} ${a.mode} ${a.target}" will not take effect on the search head. ` +
@@ -191,6 +192,7 @@ function maybeWarnStrippedRef(
   if (stripped && hasField(event.fields, stripped)) {
     reportedStrippedRefs.add(alias.source);
     diagnostics.push({
+      code: 'leading-underscore-stripped',
       level: 'warning',
       message: `FIELDALIAS references "${alias.source}", but index-time extractions strip leading underscores — Splunk will resolve this as "${stripped}". Update the alias to use "${stripped}".`,
       file: 'props.conf',

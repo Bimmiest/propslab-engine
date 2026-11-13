@@ -122,8 +122,7 @@ describe('eval regex arguments that do not compile (propslab#291)', () => {
     const { out, diagnostics } = run('replace(s, "a(", "x")');
     expect(out[0]!.fields['r']).toBe('abc');
     expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0]).toMatchObject({ level: 'warning', directiveKey: 'EVAL-r', line: 3 });
-    expect(diagnostics[0]?.message).toContain('EVAL-r');
+    expect(diagnostics[0]).toMatchObject({ code: 'regex-invalid', level: 'warning', directiveKey: 'EVAL-r', line: 3 });
     expect(diagnostics[0]?.message).toContain('"a("');
     expect(diagnostics[0]?.message).toContain('returned its input unchanged');
   });
@@ -131,11 +130,13 @@ describe('eval regex arguments that do not compile (propslab#291)', () => {
   it('match() warns and says it evaluated to false', () => {
     const { out, diagnostics } = run('if(match(s, "["), "true", "false")');
     expect(out[0]!.fields['r']).toBe('false');
+    expect(diagnostics[0]?.code).toBe('regex-invalid');
     expect(diagnostics[0]?.message).toContain('evaluated to false');
   });
 
   it('mvfind() warns too', () => {
     const { diagnostics } = run('mvfind(s, "(")');
+    expect(diagnostics[0]?.code).toBe('regex-invalid');
     expect(diagnostics[0]?.message).toContain('mvfind()');
   });
 
@@ -174,7 +175,7 @@ describe('eval regex arguments that do not compile (propslab#291)', () => {
       perEventPipeline: false,
       now: FIXED_NOW,
     });
-    const hits = diagnostics.filter((d) => d.message.includes('replace() pattern'));
+    const hits = diagnostics.filter((d) => d.code === 'regex-invalid');
     expect(hits).toHaveLength(1);
     expect(hits[0]?.message).toContain('INGEST_EVAL out');
     expect(hits[0]?.file).toBe('transforms.conf');

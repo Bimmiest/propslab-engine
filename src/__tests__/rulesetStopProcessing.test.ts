@@ -14,7 +14,7 @@ import { runPipeline } from '../pipeline';
 import { parseAge } from '../processors/routeByAge';
 import { stopConditionHolds } from '../transforms/stopProcessing';
 import { DIRECTIVE_SUPPORT } from '../directiveSupport';
-import type { EventMetadata } from '../types';
+import type { DiagnosticCode, EventMetadata } from '../types';
 
 const META: EventMetadata = { index: 'main', host: 'h', source: 's', sourcetype: 'st' };
 const NOW = Date.parse('2026-01-20T00:00:00Z');
@@ -34,11 +34,15 @@ const TAGGERS = [
 describe('RULESET-<class> (propslab#275)', () => {
   it('counts as a reference for the config lint, and a missing stanza is an error', () => {
     const r = run('x', '[st]\nRULESET-r = tag_a, nope\n', TAGGERS);
-    const messages = r.diagnostics.map((d) => d.message);
-    expect(messages).toContain('Referenced transform stanza "nope" not found in transforms.conf');
-    expect(messages.some((m) => m.includes('"tag_a" is defined but never referenced'))).toBe(false);
-    // tag_b and tag_c are genuinely unreferenced.
-    expect(messages.some((m) => m.includes('"tag_b" is defined but never referenced'))).toBe(true);
+    expect(r.diagnostics.map((d) => [d.code, d.level, d.file, d.line])).toContainEqual([
+      'transform-not-found',
+      'error',
+      'props.conf',
+      2,
+    ]);
+    // tag_b (line 4) and tag_c (line 7) are genuinely unreferenced; tag_a (line 1) is not.
+    const unreferenced = r.diagnostics.filter((d) => d.code === 'transform-unreferenced');
+    expect(unreferenced.map((d) => d.line)).toEqual([4, 7]);
   });
 
   it('applies its transforms at index time', () => {
@@ -138,8 +142,8 @@ describe('STOP_PROCESSING_IF (propslab#275)', () => {
     const transforms = '[s1]\nSTOP_PROCESSING_IF = md5(_raw) == "x"\n\n[s2]\nSTOP_PROCESSING_IF = match(_raw, "(")\n';
     const r = run('one\ntwo', '[st]\nSHOULD_LINEMERGE = false\nRULESET-r = s1, s2\n', transforms);
     const stop = r.diagnostics.filter((d) => d.directiveKey === 'STOP_PROCESSING_IF');
-    expect(stop.filter((d) => d.message.startsWith('md5() is not fully simulated'))).toHaveLength(1);
-    expect(stop.filter((d) => d.message.startsWith('STOP_PROCESSING_IF: '))).toHaveLength(1);
+    expect(stop.filter((d) => d.code === 'eval-function-not-simulated')).toHaveLength(1);
+    expect(stop.filter((d) => d.code === 'regex-invalid')).toHaveLength(1);
   });
 
   it.each([false, true])(
@@ -160,10 +164,10 @@ describe('STOP_PROCESSING_IF (propslab#275)', () => {
       const raw = Array.from({ length: 500 }, (_, i) => `event ${i}`).join('\n');
       const r = runPipeline(raw, META, props, transforms, { ...opts, perEventPipeline });
       expect(r.result.events).toHaveLength(1000);
-      const count = (pred: (m: string) => boolean) => r.diagnostics.filter((d) => pred(d.message)).length;
-      expect(count((m) => m.startsWith('md5() is not fully simulated'))).toBe(1);
-      expect(count((m) => m.startsWith('STOP_PROCESSING_IF: '))).toBe(1);
-      expect(count((m) => m.startsWith('STOP_PROCESSING_IF could not be evaluated'))).toBe(1);
+      const count = (code: DiagnosticCode) => r.diagnostics.filter((d) => d.code === code).length;
+      expect(count('eval-function-not-simulated')).toBe(1);
+      expect(count('regex-invalid')).toBe(1);
+      expect(count('eval-error')).toBe(1);
     },
   );
 
@@ -240,6 +244,10 @@ describe('ROUTE_EVENTS_OLDER_THAN (propslab#275)', () => {
   it('warns about a malformed value and routes nothing', () => {
     const r = run(RAW, props('a week'), '');
     expect(r.result.events.every((e) => e._meta._queue === undefined)).toBe(true);
-    expect(r.diagnostics.some((d) => d.directiveKey === 'ROUTE_EVENTS_OLDER_THAN' && d.level === 'warning')).toBe(true);
+    expect(r.diagnostics.map((d) => [d.code, d.level, d.directiveKey])).toContainEqual([
+      'route-age-invalid',
+      'warning',
+      'ROUTE_EVENTS_OLDER_THAN',
+    ]);
   });
 });

@@ -125,6 +125,7 @@ function warnUncompilableBreakPattern(
 ): void {
   if (!diagnostics || pattern === undefined || compiled !== null) return;
   diagnostics.push({
+    code: 'regex-invalid',
     level: 'warning',
     message: `${key} pattern (${pattern}) does not compile (${validateRegex(pattern) ?? 'invalid regex'}). The option was ignored, so events were broken as if it were not set.`,
     file: 'props.conf',
@@ -176,6 +177,7 @@ function resolveLineBreaker(
   // sense for a pattern that compiled.
   if (compiled === null) {
     diagnostics?.push({
+      code: 'regex-invalid',
       level: 'warning',
       message:
         `LINE_BREAKER pattern (${declared}) does not compile (${validateRegex(declared) ?? 'invalid regex'}). ` +
@@ -188,6 +190,7 @@ function resolveLineBreaker(
   }
   if (compiled.captureCount > 0) return declared;
   diagnostics?.push({
+    code: 'line-breaker-no-capture-group',
     level: 'warning',
     message:
       `LINE_BREAKER pattern (${declared}) has no capturing group, so it names nothing ` +
@@ -244,6 +247,7 @@ export function splitSegments(
       // unexplained.
       if (lineBreakerRegex.lastError !== undefined && diagnostics) {
         diagnostics.push({
+          code: 'regex-limit-reached',
           level: 'warning',
           message:
             `LINE_BREAKER pattern (${pattern}) stopped at character ${searchFrom}: ` +
@@ -543,6 +547,7 @@ function traceMerge(
 /** Say that line breaking stopped at `RunLimits.maxEvents`, and where the dropped input starts. */
 function warnEventCap(maxEvents: number, firstDroppedLine: number, diagnostics: DiagnosticSink): void {
   diagnostics.push({
+    code: 'event-limit-reached',
     level: 'warning',
     message:
       `Line breaking stopped at ${maxEvents.toLocaleString('en-US')} events, the most one run produces. ` +

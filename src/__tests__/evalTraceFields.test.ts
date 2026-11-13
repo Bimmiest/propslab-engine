@@ -77,9 +77,8 @@ describe('EVAL — a null result is not in the trace (propslab#876)', () => {
     expect(event?.fields).not.toHaveProperty('x');
     expect(event?.fields).not.toHaveProperty('y');
     expect(event?.noOps?.map((n) => n.directive)).toEqual(['EVAL-x']);
-    const messages = diagnostics.map((d) => `${d.level}: ${d.message}`);
-    expect(messages).toContain('error: EVAL-y: lenn() is not an eval function');
-    expect(messages.some((m) => m.includes('not fully simulated'))).toBe(false);
+    expect(diagnostics.map((d) => [d.code, d.directiveKey])).toContainEqual(['eval-error', 'EVAL-y']);
+    expect(diagnostics.map((d) => d.code)).not.toContain('eval-function-not-simulated');
   });
 });
 
@@ -181,9 +180,7 @@ describe('eval — an unknown function name fails the expression (propslab#876)'
     (fn) => {
       const diagnostics: ValidationDiagnostic[] = [];
       runEval({}, [evalDir('x', `${fn}("a")`)], diagnostics);
-      expect(diagnostics.map((d) => [d.level, d.message])).toEqual([
-        ['warning', `${fn}() is not fully simulated — results may differ from real Splunk`],
-      ]);
+      expect(diagnostics.map((d) => [d.code, d.level])).toEqual([['eval-function-not-simulated', 'warning']]);
     },
   );
 
@@ -197,11 +194,9 @@ describe('eval — an unknown function name fails the expression (propslab#876)'
     const transforms =
       '[ie]\nINGEST_EVAL = x=lenn(_raw)\n\n[stop]\nINGEST_EVAL = y="1"\nSTOP_PROCESSING_IF = lenn(_raw) > 1\n';
     const { diagnostics } = runPipeline('hello\n', META, props, transforms, AT_FIXED_NOW);
-    const errors = diagnostics.filter((d) => d.level === 'error').map((d) => d.message);
-    expect(errors.some((m) => m.includes('INGEST_EVAL') && m.includes('lenn() is not an eval function'))).toBe(true);
-    expect(errors.some((m) => m.includes('STOP_PROCESSING_IF') && m.includes('lenn() is not an eval function'))).toBe(
-      true,
-    );
-    expect(diagnostics.some((d) => d.message.includes('lenn() is not fully simulated'))).toBe(false);
+    const errors = diagnostics.filter((d) => d.code === 'eval-error');
+    expect(errors.map((d) => d.directiveKey)).toEqual(['INGEST_EVAL', 'STOP_PROCESSING_IF']);
+    expect(errors.every((d) => d.message.includes('lenn() is not an eval function'))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).not.toContain('eval-function-not-simulated');
   });
 });

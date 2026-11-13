@@ -64,7 +64,7 @@ describe('applySedCommands', () => {
     const diags: ValidationDiagnostic[] = [];
     const e = applySedCommands([event('abc')], [sedDir('x', 'y/abc/XY/')], runCtx(FIXED_NOW, diags))[0]!;
     expect(e._raw).toBe('abc');
-    expect(diags.some((d) => d.message.includes('same length'))).toBe(true);
+    expect(diags.map((d) => d.code)).toContain('sed-sets-unequal-length');
   });
 
   it('resolves escapes inside a y/// set', () => {
@@ -80,7 +80,7 @@ describe('applySedCommands', () => {
   it('warns that the numeric occurrence flag (s/.../.../N) is not simulated', () => {
     const diags: ValidationDiagnostic[] = [];
     applySedCommands([event('a a a')], [sedDir('x', 's/a/b/2')], runCtx(FIXED_NOW, diags));
-    expect(diags.some((d) => d.message.includes('numeric occurrence flag'))).toBe(true);
+    expect(diags.map((d) => d.code)).toContain('sed-flag-not-simulated');
   });
 });
 
@@ -284,6 +284,7 @@ describe('applySedCommands — warnings', () => {
   it('says what a sed expression looks like, at the directive', () => {
     expect(warnings('nope', { layer: 'local' })).toEqual([
       {
+        code: 'sed-not-an-expression',
         level: 'warning',
         message:
           'SEDCMD-x: "nope" is not a sed expression and was ignored. SEDCMD takes ' +

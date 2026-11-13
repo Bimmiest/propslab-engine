@@ -39,7 +39,7 @@ function expectSyntaxError(expr: string, message: RegExp) {
   expect(value).toBeUndefined();
   const errors = diagnostics.filter((d) => d.level === 'error');
   expect(errors).toHaveLength(1);
-  expect(errors[0]!.message).toMatch(/^EVAL-out: /);
+  expect(errors[0]).toMatchObject({ code: 'eval-error', directiveKey: 'EVAL-out' });
   expect(errors[0]!.message).toMatch(message);
 }
 
