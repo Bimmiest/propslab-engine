@@ -27,9 +27,9 @@ const detect = (raw: string) => detectLineFormat(raw, raw.split(/\r?\n/));
 describe('DIRECTIVE_RE', () => {
   const lazyKey = /^([^\s=[][^=]*?)\s*=\s*(.*)$/;
 
-  it('matches and captures what a lazy key did', () => {
+  it('matches and captures what a lazy key and a (.*) value did', () => {
     fc.assert(
-      fc.property(text('a', 'b', ' ', '\t', '=', '[', '!'), (line) => {
+      fc.property(text('a', 'b', ' ', '\t', '=', '[', '!', '\n', '\r', '\u2028'), (line) => {
         expect(DIRECTIVE_RE.exec(line)?.slice(1)).toEqual(lazyKey.exec(line)?.slice(1));
       }),
     );
@@ -38,6 +38,7 @@ describe('DIRECTIVE_RE', () => {
   it('answers on a long run of whitespace', () => {
     expect(DIRECTIVE_RE.exec(`!${'\t'.repeat(MILLION)}`)).toBeNull();
     expect(DIRECTIVE_RE.exec(`a${' b'.repeat(MILLION / 2)}`)).toBeNull();
+    expect(DIRECTIVE_RE.exec(`!=${'\t'.repeat(MILLION)}\nx\ny`)).toBeNull();
     expect(DIRECTIVE_RE.exec(`a${'\t'.repeat(MILLION)}= v`)?.slice(1)).toEqual(['a', 'v']);
   });
 });
