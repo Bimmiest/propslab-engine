@@ -8,6 +8,8 @@ A release changes `Unreleased` to `x.y.z — YYYY-MM-DD`, and adds a new `Unrele
 
 ## Unreleased
 
+## 0.2.0 — 2026-11-13
+
 ### Changed
 
 - **Breaking:** each `ValidationDiagnostic` has a required `code`, of the
