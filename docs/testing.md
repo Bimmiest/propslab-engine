@@ -197,7 +197,6 @@ npm run test:mutation:canary                                 # after an update o
   which needs a full run, and `generateCimModels.test.ts`, because Stryker
   writes `// @ts-nocheck` into each file of its sandbox, and the committed
   data file then differs from what the generator writes.
-- **A weak file:** `src/utils/redosHeuristic.ts` scores about 62% (#8).
 
 ### The private fidelity suite
 

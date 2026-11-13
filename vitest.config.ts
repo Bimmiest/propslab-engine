@@ -106,13 +106,13 @@ export default defineConfig({
       // Raise a floor in the same change that raises coverage; never lower one
       // to make a branch green.
       //
-      // Measured on 2026-11-12, when the engine moved here from propslab with
-      // its tests.
+      // Measured on 2026-11-13, with the tests that bring redosHeuristic.ts up
+      // to the mutation floor (#8).
       thresholds: {
         statements: 98,
-        branches: 93,
+        branches: 94,
         functions: 99,
-        lines: 98,
+        lines: 99,
       },
     },
   },
