@@ -67,10 +67,11 @@ Each override has a reason and an issue that removes it.
 | Override | Why | Drop it when |
 |---|---|---|
 | `typed-rest-client` → `qs` `^6.16.1` | Stryker's `typed-rest-client` pins `qs` 6.15.1 exactly, inside two denial-of-service advisories. A development dependency only. | Stryker depends on a fixed `typed-rest-client` ([#14](https://github.com/Bimmiest/propslab-engine/issues/14)). |
+| `minimatch` `^11.0.8`, for the whole tree | Only 11 fixes GHSA-g3hv-75wg-m249. ESLint, `@eslint/config-array`, `typescript-estree` and Stryker ask for 10, and they run on 11 outside that range. A development dependency only. | All four ask for `minimatch` 11 ([#17](https://github.com/Bimmiest/propslab-engine/issues/17)). |
 
-`minimatch` 10.2.6 stays inside GHSA-g3hv-75wg-m249 (development only). Only
-`minimatch` 11 fixes it, and an override to 11 stops ESLint, because
-`eslint-plugin-import-x` imports `makeRe`, which `minimatch` 11 removed.
+The `minimatch` override needs `eslint-plugin-import-x` 4.18.1 or later. An
+earlier version imports `makeRe`, which `minimatch` 11 removed, and ESLint
+stops.
 
 ### The regex engine's binary
 
