@@ -8,6 +8,13 @@ A release changes `Unreleased` to `x.y.z — YYYY-MM-DD`, and adds a new `Unrele
 
 ## Unreleased
 
+### Removed
+
+- **Breaking:** the engine does not export the types `OutputTabId` and
+  `PreviewSubTabId`. They are the tab ids of the propslab UI, and the engine
+  does not use them. A consumer that uses them must declare them in its own
+  code ([#7](https://github.com/Bimmiest/propslab-engine/issues/7)).
+
 ## 0.3.0 — 2026-11-13
 
 ### Added
