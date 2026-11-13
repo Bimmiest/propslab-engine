@@ -8,6 +8,12 @@ A release changes `Unreleased` to `x.y.z — YYYY-MM-DD`, and adds a new `Unrele
 
 ## Unreleased
 
+### Added
+
+- The `exports` map names `./package.json`. Thus a consumer can resolve
+  `propslab-engine/package.json`, for example to read the version of the
+  engine ([#25](https://github.com/Bimmiest/propslab-engine/issues/25)).
+
 ### Removed
 
 - **Breaking:** the engine does not export the types `OutputTabId` and
