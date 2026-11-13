@@ -28,7 +28,7 @@ export function renderStanza(sourcetype: string, suggestions: ScaffoldSuggestion
 
 /** Append a stanza to existing props.conf text (or set it when the file is empty). */
 export function appendStanza(existing: string, stanza: string): string {
-  const trimmed = existing.replace(/\s+$/, '');
+  const trimmed = existing.trimEnd();
   return trimmed ? `${trimmed}\n\n${stanza}\n` : `${stanza}\n`;
 }
 

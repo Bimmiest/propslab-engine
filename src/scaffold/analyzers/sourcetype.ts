@@ -14,7 +14,8 @@ export function normalizeSourcetype(current: string): string | null {
   const normalized = trimmed
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, ':')
-    .replace(/^:+|:+$/g, '');
+    // One `:` at each end at most: the replace above leaves no run of them.
+    .replace(/^:|:$/g, '');
 
   return normalized && normalized !== trimmed ? normalized : null;
 }

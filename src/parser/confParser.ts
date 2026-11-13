@@ -47,8 +47,12 @@ export const STANZA_RE = /^\[(.+)\]\s*$/;
  * indented `  KV_MODE = json` linted clean in the editor while the diagnostics
  * list reported it as a malformed line — two validators, side by side in the
  * UI, disagreeing about the same line.
+ *
+ * The key ends in a character that is not whitespace, so that the key and the
+ * `\s*` after it cannot both claim a run of whitespace and backtrack through
+ * it on a line with no `=` (#20).
  */
-export const DIRECTIVE_RE = /^([^\s=[][^=]*?)\s*=\s*(.*)$/;
+export const DIRECTIVE_RE = /^([^\s=[](?:[^=]*[^\s=])?)\s*=\s*(.*)$/;
 
 /** Matches a comment line. Splunk .conf uses `#` only — `;` is not a comment. */
 const COMMENT_RE = /^#/;
