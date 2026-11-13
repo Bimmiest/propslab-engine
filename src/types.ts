@@ -473,7 +473,3 @@ export interface PipelineOptions {
    */
   limits?: Partial<RunLimits>;
 }
-
-export type OutputTabId = 'preview' | 'cim' | 'fields' | 'transforms' | 'effective' | 'architecture';
-
-export type PreviewSubTabId = 'raw' | 'highlighted' | 'diff' | 'timestamp' | 'regex';
