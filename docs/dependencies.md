@@ -60,6 +60,18 @@ The rules for dependencies, and how to review an update. CONTRIBUTING.md has the
 |---|---|---|---|---|
 | `pcre2-wasm-utf16` commit | `package.json`, and `pcre2.wasm.sha256` at the root | A git dependency is pinned by commit, and the update bot does not move it. | A new release of the module: see below. | `node scripts/check-wasm-checksum.mjs` |
 
+### Overrides
+
+Each override has a reason and an issue that removes it.
+
+| Override | Why | Drop it when |
+|---|---|---|
+| `typed-rest-client` → `qs` `^6.16.1` | Stryker's `typed-rest-client` pins `qs` 6.15.1 exactly, inside two denial-of-service advisories. A development dependency only. | Stryker depends on a fixed `typed-rest-client` ([#14](https://github.com/Bimmiest/propslab-engine/issues/14)). |
+
+`minimatch` 10.2.6 stays inside GHSA-g3hv-75wg-m249 (development only). Only
+`minimatch` 11 fixes it, and an override to 11 stops ESLint, because
+`eslint-plugin-import-x` imports `makeRe`, which `minimatch` 11 removed.
+
 ### The regex engine's binary
 
 The module lives in its own repository,
