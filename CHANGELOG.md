@@ -8,6 +8,12 @@ A release changes `Unreleased` to `x.y.z — YYYY-MM-DD`, and adds a new `Unrele
 
 ## Unreleased
 
+### Added
+
+- `DIAGNOSTIC_CODES`, every `DiagnosticCode` as a list, so that a consumer
+  can name them at run time, for example in a schema. `DiagnosticCode` is
+  now derived from it ([#22](https://github.com/Bimmiest/propslab-engine/issues/22)).
+
 ## 0.2.0 — 2026-11-13
 
 ### Changed

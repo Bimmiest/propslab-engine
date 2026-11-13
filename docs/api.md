@@ -46,7 +46,7 @@ fields:
 
 | Field | What it holds |
 |---|---|
-| `code` | What the diagnostic is about: one `DiagnosticCode`, from the tables below. |
+| `code` | What the diagnostic is about: one `DiagnosticCode`, from the tables below. `DIAGNOSTIC_CODES` lists them all, for a caller that needs them at run time. |
 | `level` | `error`, `warning` or `info`. |
 | `message` | The text for a person. The words can change in any release. |
 | `file` | `props.conf` or `transforms.conf`, or `raw` for a problem in the input data. |
