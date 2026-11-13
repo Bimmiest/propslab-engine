@@ -56,7 +56,9 @@ export function detectLineFormat(rawData: string, lines: string[]): ScaffoldSugg
   // single object needs the breaker: under the default line merge
   // (BREAK_ONLY_BEFORE_DATE) it would split at any line holding a date.
   const trimmed = rawData.trim();
-  const several = /\}\s*[\r\n]+\s*\{/.test(rawData);
+  // Horizontal whitespace up to the first line break, so that `\s` and the
+  // break cannot share a run of blank lines and backtrack through it (#20).
+  const several = /\}[^\S\r\n]*[\r\n]\s*\{/.test(rawData);
   if (trimmed.startsWith('{') && (several || (nonBlank.length > 1 && tryParse(trimmed)))) {
     return multiLineJsonSuggestions(several);
   }
@@ -227,30 +229,92 @@ function multiLineJsonSuggestions(several: boolean): ScaffoldSuggestion[] {
  * root; otherwise it is before the root element names seen at depth 0. Like the
  * JSON breaker, it assumes each document starts at column 0.
  */
+export interface XmlElementTag {
+  name: string;
+  closing: boolean;
+  selfClosing: boolean;
+}
+
+/**
+ * The element tags of a sample, in order. Comments, CDATA, declarations and
+ * processing instructions are skipped, and give no tag. A scanner rather than
+ * one regex, because a regex rescanned the rest of the sample from each
+ * unterminated `<!--`, `<?` or quoted attribute (#20). Here each terminator is
+ * searched for after the previous find, and once absent it stays absent; an
+ * element stops at the next `<`, also inside a quoted attribute value, where
+ * XML does not allow it. So each character is read a bounded number of times.
+ */
+export function xmlElementTags(raw: string): XmlElementTag[] {
+  const found = new Map<string, number>();
+  const next = (terminator: string, from: number): number => {
+    const at = found.get(terminator);
+    if (at === -1 || (at !== undefined && at >= from)) return at;
+    const index = raw.indexOf(terminator, from);
+    found.set(terminator, index);
+    return index;
+  };
+  const tags: XmlElementTag[] = [];
+  let i = raw.indexOf('<');
+  while (i !== -1) {
+    let resume = i + 1;
+    let end: number;
+    if (raw.startsWith('<!--', i) && (end = next('-->', i + 4)) !== -1) resume = end + 3;
+    else if (raw.startsWith('<![CDATA[', i) && (end = next(']]>', i + 9)) !== -1) resume = end + 3;
+    else if ((raw[i + 1] === '?' || raw[i + 1] === '!') && (end = next('>', i + 2)) !== -1) resume = end + 1;
+    else {
+      const element = readElementTag(raw, i);
+      if (element) {
+        tags.push(element.tag);
+        resume = element.end;
+      }
+    }
+    i = raw.indexOf('<', resume);
+  }
+  return tags;
+}
+
+/** The element tag that starts at `raw[i]` (a `<`), and the index after it; null if there is none. */
+function readElementTag(raw: string, i: number): { tag: XmlElementTag; end: number } | null {
+  let p = i + 1;
+  const closing = raw[p] === '/';
+  if (closing) p++;
+  if (!/[A-Za-z_]/.test(raw[p] ?? '')) return null;
+  const nameStart = p++;
+  while (/[\w.:-]/.test(raw[p] ?? '')) p++;
+  const name = raw.slice(nameStart, p);
+  for (;;) {
+    const c = raw[p];
+    if (c === undefined || c === '<') return null;
+    if (c === '>') return { tag: { name, closing, selfClosing: false }, end: p + 1 };
+    if (c === '/' && raw[p + 1] === '>') return { tag: { name, closing, selfClosing: true }, end: p + 2 };
+    if (c === '"' || c === "'") {
+      let q = p + 1;
+      while (q < raw.length && raw[q] !== c && raw[q] !== '<') q++;
+      if (raw[q] !== c) return null;
+      p = q + 1;
+    } else p++;
+  }
+}
+
 function xmlDocumentBreaker(rawData: string): { regex: string; evidence: string } | null {
   const roots = new Set<string>();
   let rootCount = 0;
   let depth = 0;
-  // `[^'"<>]` rather than `[^'">]` so an unclosed tag stops at the next `<`
-  // instead of rescanning the rest of the sample.
-  const tagRe =
-    /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<[?!][^>]*>|<(\/?)([A-Za-z_][\w.:-]*)(?:"[^"]*"|'[^']*'|[^'"<>])*?(\/?)>/g;
-  for (const m of rawData.matchAll(tagRe)) {
-    const name = m[2];
-    if (name === undefined) continue;
-    if (m[1]) {
+  for (const tag of xmlElementTags(rawData)) {
+    if (tag.closing) {
       if (--depth < 0) return null;
       continue;
     }
     if (depth === 0) {
-      roots.add(name);
+      roots.add(tag.name);
       rootCount++;
     }
-    if (!m[3]) depth++;
+    if (!tag.selfClosing) depth++;
   }
   if (rootCount === 0) return null;
 
-  const declarations = rawData.match(/(?:^|[\r\n])\s*<\?xml\s/gi)?.length ?? 0;
+  // Horizontal whitespace after the line break, for the reason above (#20).
+  const declarations = rawData.match(/(?:^|[\r\n])[^\S\r\n]*<\?xml\s/gi)?.length ?? 0;
   if (declarations === rootCount) {
     return {
       regex: '([\\r\\n]+)(?=<\\?xml\\s)',

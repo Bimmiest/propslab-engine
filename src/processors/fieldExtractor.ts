@@ -260,15 +260,40 @@ function runExtraction(
 
 export function parseExtractValue(value: string): { pattern: string; sourceField?: string } {
   const trimmed = value.trim();
-  // Greedy match: consume as much as possible before the last " in <field>" suffix.
-  // This avoids mis-splitting on regex bodies that contain the word "in". The source
-  // field may be single/double-quoted so a nested-JSON name with a period survives
-  // as one token (Splunk requires quoting for such names); strip the quotes here.
-  const inMatch = trimmed.match(/^([\s\S]+)\s+in\s+('[^']*'|"[^"]*"|[\w.]+)\s*$/);
-  if (inMatch) {
-    return { pattern: inMatch[1] ?? '', sourceField: unquoteFieldName(inMatch[2] ?? '') };
+  return splitInSuffix(trimmed) ?? { pattern: trimmed };
+}
+
+const isSpace = (c: string | undefined): boolean => c !== undefined && /\s/.test(c);
+
+/**
+ * `<pattern> in <field>`, read from the end. Only the last ` in <field>` splits,
+ * so a regex body that holds the word "in" stays whole. The field may be single-
+ * or double-quoted, so that a nested-JSON name with a period stays one token
+ * (Splunk requires quotes for such names); the quotes are removed here. The
+ * pattern is everything before the one whitespace character in front of `in`.
+ * Read backward, because a regex for the same split backtracked through a long
+ * run of whitespace once for each character before it (#20).
+ */
+function splitInSuffix(s: string): { pattern: string; sourceField: string } | null {
+  let end = s.length;
+  while (isSpace(s[end - 1])) end--;
+  const last = s[end - 1];
+  let start: number;
+  if (last === "'" || last === '"') {
+    start = end >= 2 ? s.lastIndexOf(last, end - 2) : -1;
+    if (start < 0) return null;
+  } else {
+    start = end;
+    while (start > 0 && /[\w.]/.test(s[start - 1] ?? '')) start--;
+    if (start === end) return null;
   }
-  return { pattern: trimmed };
+  let i = start;
+  if (!isSpace(s[i - 1])) return null;
+  while (isSpace(s[i - 1])) i--;
+  if (i < 2 || s.slice(i - 2, i) !== 'in') return null;
+  i -= 2;
+  if (i < 2 || !isSpace(s[i - 1])) return null;
+  return { pattern: s.slice(0, i - 1), sourceField: unquoteFieldName(s.slice(start, end)) };
 }
 
 /**

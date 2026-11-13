@@ -14,6 +14,15 @@ A release changes `Unreleased` to `x.y.z — YYYY-MM-DD`, and adds a new `Unrele
   can name them at run time, for example in a schema. `DiagnosticCode` is
   now derived from it ([#22](https://github.com/Bimmiest/propslab-engine/issues/22)).
 
+### Fixed
+
+- Seven patterns took quadratic time, or worse, on crafted input: a conf line
+  or an `EXTRACT` value with a long run of whitespace, and a sample with many
+  blank lines or unterminated XML constructs. Each one is now linear, with
+  the same result. The XML tag scan of the Scaffold also stops an attribute
+  value at `<`, which XML does not allow there
+  ([#20](https://github.com/Bimmiest/propslab-engine/issues/20)).
+
 ## 0.2.0 — 2026-11-13
 
 ### Changed
