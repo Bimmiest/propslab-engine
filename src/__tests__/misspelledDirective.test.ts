@@ -96,6 +96,7 @@ describe('parseConf reports a misspelled key (propslab#899)', () => {
     const { errors } = parseConf('[st]\nTIME_FORMAT = %Y\nTIME_FROMAT = %Y\n', 'props.conf');
     expect(errors).toEqual([
       {
+        code: 'directive-misspelled',
         level: 'warning',
         message: MISSPELLED_MESSAGE('TIME_FROMAT', 'TIME_FORMAT', 'props.conf'),
         file: 'props.conf',
@@ -108,8 +109,7 @@ describe('parseConf reports a misspelled key (propslab#899)', () => {
 
   it('reports a mis-cased key once, as mis-cased', () => {
     const { errors } = parseConf('[st]\ntime_format = %Y\n', 'props.conf');
-    expect(errors).toHaveLength(1);
-    expect(errors[0]?.message).toMatch(/case-sensitive/);
+    expect(errors.map((e) => e.code)).toEqual(['directive-miscased']);
   });
 
   it('keeps the directive, which Splunk ignores but the stanza still holds', () => {

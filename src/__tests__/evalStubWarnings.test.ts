@@ -24,12 +24,12 @@ function warningsFor(expr: string): ValidationDiagnostic[] {
 describe('eval — every unsimulated builtin warns (propslab#127)', () => {
   it.each(['sigfig', 'exact'])('%s() warns', (fn) => {
     const diagnostics = warningsFor(`${fn}(n)`);
-    expect(diagnostics.some((d) => d.message.startsWith(`${fn}() is not fully simulated`))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).toEqual(['eval-function-not-simulated']);
   });
 
   it.each(['mvfilter', 'searchmatch', 'strptime', 'relative_time', 'md5', 'sha256'])('%s() still warns', (fn) => {
     const diagnostics = warningsFor(`${fn}(n)`);
-    expect(diagnostics.some((d) => d.message.startsWith(`${fn}() is not fully simulated`))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).toContain('eval-function-not-simulated');
   });
 
   it('a fully simulated function does not warn', () => {

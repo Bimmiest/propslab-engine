@@ -1,4 +1,4 @@
-import type { ConfDirective, SplunkEvent, ValidationDiagnostic } from '../types';
+import type { ConfDirective, DiagnosticCode, SplunkEvent, ValidationDiagnostic } from '../types';
 import type { RunContext } from '../runContext';
 import { transformsMessageKey } from './ingestEval';
 import { regexFailureMessage, regexLimitMessage } from '../processors/evalProcessor';
@@ -50,8 +50,9 @@ export function evaluateStopCondition(
 
   // This runs once per event, and a config problem reported 500 times buries
   // everything else, so each message is reported once per run.
-  const report = (level: ValidationDiagnostic['level'], message: string) => {
+  const report = (code: DiagnosticCode, level: ValidationDiagnostic['level'], message: string) => {
     diagnostics.report(transformsMessageKey(message), {
+      code,
       level,
       message,
       file: 'transforms.conf',
@@ -74,15 +75,22 @@ export function evaluateStopCondition(
     const value = evalNode(parsed.tree, {
       event,
       now,
-      onStubWarning: (fn) => report('warning', `${fn}() is not fully simulated — results may differ from real Splunk`),
-      onRegexError: (fn, pattern) => report('warning', `STOP_PROCESSING_IF: ${regexFailureMessage(fn, pattern)}`),
+      onStubWarning: (fn) =>
+        report(
+          'eval-function-not-simulated',
+          'warning',
+          `${fn}() is not fully simulated — results may differ from real Splunk`,
+        ),
+      onRegexError: (fn, pattern) =>
+        report('regex-invalid', 'warning', `STOP_PROCESSING_IF: ${regexFailureMessage(fn, pattern)}`),
       onRegexLimit: (fn, pattern, error) =>
-        report('warning', `STOP_PROCESSING_IF: ${regexLimitMessage(fn, pattern, error)}`),
+        report('regex-limit-reached', 'warning', `STOP_PROCESSING_IF: ${regexLimitMessage(fn, pattern, error)}`),
     });
     return { stop: stopConditionHolds(value), expression };
   } catch (err) {
     if (err instanceof RegexDeadlineError) throw err;
     report(
+      'eval-error',
       'error',
       `STOP_PROCESSING_IF could not be evaluated, so processing continues: ${err instanceof Error ? err.message : String(err)}`,
     );

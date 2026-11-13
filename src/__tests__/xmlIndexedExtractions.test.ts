@@ -115,7 +115,10 @@ describe('XML_INDEXED_EXTRACTIONS_PIPELINE (propslab#271)', () => {
       runCtx(FIXED_NOW, diagnostics),
     );
     expect(out[0]!.fields).toEqual({});
-    expect(diagnostics.some((x) => x.directiveKey === 'XML_INDEXED_EXTRACTIONS_PIPELINE')).toBe(true);
+    expect(diagnostics.map((x) => [x.code, x.directiveKey])).toContainEqual([
+      'xml-pipeline-missing',
+      'XML_INDEXED_EXTRACTIONS_PIPELINE',
+    ]);
   });
 
   it('rejects a value outside the four pipelines', () => {

@@ -161,6 +161,7 @@ describe('sourcetype — an input-time assignment decides what else matches', ()
   it('reports the assignment rather than performing it silently', () => {
     const { diagnostics } = run('[source::/var/log/app.log]\nsourcetype = assigned\n');
     const d = diagnostics.find((x) => x.directiveKey === 'sourcetype');
+    expect(d?.code).toBe('sourcetype-assigned');
     expect(d?.message).toContain('original');
     expect(d?.message).toContain('assigned');
   });
@@ -208,6 +209,7 @@ describe('rename — a search-time-only sourcetype change', () => {
   it('explains the change, including what stops applying', () => {
     const { diagnostics } = run('[original]\nrename = renamed\n\n[renamed]\nEVAL-tag = 1\n');
     const d = diagnostics.find((x) => x.directiveKey === 'rename');
+    expect(d?.code).toBe('sourcetype-renamed');
     expect(d?.message).toContain('renamed');
     expect(d?.message).toContain('no longer apply');
   });

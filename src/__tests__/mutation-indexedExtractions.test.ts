@@ -69,6 +69,7 @@ describe('INDEXED_EXTRACTIONS = json', () => {
     const diagnostics: ValidationDiagnostic[] = [];
     extract('json', ['{"a":'], {}, diagnostics);
     expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]?.code).toBe('json-invalid');
     expect(diagnostics[0]?.message).toMatch(
       /^INDEXED_EXTRACTIONS = json: 1 event not valid JSON — JSON fields skipped \(/,
     );
@@ -163,6 +164,7 @@ describe('the regex-valued attributes', () => {
     extract('csv', ['a,b', '1,2'], { [key]: '(' }, diagnostics);
     expect(diagnostics).toEqual([
       {
+        code: 'regex-invalid',
         level: 'warning',
         message: `${key} (() does not compile (${validateRegex('(') ?? ''}). ${consequence}`,
         file: 'props.conf',

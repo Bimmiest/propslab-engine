@@ -8,6 +8,15 @@ A release changes `Unreleased` to `x.y.z — YYYY-MM-DD`, and adds a new `Unrele
 
 ## Unreleased
 
+### Changed
+
+- **Breaking:** each `ValidationDiagnostic` has a required `code`, of the
+  new exported type `DiagnosticCode`. A caller can act on the kind of a
+  diagnostic without a match on its message. A consumer that builds a
+  `ValidationDiagnostic` must give it a code.
+  [docs/api.md](docs/api.md#diagnostics) lists the codes
+  ([#4](https://github.com/Bimmiest/propslab-engine/issues/4)).
+
 ## 0.1.0 — 2026-11-12
 
 ### Added

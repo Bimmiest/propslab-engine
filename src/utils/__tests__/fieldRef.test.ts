@@ -30,6 +30,7 @@ describe('fieldRef', () => {
   it('builds a consistent quoting warning', () => {
     const dir: ConfDirective = { key: 'FIELDALIAS-a', value: '', line: 7, directiveType: 'FIELDALIAS', className: 'a' };
     const w = fieldQuotingWarning(dir, 'event.field', 'needs quotes');
+    expect(w.code).toBe('field-name-needs-quotes');
     expect(w.level).toBe('warning');
     expect(w.file).toBe('props.conf');
     expect(w.line).toBe(7);

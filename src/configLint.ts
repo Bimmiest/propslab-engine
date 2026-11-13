@@ -22,6 +22,7 @@ function lintLookups(propsConf: ParsedConf, diagnostics: ValidationDiagnostic[])
     for (const dir of stanza.directives) {
       if (dir.directiveType === 'LOOKUP') {
         diagnostics.push({
+          code: 'directive-not-simulated',
           level: 'warning',
           message: `LOOKUP-${dir.className ?? dir.key} is configured but lookup table execution is not simulated — fields will not be populated`,
           file: 'props.conf',
@@ -57,6 +58,7 @@ function lintDirectiveSupport(dir: ConfDirective, file: ConfFile, diagnostics: V
   const belongsIn = wrongFileCanonical(dir.key, file);
   if (belongsIn !== undefined) {
     diagnostics.push({
+      code: 'directive-in-wrong-file',
       level: 'warning',
       message: WRONG_FILE_MESSAGE(dir.key, file, belongsIn),
       file,
@@ -82,6 +84,7 @@ function lintDirectiveSupport(dir: ConfDirective, file: ConfFile, diagnostics: V
   if (!entry) {
     if (!isUndocumentedAttribute(baseKey)) return;
     diagnostics.push({
+      code: 'directive-unclassified',
       level: 'warning',
       message:
         `${dir.key} is a valid Splunk attribute that this simulator does not ` +
@@ -103,6 +106,7 @@ function lintDirectiveSupport(dir: ConfDirective, file: ConfFile, diagnostics: V
     // `ignored` is a gap we intend to close, so it is a warning: the
     // preview is wrong and will change. `documented` is a deliberate,
     // permanent edge, so it is informational.
+    code: 'directive-not-simulated',
     level: entry.support === 'ignored' ? 'warning' : 'info',
     message:
       `${dir.key} is recognised but not simulated — the preview ignores it. ` + `${entry.note ?? ''}${tracking}`.trim(),
@@ -119,6 +123,7 @@ function lintRegexLimitCap(dir: ConfDirective, file: ConfFile, diagnostics: Vali
   const n = Number(value);
   if (n !== 0 && n <= MAX_REGEX_LIMIT) return;
   diagnostics.push({
+    code: 'regex-limit-capped',
     level: 'info',
     message:
       `${dir.key} = ${value} ${n === 0 ? 'means no limit' : `is above ${MAX_REGEX_LIMIT.toLocaleString('en-US')}`}. ` +
@@ -150,6 +155,7 @@ const DEST_KEY_REQUIRED_PREFIX: Record<string, string> = {
 function lintDestKeyValue(destKeyDir: ConfDirective, destKey: string, diagnostics: ValidationDiagnostic[]): void {
   if (VALID_UNSIMULATED_DEST_KEYS.has(destKey)) {
     diagnostics.push({
+      code: 'dest-key-not-simulated',
       level: 'warning',
       message: `DEST_KEY = ${destKeyDir.value.trim()} is a valid Splunk routing key but is not simulated — events will not be cloned/routed in the preview.`,
       file: 'transforms.conf',
@@ -158,6 +164,7 @@ function lintDestKeyValue(destKeyDir: ConfDirective, destKey: string, diagnostic
     });
   } else if (!SIMULATED_DEST_KEYS.has(destKey)) {
     diagnostics.push({
+      code: 'dest-key-unknown',
       level: 'warning',
       message: `DEST_KEY = ${destKeyDir.value.trim()} is not a recognised Splunk DEST_KEY. Splunk only accepts the documented keys (queue, _raw, _meta, _time, MetaData:Host/Source/Sourcetype/Index, _TCP_ROUTING, _SYSLOG_ROUTING). An unrecognised key has no routing effect.`,
       file: 'transforms.conf',
@@ -180,6 +187,7 @@ function lintDestKeyFormat(
     : undefined;
   if (requiredPrefix && !formatDir.value.includes(requiredPrefix)) {
     diagnostics.push({
+      code: 'format-prefix-missing',
       level: 'warning',
       message: `DEST_KEY = ${destKeyDir.value.trim()} requires FORMAT to include the "${requiredPrefix}" prefix (e.g. FORMAT = ${requiredPrefix}$1). Without it Splunk silently skips the metadata update.`,
       file: 'transforms.conf',
@@ -194,6 +202,7 @@ function lintDestKeyFormat(
   const format = formatDir.value.trim();
   if (destKey === 'MetaData:Index' && format.startsWith('index::')) {
     diagnostics.push({
+      code: 'format-has-index-prefix',
       level: 'warning',
       message: `DEST_KEY = ${destKeyDir.value.trim()} takes the bare index name, not an "index::" prefix. Splunk does not strip it, so this routes events to an index literally named "${format}".`,
       file: 'transforms.conf',
@@ -248,6 +257,7 @@ function lintTransformReferences(
         transformPhase.set(name, seen === undefined || seen === phase ? phase : 'both');
         if (!transformsConf.stanzas.find((s) => s.name === name)) {
           diagnostics.push({
+            code: 'transform-not-found',
             level: 'error',
             message: `Referenced transform stanza "${name}" not found in transforms.conf`,
             file: 'props.conf',
@@ -269,6 +279,7 @@ function lintUnreferencedTransforms(
   for (const stanza of transformsConf.stanzas) {
     if (stanza.type !== 'default' && !referenced.has(stanza.name)) {
       diagnostics.push({
+        code: 'transform-unreferenced',
         level: 'warning',
         message: `Transform stanza "${stanza.name}" is defined but never referenced from props.conf`,
         file: 'transforms.conf',
@@ -288,6 +299,7 @@ function lintStanzaPatterns(propsConf: ParsedConf, diagnostics: ValidationDiagno
     const problem = stanzaPatternProblem(stanza);
     if (!problem) continue;
     diagnostics.push({
+      code: 'stanza-pattern-invalid',
       level: 'warning',
       message:
         `[${stanza.name}] never matches: its pattern reads as the regular expression ${problem.regex}, ` +
@@ -361,6 +373,7 @@ export function lintMatchedDirectives(
     if (kvMode !== 'none' && searchTimeJson) {
       const kvDesc = kvMode ? `KV_MODE = ${kvMode}` : 'the default KV_MODE = auto';
       diagnostics.push({
+        code: 'json-extracted-twice',
         level: 'warning',
         message:
           `INDEXED_EXTRACTIONS = json already extracts fields at index time, but ${kvDesc} extracts them again at search time. ` +

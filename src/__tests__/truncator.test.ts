@@ -104,7 +104,7 @@ describe('propslab#559 — a malformed TRUNCATE in a run', () => {
       const { result, diagnostics } = run(value);
       expect(result.events[0]?._raw, value).toHaveLength(10_000);
       expect(
-        diagnostics.filter((d) => d.directiveKey === 'TRUNCATE' || d.message.includes('TRUNCATE')),
+        diagnostics.filter((d) => d.directiveKey === 'TRUNCATE'),
         value,
       ).toHaveLength(value === '' ? 0 : 1);
     }

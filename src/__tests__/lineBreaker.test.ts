@@ -267,27 +267,27 @@ describe('breakLines — uncompilable break patterns are reported (propslab#75.2
   it('warns when BREAK_ONLY_BEFORE cannot be compiled', () => {
     const diags: ValidationDiagnostic[] = [];
     breakLines('a\nb\nc', [dir('BREAK_ONLY_BEFORE', '(a+')], META, runCtx(FIXED_NOW, diags));
-    const warning = diags.find((d) => d.message.includes('BREAK_ONLY_BEFORE'));
+    const warning = diags.find((d) => d.directiveKey === 'BREAK_ONLY_BEFORE');
     expect(warning).toBeDefined();
-    expect(warning!.message).toContain('does not compile (missing closing parenthesis');
+    expect(warning!.code).toBe('regex-invalid');
   });
 
   it('warns when MUST_BREAK_AFTER cannot be compiled', () => {
     const diags: ValidationDiagnostic[] = [];
     breakLines('a\nb\nc', [dir('MUST_BREAK_AFTER', '[unterminated')], META, runCtx(FIXED_NOW, diags));
-    expect(diags.some((d) => d.message.includes('MUST_BREAK_AFTER'))).toBe(true);
+    expect(diags.map((d) => [d.code, d.directiveKey])).toContainEqual(['regex-invalid', 'MUST_BREAK_AFTER']);
   });
 
   it('stays quiet for a pattern that compiles', () => {
     const diags: ValidationDiagnostic[] = [];
     breakLines('a\nb\nc', [dir('BREAK_ONLY_BEFORE', '^\\d{4}-')], META, runCtx(FIXED_NOW, diags));
-    expect(diags.filter((d) => d.message.includes('BREAK_ONLY_BEFORE'))).toHaveLength(0);
+    expect(diags.filter((d) => d.directiveKey === 'BREAK_ONLY_BEFORE')).toHaveLength(0);
   });
 
   it('stays quiet when the directive is absent', () => {
     const diags: ValidationDiagnostic[] = [];
     breakLines('a\nb\nc', [], META, runCtx(FIXED_NOW, diags));
-    expect(diags.filter((d) => d.message.includes('BREAK_ONLY_BEFORE'))).toHaveLength(0);
+    expect(diags.filter((d) => d.directiveKey === 'BREAK_ONLY_BEFORE')).toHaveLength(0);
   });
 });
 
@@ -316,7 +316,7 @@ describe('propslab#172 — a LINE_BREAKER with no capture group', () => {
   it('says why, rather than silently ignoring the pattern', () => {
     const diags: ValidationDiagnostic[] = [];
     breakLines('a\nb\n', [dir('LINE_BREAKER', '-----')], META, runCtx(FIXED_NOW, diags));
-    expect(diags.some((d) => d.message.includes('no capturing group'))).toBe(true);
+    expect(diags.map((d) => d.code)).toContain('line-breaker-no-capture-group');
   });
 
   it('still honours a pattern that does have a group', () => {
@@ -358,10 +358,8 @@ describe('propslab#472 — a LINE_BREAKER that does not compile', () => {
       runCtx(FIXED_NOW, diags),
     );
     const lb = diags.filter((d) => d.directiveKey === 'LINE_BREAKER');
-    expect(lb).toHaveLength(1);
+    expect(lb.map((d) => d.code)).toEqual(['regex-invalid']);
     expect(lb[0]!.message).toContain('does not compile (missing closing parenthesis');
-    expect(lb[0]!.message).not.toContain('no capturing group');
-    expect(lb[0]!.message).not.toContain('Wrap the delimiter');
     // Events are still broken, on newlines.
     expect(events.map((e) => e._raw)).toEqual(['a', 'b']);
   });
@@ -370,9 +368,7 @@ describe('propslab#472 — a LINE_BREAKER that does not compile', () => {
     const diags: ValidationDiagnostic[] = [];
     breakLines('a\nb\n', [dir('LINE_BREAKER', '-----')], META, runCtx(FIXED_NOW, diags));
     const lb = diags.filter((d) => d.directiveKey === 'LINE_BREAKER');
-    expect(lb).toHaveLength(1);
-    expect(lb[0]!.message).toContain('no capturing group');
-    expect(lb[0]!.message).not.toContain('does not compile');
+    expect(lb.map((d) => d.code)).toEqual(['line-breaker-no-capture-group']);
   });
 
   it('is resolved before splitting, which refuses a pattern that does not compile (propslab#561)', () => {
@@ -470,7 +466,7 @@ describe('breakLines — MUST_NOT_BREAK_BEFORE / MUST_NOT_BREAK_AFTER (propslab#
       META,
       runCtx(FIXED_NOW, diagnostics),
     );
-    expect(diagnostics.some((d) => d.message.includes('MUST_NOT_BREAK_AFTER'))).toBe(true);
+    expect(diagnostics.map((d) => [d.code, d.directiveKey])).toContainEqual(['regex-invalid', 'MUST_NOT_BREAK_AFTER']);
   });
 });
 
@@ -500,7 +496,7 @@ describe('breakLines — LINE_BREAKER capture groups counted on the translated p
       META,
       runCtx(FIXED_NOW, diagnostics),
     );
-    expect(diagnostics.some((d) => d.message.includes('has no capturing group'))).toBe(true);
+    expect(diagnostics.map((d) => d.code)).toContain('line-breaker-no-capture-group');
   });
 });
 

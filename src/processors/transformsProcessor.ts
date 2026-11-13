@@ -168,6 +168,7 @@ function warnMatched(
   // nothing else on the event says so (propslab#874).
   if (result.limitHit !== undefined) {
     diagnostics.report(warnKey(run, 'scanLimit', stanzaName), {
+      code: 'regex-limit-reached',
       level: 'warning',
       message:
         `Transform "${stanzaName}" stopped at a regex limit (${result.limitHit}) while it looked for each match ` +
@@ -277,6 +278,7 @@ function applyMatch(
     writeMeta: phase === 'index-time' && stanzaWritesMeta(transformStanza),
     onTimeOutOfRange: (value) => {
       diagnostics.report(warnKey(run, 'timeOutOfRange', stanzaName), {
+        code: 'epoch-out-of-range',
         level: 'warning',
         message: epochOutOfRangeMessage(`DEST_KEY = _time in transform "${stanzaName}"`, value),
         file: 'transforms.conf',
@@ -354,6 +356,7 @@ function runRegexStanza(
     transformStanza,
     (pattern) => {
       diagnostics.report(warnKey(run, 'invalidRegex', stanzaName), {
+        code: 'regex-invalid',
         level: 'warning',
         message: `Transform "${stanzaName}" was skipped: its REGEX (${pattern}) does not compile (${validateRegex(pattern) ?? 'invalid regex'}).`,
         file: 'transforms.conf',
@@ -476,6 +479,7 @@ function warnIndexTimeNoWriteMeta(
   if (stanzaWritesMeta(transformStanza)) return;
 
   diagnostics.report(key, {
+    code: 'transform-no-write-meta',
     level: 'warning',
     message:
       `Index-time transform "${stanzaName}" extracts fields (${Object.keys(result.fields).join(', ')}) but has no ` +
@@ -508,6 +512,7 @@ function warnIndexTimeSearchOnlyAttrs(
 
   const hasDelims = present.includes('DELIMS');
   diagnostics.report(key, {
+    code: 'setting-inert-in-phase',
     level: 'warning',
     message:
       `Transform "${stanzaName}" sets ${present.join(', ')}, but it is referenced by an index-time TRANSFORMS-. ` +
@@ -536,6 +541,7 @@ function warnSearchTimeDestKey(
   if (!destKeyDir) return;
   const destKey = destKeyDir.value.trim();
   diagnostics.report(key, {
+    code: 'setting-inert-in-phase',
     level: 'warning',
     message:
       `Transform "${stanzaName}" sets DEST_KEY = ${destKey}, but it is referenced by a search-time REPORT-. ` +
@@ -568,6 +574,7 @@ function warnSearchTimeNoFormat(
   const regex = effectiveDirective(transformStanza.directives, 'REGEX')?.value ?? '';
   if (/\(\?P?<(?![=!])/.test(regex)) return;
   diagnostics.report(key, {
+    code: 'report-no-format',
     level: 'warning',
     message:
       `Transform "${stanzaName}" is referenced by a search-time REPORT- and its REGEX matched, but it has no ` +
@@ -599,6 +606,7 @@ function warnUnsimulatedDestKey(
 
   const line = effectiveDirective(transformStanza.directives, 'DEST_KEY')?.line ?? transformStanza.lineRange.start;
   diagnostics.push({
+    code: 'dest-key-not-simulated',
     level: 'info',
     message: `DEST_KEY = ${destKey} in transform "${stanzaName}" is a valid Splunk routing key but is not simulated here — the event is shown unchanged.`,
     file: 'transforms.conf',
@@ -620,6 +628,7 @@ function warnMetaReplaced(
 ): void {
   if (dropped.length === 0) return;
   diagnostics.report(key, {
+    code: 'meta-fields-dropped',
     level: 'warning',
     message:
       `DEST_KEY = _meta in transform "${stanzaName}" replaced _meta, dropping the indexed fields written before it ` +
@@ -648,6 +657,7 @@ function warnRawLoss(
   if (origLen === 0 || dropped <= 0 || dropped / origLen <= RAW_LOSS_THRESHOLD) return;
 
   diagnostics.report(key, {
+    code: 'raw-text-dropped',
     level: 'warning',
     message:
       `DEST_KEY = _raw in transform "${stanzaName}" replaced the event and dropped ${dropped} of ${origLen} characters. ` +

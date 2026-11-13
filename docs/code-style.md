@@ -129,6 +129,8 @@ The rules of the engine, which a reviewer looks for:
   `new RegExp`. The engine's own fixed patterns stay JavaScript regexes.
 
 The rule that a test asserts the code of a diagnostic, not its message,
-arrived with the template. The tests that assert a message today are in
-`scripts/lint-allowlist.json`. #4 gives each diagnostic a code and removes
-them. #6 removes the other findings in that file.
+arrived with the template. Each diagnostic has a code (#4), and
+[api.md](api.md#diagnostics) lists the codes. The message assertions that
+stay in `scripts/lint-allowlist.json` assert data that only the message
+holds, for example a count of events. #11 removes them. #6 removes the other
+findings in that file.

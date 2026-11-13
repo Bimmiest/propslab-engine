@@ -1,4 +1,11 @@
-import type { SplunkEvent, ConfDirective, DirectiveNoOp, RawMutation, ValidationDiagnostic } from '../types';
+import type {
+  SplunkEvent,
+  ConfDirective,
+  DiagnosticCode,
+  DirectiveNoOp,
+  RawMutation,
+  ValidationDiagnostic,
+} from '../types';
 import { explainNoMatch, noOpDirectiveKey } from '../noOpExplainer';
 import { safeRegex, validateRegex, type RegexMatch, type SplunkRegex } from '../utils/splunkRegex';
 import { byClassName } from '../utils/asciiCompare';
@@ -82,8 +89,9 @@ function buildReplacement(raw: string): (match: RegexMatch) => string {
 const SED_COMMAND_RE = /^([sy])([^\w\s])/;
 
 /** Shared shape for every diagnostic this file raises about one directive. */
-function sedWarning(dir: ConfDirective | undefined, message: string): ValidationDiagnostic {
+function sedWarning(dir: ConfDirective | undefined, code: DiagnosticCode, message: string): ValidationDiagnostic {
   return {
+    code,
     level: 'warning',
     message: `SEDCMD-${dir?.className ?? ''}: ${message}`,
     file: 'props.conf',
@@ -136,6 +144,7 @@ function parseTransliterate(
     diagnostics?.push(
       sedWarning(
         dir,
+        'sed-sets-unequal-length',
         `y/// needs both character sets to be the same length (got ${from.length} and ${to.length}), ` +
           'so the directive was ignored.',
       ),
@@ -228,6 +237,7 @@ export function parseSedExpression(
     diagnostics?.push(
       sedWarning(
         dir,
+        'sed-not-an-expression',
         `"${trimmed}" is not a sed expression and was ignored. SEDCMD takes ` +
           's/<regex>/<replacement>/<flags> (any non-alphanumeric character may be the delimiter).',
       ),
@@ -242,6 +252,7 @@ export function parseSedExpression(
     diagnostics?.push(
       sedWarning(
         dir,
+        'sed-delimiter-missing',
         `"${trimmed}" is missing its closing delimiter "${delimiter}" and was ignored. ` +
           `SEDCMD takes s${delimiter}<regex>${delimiter}<replacement>${delimiter}<flags>.`,
       ),
@@ -264,6 +275,7 @@ export function parseSedExpression(
     diagnostics?.push(
       sedWarning(
         dir,
+        'sed-flag-not-simulated',
         `the numeric occurrence flag (s/.../.../N) is not simulated — the preview replaces the ${isGlobal ? 'matches globally' : 'first match'} instead of only the Nth.`,
       ),
     );
@@ -279,6 +291,7 @@ export function parseSedExpression(
     diagnostics?.push(
       sedWarning(
         dir,
+        'regex-invalid',
         `the pattern (${patternStr}) does not compile (${validateRegex(patternStr) ?? 'invalid regex'}). ` +
           'The substitution was skipped, so the event is shown unmodified.',
       ),
@@ -350,6 +363,7 @@ export function applySedCommands(events: SplunkEvent[], directives: ConfDirectiv
             `SEDCMD limit|${directive.layer ?? ''}|${directive.line}|${directive.key}`,
             sedWarning(
               directive,
+              'regex-limit-reached',
               `the scan for each match stopped at a regex limit (${limitHit}), so the substitution is incomplete: ` +
                 'only the matches before the limit were replaced, and the rest of the event is unchanged.',
             ),

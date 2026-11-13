@@ -138,7 +138,7 @@ describe('assigning a boolean result (propslab#358)', () => {
     )[0]!;
     expect(out.fields['x']).toBeUndefined();
     expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0]).toMatchObject({ level: 'error', directiveKey: 'EVAL-x' });
+    expect(diagnostics[0]).toMatchObject({ code: 'eval-error', level: 'error', directiveKey: 'EVAL-x' });
     expect(diagnostics[0]!.message).toMatch(/Fields cannot be assigned a boolean result/);
   });
 
@@ -159,7 +159,7 @@ describe('assigning a boolean result (propslab#358)', () => {
     const out = applyIngestEval([event({ a: '1', b: '2' })], dirs, runCtx(FIXED_NOW, diagnostics))[0]!;
     expect(out.fields['x']).toBeUndefined();
     expect(out.fields['y']).toBe('kept');
-    expect(diagnostics.filter((d) => d.level === 'error')).toHaveLength(1);
+    expect(diagnostics.filter((d) => d.code === 'eval-error')).toHaveLength(1);
     expect(diagnostics[0]!.message).toMatch(/^INGEST_EVAL x: Fields cannot be assigned a boolean result/);
   });
 });

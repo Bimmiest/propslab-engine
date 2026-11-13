@@ -171,13 +171,14 @@ describe('unsimulated directives are reported rather than ignored (propslab#153)
       diagnosticsFor('TZ_ALIAS = EST=GMT-5\n').find((x) => x.directiveKey === 'TZ_ALIAS'),
     );
     expect(d?.level).toBe('warning');
-    expect(d?.message).toContain('not simulated');
+    expect(d?.code).toBe('directive-not-simulated');
     expect(d?.message).toContain('#9999');
   });
 
   it('informs, without an issue, for a directive that is out of scope on purpose', () => {
     const d = diagnosticsFor('CHARSET = UTF-16\n').find((x) => x.directiveKey === 'CHARSET');
     expect(d?.level).toBe('info');
+    expect(d?.code).toBe('directive-not-simulated');
     expect(d?.message).toContain('already decoded');
     expect(d?.message).not.toContain('#');
   });
@@ -193,7 +194,7 @@ describe('unsimulated directives are reported rather than ignored (propslab#153)
 
   it('says nothing about a directive that is simulated', () => {
     const keys = diagnosticsFor('TRUNCATE = 500\nKV_MODE = auto\n')
-      .filter((d) => d.message.includes('not simulated'))
+      .filter((d) => d.code === 'directive-not-simulated')
       .map((d) => d.directiveKey);
     expect(keys).toEqual([]);
   });
@@ -207,7 +208,7 @@ describe('unsimulated directives are reported rather than ignored (propslab#153)
     ).find((x) => x.directiveKey === 'external_cmd');
     expect(d?.file).toBe('transforms.conf');
     expect(d?.level).toBe('info');
-    expect(d?.message).toContain('not simulated');
+    expect(d?.code).toBe('directive-not-simulated');
   });
 
   it('warns for a valid attribute the registry does not document (propslab#178)', () => {
@@ -218,7 +219,7 @@ describe('unsimulated directives are reported rather than ignored (propslab#153)
     const KEY = 'A_FUTURE_SPLUNK_ATTRIBUTE';
     const d = withUndocumented(KEY, () => diagnosticsFor(`${KEY} = foo\n`).find((x) => x.directiveKey === KEY));
     expect(d?.level).toBe('warning');
-    expect(d?.message).toContain('valid Splunk attribute');
+    expect(d?.code).toBe('directive-unclassified');
     // Deliberately asserts no issue number: a message must not point a user
     // at an issue that may have closed.
     expect(d?.message).not.toContain('#178');
@@ -236,6 +237,16 @@ describe('unsimulated directives are reported rather than ignored (propslab#153)
       d.directiveKey?.startsWith('LOOKUP'),
     );
     expect(lookupDiags).toHaveLength(1);
+    expect(lookupDiags[0]?.code).toBe('directive-not-simulated');
     expect(lookupDiags[0]?.message).toContain('lookup table execution is not simulated');
+  });
+
+  // Doc-derived: transforms.conf.spec defines REGEX, and props.conf.spec does
+  // not, so Splunk ignores it in props.conf.
+  it('reports an attribute of transforms.conf written in props.conf, at its line', () => {
+    const d = diagnosticsFor('TRUNCATE = 500\nREGEX = (\\w+)\n').filter((x) => x.directiveKey === 'REGEX');
+    expect(d.map((x) => [x.code, x.level, x.file, x.line])).toEqual([
+      ['directive-in-wrong-file', 'warning', 'props.conf', 3],
+    ]);
   });
 });

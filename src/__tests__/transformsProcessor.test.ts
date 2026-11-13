@@ -35,7 +35,7 @@ function classDir(className: string, value: string): ConfDirective {
   return { key: `TRANSFORMS-${className}`, value, line: 1, directiveType: 'TRANSFORMS', className };
 }
 
-const lossMsg = (d: ValidationDiagnostic) => d.message.includes('replaced the event and dropped');
+const lossMsg = (d: ValidationDiagnostic) => d.code === 'raw-text-dropped';
 
 describe('applyTransforms — DEST_KEY=_raw data-loss warning', () => {
   it('warns when the FORMAT drops a large chunk of the event', () => {
@@ -84,7 +84,7 @@ describe('applyTransforms — DEST_KEY=_raw data-loss warning', () => {
 });
 
 describe('applyTransforms — unknown DEST_KEY warning (SEM-11)', () => {
-  const unknownMsg = (d: ValidationDiagnostic) => d.message.includes('is not a recognized Splunk DEST_KEY');
+  const unknownMsg = (d: ValidationDiagnostic) => d.code === 'dest-key-unknown';
 
   // The one warning about an unknown key is the config-time lint's ("has no
   // routing effect"); the run-time stage used to add a second that said the
@@ -114,7 +114,7 @@ describe('applyTransforms — unknown DEST_KEY warning (SEM-11)', () => {
     const diags: ValidationDiagnostic[] = [];
     const conf = transformsConf('route', { REGEX: '(.*)', FORMAT: 'my_group', DEST_KEY: '_TCP_ROUTING' });
     applyTransforms([event('hello')], transformsDir('route'), conf, 'index-time', runCtx(FIXED_NOW, diags));
-    expect(diags.some((d) => d.level === 'info' && d.message.includes('not simulated'))).toBe(true);
+    expect(diags.map((d) => [d.code, d.level])).toContainEqual(['dest-key-not-simulated', 'info']);
     expect(diags.some(unknownMsg)).toBe(false);
   });
 });
@@ -162,14 +162,14 @@ describe('applyTransforms — index-time extraction without WRITE_META (SEM-7)',
     const diags: ValidationDiagnostic[] = [];
     const conf = transformsConf('grab', { REGEX: '(?<user>\\w+)' });
     applyTransforms([event('alice')], transformsDir('grab'), conf, 'index-time', runCtx(FIXED_NOW, diags));
-    expect(diags.some((d) => d.message.includes('no effect'))).toBe(true);
+    expect(diags.map((d) => d.code)).toContain('transform-no-write-meta');
   });
 
   it('does NOT warn when WRITE_META = true is set', () => {
     const diags: ValidationDiagnostic[] = [];
     const conf = transformsConf('grab', { REGEX: '(?<user>\\w+)', WRITE_META: 'true' });
     applyTransforms([event('alice')], transformsDir('grab'), conf, 'index-time', runCtx(FIXED_NOW, diags));
-    expect(diags.some((d) => d.message.includes('no effect'))).toBe(false);
+    expect(diags.map((d) => d.code)).not.toContain('transform-no-write-meta');
   });
 
   it('does NOT warn for the same extraction at search time (REPORT)', () => {
@@ -179,7 +179,7 @@ describe('applyTransforms — index-time extraction without WRITE_META (SEM-7)',
       { key: 'REPORT-x', value: 'grab', line: 1, directiveType: 'REPORT', className: 'x' },
     ];
     applyTransforms([event('alice')], reportDir, conf, 'search-time', runCtx(FIXED_NOW, diags));
-    expect(diags.some((d) => d.message.includes('no effect'))).toBe(false);
+    expect(diags.map((d) => d.code)).not.toContain('transform-no-write-meta');
   });
 
   // Doc-derived (transforms.conf.spec, WRITE_META): index-time fields are
@@ -196,7 +196,7 @@ describe('applyTransforms — index-time extraction without WRITE_META (SEM-7)',
       runCtx(FIXED_NOW, diags),
     )[0]!;
     expect(e.fields['user']).toBeUndefined();
-    expect(diags.some((d) => d.message.includes('no effect'))).toBe(true);
+    expect(diags.map((d) => d.code)).toContain('transform-no-write-meta');
     const step = e.processingTrace.at(-1);
     expect(step?.fieldsAdded).toEqual([]);
     expect(step?.description).toContain('user');
@@ -223,7 +223,7 @@ describe('applyTransforms — index-time extraction without WRITE_META (SEM-7)',
     ];
     const e = applyTransforms([event('alice')], reportDir, conf, 'search-time', runCtx(FIXED_NOW, diags))[0]!;
     expect(e.fields).toEqual({});
-    expect(diags.some((d) => d.message.includes('At search time FORMAT has no default'))).toBe(true);
+    expect(diags.map((d) => d.code)).toContain('report-no-format');
   });
 
   it('keeps the index-time default FORMAT for the same stanza under TRANSFORMS-', () => {
@@ -239,7 +239,7 @@ describe('applyTransforms — index-time extraction without WRITE_META (SEM-7)',
       { key: 'REPORT-x', value: 'opt', line: 1, directiveType: 'REPORT', className: 'x' },
     ];
     applyTransforms([event('x')], reportDir, conf, 'search-time', runCtx(FIXED_NOW, diags));
-    expect(diags.some((d) => d.message.includes('FORMAT has no default'))).toBe(false);
+    expect(diags.map((d) => d.code)).not.toContain('report-no-format');
   });
 
   it('still stores what DEST_KEY = _meta writes', () => {
@@ -334,7 +334,7 @@ describe('applyTransforms — DEST_KEY is index-time only (propslab#57)', () => 
     )[0]!;
     expect(out.fields['user']).toBe('alice');
     expect(out._meta._queue).toBeUndefined();
-    expect(diags.some((d) => d.message.includes('DEST_KEY is index-time only'))).toBe(true);
+    expect(diags.map((d) => d.code)).toContain('setting-inert-in-phase');
   });
 
   it('still routes at index time', () => {
@@ -444,7 +444,7 @@ describe('applyTransforms — search-time-only attributes reached index-time', (
     return [{ key: 'REPORT-x', value: stanzaName, line: 1, directiveType: 'REPORT', className: 'x' }];
   }
 
-  const warnMsg = (d: ValidationDiagnostic) => d.message.includes('valid only for search-time field extractions');
+  const warnMsg = (d: ValidationDiagnostic) => d.code === 'setting-inert-in-phase';
 
   it('warns when a DELIMS stanza is referenced by TRANSFORMS-', () => {
     const diags: ValidationDiagnostic[] = [];
@@ -591,7 +591,7 @@ describe('propslab#87 — CLONE_SOURCETYPE', () => {
       );
       // orig → masked (processed) → orig (cut: already in the chain).
       expect(result.events.map((e) => e.metadata.sourcetype)).toEqual(['orig', 'masked', 'orig']);
-      expect(diagnostics.some((d) => d.message.includes('CLONE_SOURCETYPE loops back'))).toBe(true);
+      expect(diagnostics.map((d) => d.code)).toContain('clone-loop');
     });
   });
 
@@ -779,7 +779,7 @@ describe('propslab#451 — DEST_KEY = _meta replaces what came before it', () =>
     expect(tierStep(e)?.description).toBe(
       'Transform replaced _meta, dropping the indexed fields written before it: zone',
     );
-    const warnings = diags.filter((d) => d.message.includes('replaced _meta'));
+    const warnings = diags.filter((d) => d.code === 'meta-fields-dropped');
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toMatchObject({ level: 'warning', file: 'transforms.conf' });
     expect(warnings[0]?.message).toBe(
@@ -809,7 +809,7 @@ describe('propslab#451 — DEST_KEY = _meta replaces what came before it', () =>
     );
     expect(result.events[0]?._meta).toEqual({ tier: 'web' });
     expect(tierStep(result.events[0]!)?.description).toMatch(/written before it: zone, was$/);
-    const warning = diagnostics.find((d) => d.message.includes('replaced _meta'));
+    const warning = diagnostics.find((d) => d.code === 'meta-fields-dropped');
     expect(warning?.message).toContain('(zone, was)');
     expect(warning).toMatchObject({ file: 'transforms.conf', line: 9 });
   });
@@ -820,7 +820,7 @@ describe('propslab#451 — DEST_KEY = _meta replaces what came before it', () =>
     expect(e._meta).toEqual({ zone: 'dmz', tier: 'web' });
     expect(e.fields['zone']).toBe('dmz');
     expect(tierStep(e)?.description).toBe('Transform routed to _meta');
-    expect(diags.filter((d) => d.message.includes('replaced _meta'))).toEqual([]);
+    expect(diags.filter((d) => d.code === 'meta-fields-dropped')).toEqual([]);
   });
 
   it('appends rather than replaces when the stanza also sets WRITE_META', () => {
@@ -838,7 +838,7 @@ describe('propslab#451 — DEST_KEY = _meta replaces what came before it', () =>
       'index-time',
       runCtx(FIXED_NOW, diags),
     );
-    expect(diags.filter((d) => d.message.includes('replaced _meta'))).toHaveLength(1);
+    expect(diags.filter((d) => d.code === 'meta-fields-dropped')).toHaveLength(1);
   });
 
   it('writes nothing to _meta from a REPORT, where WRITE_META is inert', () => {

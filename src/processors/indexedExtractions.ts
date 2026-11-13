@@ -90,6 +90,7 @@ function extractJsonFields(events: SplunkEvent[], directives: ConfDirective[], c
     // A problem with the raw event data, not the config: surface it under the
     // Raw Log panel, pointing at the first offending line.
     ctx.diagnostics.push({
+      code: 'json-invalid',
       level: 'warning',
       file: 'raw',
       line: first.line,
@@ -293,6 +294,7 @@ function compileOption(
   const compiled = safeRegex(pattern);
   if (!compiled && diagnostics) {
     diagnostics.push({
+      code: 'regex-invalid',
       level: 'warning',
       message: `${dir.key} (${pattern}) does not compile (${validateRegex(pattern) ?? 'invalid regex'}). ${consequence}`,
       file: 'props.conf',

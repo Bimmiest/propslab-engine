@@ -23,7 +23,7 @@ describe('parseConf — basic structure', () => {
   it('treats # as a comment but NOT ;', () => {
     const parsed = parseConf('[s]\n# a comment\n; not a comment\nA = 1', 'props.conf');
     // The ";" line is not a comment — it becomes a malformed-line error, not a directive.
-    expect(parsed.errors.some((e) => e.message.includes('Malformed'))).toBe(true);
+    expect(parsed.errors.map((e) => [e.code, e.line])).toEqual([['malformed-line', 3]]);
   });
 });
 
@@ -54,7 +54,7 @@ describe('parseConf — case-sensitive attribute names', () => {
     const warn = parsed.errors.find((e) => e.directiveKey === 'kv_mode');
     expect(warn).toBeDefined();
     expect(warn!.level).toBe('warning');
-    expect(warn!.message).toMatch(/case-sensitive/);
+    expect(warn!.code).toBe('directive-miscased');
     expect(warn!.suggestion).toBe('Change "kv_mode" to "KV_MODE".');
     expect(warn!.line).toBe(2);
   });
@@ -159,9 +159,9 @@ describe('parseConf — class-directive prefixes are case-sensitive (propslab#60
 
   it('warns with the canonical spelling', () => {
     const conf = parseConf('[st]\nextract-f = (?<a>\\d+)', 'props.conf');
-    const warning = conf.errors.find((e) => e.message.includes('case-sensitive'));
+    const warning = conf.errors.find((e) => e.code === 'directive-miscased');
     expect(warning).toBeDefined();
-    expect(warning!.message).toContain('EXTRACT-f');
+    expect(warning!.suggestion).toBe('Change "extract-f" to "EXTRACT-f".');
   });
 
   it('still accepts the correctly-cased form', () => {
@@ -169,12 +169,15 @@ describe('parseConf — class-directive prefixes are case-sensitive (propslab#60
     const dir = conf.stanzas[0]!.directives[0]!;
     expect(dir.directiveType).toBe('EXTRACT');
     expect(dir.className).toBe('f');
-    expect(conf.errors.some((e) => e.message.includes('case-sensitive'))).toBe(false);
+    expect(conf.errors.map((e) => e.code)).not.toContain('directive-miscased');
   });
 
   it('flags a mixed-case prefix too', () => {
     const conf = parseConf('[st]\nExtract-f = (?<a>\\d+)', 'props.conf');
-    expect(conf.errors.some((e) => e.message.includes('EXTRACT-f'))).toBe(true);
+    expect(conf.errors.map((e) => [e.code, e.suggestion])).toContainEqual([
+      'directive-miscased',
+      'Change "Extract-f" to "EXTRACT-f".',
+    ]);
   });
 });
 

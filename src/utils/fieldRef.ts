@@ -38,6 +38,7 @@ export function fieldNameNeedsQuoting(name: string, opts?: { allowWildcard?: boo
  */
 export function fieldQuotingWarning(dir: ConfDirective, bareName: string, reason: string): ValidationDiagnostic {
   return {
+    code: 'field-name-needs-quotes',
     level: 'warning',
     message: `${dir.key}: "${bareName}" ${reason} — single-quote it: '${bareName}'.`,
     file: 'props.conf',

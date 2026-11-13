@@ -40,7 +40,7 @@ describe('applyEvalExpressions — dotted (nested JSON) field names', () => {
       [evalDir('x', 'event.field')],
       runCtx(FIXED_NOW, diagnostics),
     );
-    const warn = diagnostics.find((d) => d.message.includes('event.field'));
+    const warn = diagnostics.find((d) => d.code === 'field-name-needs-quotes');
     expect(warn).toBeDefined();
     expect(warn!.level).toBe('warning');
     expect(warn!.suggestion).toBe("Use 'event.field' instead of event.field.");
@@ -458,7 +458,7 @@ describe('applyEvalExpressions — lazy evaluation (SEM-8)', () => {
     )[0]!;
     expect(r.fields['r']).toBe('yes');
     // md5() is a stub; it sits on the false branch and must not be reached.
-    expect(diagnostics.some((d) => d.message.includes('md5'))).toBe(false);
+    expect(diagnostics.map((d) => d.code)).not.toContain('eval-function-not-simulated');
   });
 
   it('case() stops at the first matching predicate', () => {
@@ -469,7 +469,7 @@ describe('applyEvalExpressions — lazy evaluation (SEM-8)', () => {
       runCtx(FIXED_NOW, diagnostics),
     )[0]!;
     expect(r.fields['r']).toBe('first');
-    expect(diagnostics.some((d) => d.message.includes('sha256'))).toBe(false);
+    expect(diagnostics.map((d) => d.code)).not.toContain('eval-function-not-simulated');
   });
 
   it('coalesce() stops at the first non-null and does not evaluate later args', () => {
@@ -481,7 +481,7 @@ describe('applyEvalExpressions — lazy evaluation (SEM-8)', () => {
       runCtx(FIXED_NOW, diagnostics),
     )[0]!;
     expect(r.fields['r']).toBe('present');
-    expect(diagnostics.some((d) => d.message.includes('searchmatch'))).toBe(false);
+    expect(diagnostics.map((d) => d.code)).not.toContain('eval-function-not-simulated');
   });
 
   it('OR short-circuits when the left operand is true', () => {
@@ -492,7 +492,7 @@ describe('applyEvalExpressions — lazy evaluation (SEM-8)', () => {
       runCtx(FIXED_NOW, diagnostics),
     )[0]!;
     expect(r.fields['r']).toBe('hit');
-    expect(diagnostics.some((d) => d.message.includes('searchmatch'))).toBe(false);
+    expect(diagnostics.map((d) => d.code)).not.toContain('eval-function-not-simulated');
   });
 
   it('AND short-circuits when the left operand is false', () => {
@@ -503,7 +503,7 @@ describe('applyEvalExpressions — lazy evaluation (SEM-8)', () => {
       runCtx(FIXED_NOW, diagnostics),
     )[0]!;
     expect(r.fields['r']).toBe('miss');
-    expect(diagnostics.some((d) => d.message.includes('searchmatch'))).toBe(false);
+    expect(diagnostics.map((d) => d.code)).not.toContain('eval-function-not-simulated');
   });
 });
 

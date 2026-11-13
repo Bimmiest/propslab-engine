@@ -134,7 +134,7 @@ describe('what the trace says when no timestamp was read', () => {
   it('reports a TIME_PREFIX that will not compile, as an error, and treats it as never matching', () => {
     const d: ValidationDiagnostic[] = [];
     const [e] = run(['2026-08-03 10:00:00'], [dir('TIME_PREFIX', '(unclosed', 4)], d);
-    expect(d[0]).toMatchObject({ level: 'error', line: 4, directiveKey: 'TIME_PREFIX' });
+    expect(d[0]).toMatchObject({ code: 'regex-invalid', level: 'error', line: 4, directiveKey: 'TIME_PREFIX' });
     expect(d[0]!.message).toMatch(/^TIME_PREFIX \(\(unclosed\) could not be compiled: /);
     expect(step(e!).description).toMatch(
       /^TIME_PREFIX could not be compiled, so it never matches, and no previous event/,
@@ -215,8 +215,9 @@ describe('an unresolvable zone', () => {
   it('is reported once, at TZ when TZ is set', () => {
     const d: ValidationDiagnostic[] = [];
     run(['2026-08-03 10:00:00', '2026-08-03 10:00:01'], [FMT, dir('TZ', '  Nowhere/Land ', 9)], d);
-    const hits = d.filter((x) => x.message.startsWith('Timezone "Nowhere/Land"'));
+    const hits = d.filter((x) => x.code === 'timezone-unresolved');
     expect(hits).toHaveLength(1);
     expect(hits[0]).toMatchObject({ line: 9, directiveKey: 'TZ' });
+    expect(hits[0]?.message).toMatch(/^Timezone "Nowhere\/Land"/);
   });
 });

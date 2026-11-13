@@ -177,7 +177,7 @@ describe('applyFieldAliases — wildcards are not supported (Splunk parity)', ()
     expect(e.fields['dest_ip']).toBeUndefined();
     expect(e.fields['dest_port']).toBeUndefined();
     expect(e.fields['src_ip']).toBe('10.0.0.1'); // originals untouched
-    expect(diags.some((d) => d.message.includes('does not support wildcards'))).toBe(true);
+    expect(diags.map((d) => d.code)).toContain('field-alias-wildcard');
   });
 
   it('warns for a prefix-strip wildcard (event.* AS *) and creates nothing', () => {
@@ -189,7 +189,7 @@ describe('applyFieldAliases — wildcards are not supported (Splunk parity)', ()
     )[0]!;
     expect(e.fields['field1']).toBeUndefined();
     expect(e.fields['field2']).toBeUndefined();
-    expect(diags.some((d) => d.message.includes('does not support wildcards'))).toBe(true);
+    expect(diags.map((d) => d.code)).toContain('field-alias-wildcard');
   });
 });
 
@@ -206,7 +206,7 @@ describe('applyFieldAliases — dotted (nested JSON) field names', () => {
   it('warns when an unquoted dotted source name is used', () => {
     const diags: ValidationDiagnostic[] = [];
     applyFieldAliases([event({ 'event.field': 'V' })], [dir('a', 'event.field AS myfield')], runCtx(FIXED_NOW, diags));
-    const warn = diags.find((d) => d.message.includes('event.field'));
+    const warn = diags.find((d) => d.code === 'field-name-needs-quotes');
     expect(warn).toBeDefined();
     expect(warn!.level).toBe('warning');
     expect(warn!.suggestion).toBe("Use 'event.field' instead of event.field.");
@@ -231,6 +231,7 @@ describe('applyFieldAliases — diagnostics', () => {
   it('warns once for a wildcard pair, however often it is repeated', () => {
     expect(diagnose([event({ src_ip: '1' })], 'src_* AS dest_*  src_* AS dest_*')).toEqual([
       {
+        code: 'field-alias-wildcard',
         level: 'warning',
         message:
           'FIELDALIAS does not support wildcards — "src_* AS dest_*" will not take effect on the search head. ' +
@@ -259,6 +260,7 @@ describe('applyFieldAliases — diagnostics', () => {
   it('warns once about an unquoted dotted source used by several aliases', () => {
     expect(diagnose([event({ 'event.f': 'v' })], 'event.f AS x  event.f AS y')).toEqual([
       {
+        code: 'field-name-needs-quotes',
         level: 'warning',
         message:
           'FIELDALIAS-a: "event.f" contains characters that must be quoted to reference a field — ' +
@@ -276,6 +278,7 @@ describe('applyFieldAliases — diagnostics', () => {
   it('warns once when the source names a field whose leading underscores were stripped', () => {
     expect(diagnose([event({ GID: '100' }), event({ GID: '101' })], '__GID AS gid')).toEqual([
       {
+        code: 'leading-underscore-stripped',
         level: 'warning',
         message:
           'FIELDALIAS references "__GID", but index-time extractions strip leading underscores — ' +

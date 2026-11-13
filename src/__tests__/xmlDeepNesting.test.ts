@@ -57,7 +57,7 @@ describe('KV_MODE = xml on deep nesting (propslab#428)', () => {
     expect(result.events[1]!.fields['event.user']).toBe('bob');
     const errors = result.diagnostics.filter((d) => d.level === 'error');
     expect(errors).toHaveLength(1);
-    expect(errors[0]).toMatchObject({ file: 'raw', line: 1 });
+    expect(errors[0]).toMatchObject({ code: 'extraction-failed', file: 'raw', line: 1 });
     expect(errors[0]!.message).toContain('boom');
   });
 });
@@ -80,6 +80,7 @@ describe('INDEXED_EXTRACTIONS = xml on deep nesting (propslab#428)', () => {
     expect(result.events[1]!.fields['event.user']).toBe('bob');
     const errors = result.diagnostics.filter((d) => d.level === 'error');
     expect(errors).toHaveLength(1);
+    expect(errors[0]?.code).toBe('extraction-failed');
     expect(errors[0]!.message).toContain('boom');
   });
 });

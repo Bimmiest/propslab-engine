@@ -5,6 +5,7 @@ import { runPipeline } from '../pipeline';
 import { FIXED_NOW } from './runCtx';
 
 const warn = (message: string, line?: number): ValidationDiagnostic => ({
+  code: 'malformed-line',
   level: 'warning',
   message,
   file: 'props.conf',
@@ -111,7 +112,7 @@ describe('the run ledger through runPipeline', () => {
         perEventPipeline,
         now: FIXED_NOW,
       });
-      const skipped = diagnostics.filter((d) => d.message.startsWith('Transform "bad" was skipped'));
+      const skipped = diagnostics.filter((d) => d.code === 'regex-invalid');
       // Once for TRANSFORMS-, once for REPORT-; never once per event.
       expect(skipped).toHaveLength(2);
     }
@@ -124,7 +125,7 @@ describe('the run ledger through runPipeline', () => {
       perEventPipeline: false,
       now: FIXED_NOW,
     });
-    const errors = diagnostics.filter((d) => d.message.startsWith('INGEST_EVAL x:'));
+    const errors = diagnostics.filter((d) => d.code === 'eval-error');
     expect(errors).toHaveLength(1);
   });
 
@@ -140,7 +141,7 @@ describe('the run ledger through runPipeline', () => {
       expect(result.events.filter((e) => e.metadata.sourcetype === 'copy')).toHaveLength(4);
       const bad = diagnostics.filter((d) => d.directiveKey === 'SEDCMD-mask');
       expect(bad).toHaveLength(1);
-      expect(bad[0]!.message).toMatch(/does not compile/);
+      expect(bad[0]!.code).toBe('regex-invalid');
     }
   });
 

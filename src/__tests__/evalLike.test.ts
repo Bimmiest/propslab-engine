@@ -87,7 +87,7 @@ describe('like() reports a pattern the guard refuses (propslab#303)', () => {
 
     expect(out[0]!.fields['r']).toBe('false');
     expect(diagnostics).toHaveLength(1);
-    expect(diagnostics[0]).toMatchObject({ level: 'warning', directiveKey: 'EVAL-r', line: 3 });
+    expect(diagnostics[0]).toMatchObject({ code: 'regex-invalid', level: 'warning', directiveKey: 'EVAL-r', line: 3 });
     // `(?s)^…\z` since propslab#447; the regex like() built was `^a.*$` before.
     expect(diagnostics[0]?.message).toContain('like() pattern "(?s)^a.*\\z"');
     expect(diagnostics[0]?.message).toContain('evaluated to false');
