@@ -26,6 +26,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./package.json": "./package.json",
     "./pcre2.wasm.sha256": "./pcre2.wasm.sha256"
   },
   "files": [
