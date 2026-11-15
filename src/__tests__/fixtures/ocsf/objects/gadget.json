@@ -1,0 +1,11 @@
+{
+  "name": "gadget",
+  "caption": "Gadget",
+  "extends": "object",
+  "attributes": {
+    "$include": ["profiles/cloud.json"],
+    "colour": { "requirement": "recommended" },
+    "part": { "requirement": "optional" },
+    "size": { "requirement": "optional", "type": "integer_t" }
+  }
+}

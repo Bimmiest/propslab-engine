@@ -1,0 +1,8 @@
+{
+  "name": "widget",
+  "caption": "Widget",
+  "extends": "base_event",
+  "category": "widgets",
+  "attributes": { "actor": { "requirement": "recommended" } },
+  "constraints": { "at_least_one": ["gadget", "actor"] }
+}

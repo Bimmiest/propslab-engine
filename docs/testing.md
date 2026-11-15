@@ -193,10 +193,11 @@ npm run test:mutation:canary                                 # after an update o
 - **The canary** mutates `src/utils/wildcardMatch.ts` before each run, and
   `scripts/check-mutation-canary.mjs` fails if almost all of its mutants
   survive.
-- **`vitest.stryker.config.ts` leaves two tests out:** the evidence gate,
-  which needs a full run, and `generateCimModels.test.ts`, because Stryker
-  writes `// @ts-nocheck` into each file of its sandbox, and the committed
-  data file then differs from what the generator writes.
+- **`vitest.stryker.config.ts` leaves three tests out:** the evidence gate,
+  which needs a full run, and `generateCimModels.test.ts` and
+  `generateOcsfClasses.test.ts`, because Stryker writes `// @ts-nocheck` into
+  each file of its sandbox, and the committed data files then differ from
+  what the generators write.
 
 ### The private fidelity suite
 

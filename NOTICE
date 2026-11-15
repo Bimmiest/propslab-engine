@@ -11,13 +11,15 @@ Trademarks
 
 Splunk, Splunk Enterprise, and Splunkbase are trademarks or registered
 trademarks of Splunk Inc. in the United States and other countries. Cisco is a
-trademark of Cisco Systems, Inc.
+trademark of Cisco Systems, Inc. OCSF and Open Cybersecurity Schema Framework
+are names of the OCSF project, a Series of LF Projects, LLC.
 
-propslab-engine is an independent project and is not affiliated with, endorsed by, or
-sponsored by Splunk Inc. or Cisco Systems, Inc. These marks appear in this
-repository only to identify the software whose behaviour is being simulated and
-the configuration file formats being parsed, which is descriptive use. No claim
-of ownership or association is made or implied.
+propslab-engine is an independent project and is not affiliated with,
+endorsed by, or sponsored by Splunk Inc., Cisco Systems, Inc., or the OCSF
+project. These marks appear in this repository only to identify the software
+whose behaviour is being simulated, the configuration file formats being
+parsed, and the schema that fields are checked against, which is descriptive
+use. No claim of ownership or association is made or implied.
 
 --------------------------------------------------------------------------
 Splunk Common Information Model (CIM) add-on
@@ -42,6 +44,40 @@ a dataset constraint requires — is factual naming needed to check whether an
 extraction is CIM-compliant. It is used here for interoperability, and it is
 not offered under this project's MIT licence. Rights in the CIM add-on and its
 data models remain with Splunk Inc.
+
+--------------------------------------------------------------------------
+Open Cybersecurity Schema Framework (OCSF)
+--------------------------------------------------------------------------
+
+src/ocsf/ocsfClassesData.ts is a derivative work of the OCSF schema, release
+1.9.0:
+
+    https://github.com/ocsf/ocsf-schema
+
+It holds the names of the event classes, categories, objects and attributes
+of the schema, and their requirements, in a different form. The descriptions
+are left out. scripts/generate-ocsf-classes.js made the file from the schema;
+the header of the file gives the rules. The schema is not vendored or fetched
+by this repository.
+
+The NOTICE of the schema reads:
+
+    Open Cybersecurity Schema Framework
+
+    Copyright © OCSF a Series of LF Projects, LLC
+    For web site terms of use, trademark policy and other project policies
+    please see https://lfprojects.org.
+
+    This project includes the ICD Schema developed by Symantec, a division of
+    Broadcom.
+
+    Licensed under the Apache 2 license.
+    Refer to the Apache 2 license in the file LICENSE.
+
+The file LICENSE of the schema is LICENSE-OCSF in this package. The schema is
+licensed under the Apache License, Version 2.0, and LICENSE-OCSF is installed
+with this package. A consumer that distributes the data, for example in a
+browser bundle, must give this section and that licence with it.
 
 --------------------------------------------------------------------------
 Configuration directive documentation

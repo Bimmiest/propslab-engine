@@ -1,0 +1,6 @@
+{
+  "name": "part",
+  "caption": "Part",
+  "extends": "object",
+  "attributes": { "note": { "requirement": "optional" } }
+}

@@ -135,3 +135,8 @@ the stanza and what Splunk produced. Before you open a pull request, read
 
 [MIT](LICENSE). The [NOTICE](NOTICE) file gives the attribution for the
 third-party material that this project derives data from.
+
+[LICENSE-OCSF](LICENSE-OCSF) is the Apache License 2.0 of the OCSF schema. It
+covers `src/ocsf/ocsfClassesData.ts`, which is made from the schema. When you
+distribute that data, you must give this licence and the OCSF section of
+`NOTICE` with it.

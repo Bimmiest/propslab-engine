@@ -1,0 +1,13 @@
+{
+  "uid": 1,
+  "name": "widget_spin",
+  "caption": "Widget Spin",
+  "extends": "widget",
+  "attributes": {
+    "actor": { "requirement": "required" },
+    "gadget": { "requirement": "required" },
+    "message": { "description": "The spin, in words." },
+    "cloud_thing": { "requirement": "optional", "profile": "cloud" },
+    "size": { "requirement": "optional", "profile": null }
+  }
+}

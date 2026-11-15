@@ -32,9 +32,11 @@ export default defineConfig({
       ...configDefaults.exclude,
       'src/__tests__/directiveEvidence.test.ts',
       // Stryker writes `// @ts-nocheck` at the top of each file in its
-      // sandbox, so the committed cimModelsData.ts is no longer what the
-      // generator writes. The test checks the script, and kills no mutant.
+      // sandbox, so the committed cimModelsData.ts and ocsfClassesData.ts are
+      // no longer what the generators write. The tests check the scripts, and
+      // kill no mutant.
       'src/__tests__/generateCimModels.test.ts',
+      'src/__tests__/generateOcsfClasses.test.ts',
     ],
   },
 });

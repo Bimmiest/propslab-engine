@@ -96,6 +96,7 @@ export default defineConfig({
         // A generated data table: large, literal, and asserted through the
         // modules that read it rather than directly.
         'src/cim/cimModelsData.ts',
+        'src/ocsf/ocsfClassesData.ts',
       ],
       // The floor lives here rather than in a CI flag, so `npm run
       // test:coverage` locally gives the same verdict CI does.

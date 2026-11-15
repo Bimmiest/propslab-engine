@@ -92,6 +92,7 @@ heading in the topic file of that area: [ci.md](ci.md),
 | `npm run test:mutation:canary` | Proves that Stryker still runs the tests of each mutant. |
 | `node scripts/check-wasm-checksum.mjs` | Compares the installed `pcre2.wasm` with `pcre2.wasm.sha256`. |
 | `node scripts/generate-cim-models.js <Splunk_SA_CIM>` | Makes `src/cim/cimModelsData.ts` again from the CIM add-on ([recipes.md](recipes.md#add-or-update-a-cim-model)). |
+| `node scripts/generate-ocsf-classes.js <ocsf-schema>` | Makes `src/ocsf/ocsfClassesData.ts` again from a checkout of the OCSF schema ([recipes.md](recipes.md#add-or-update-the-ocsf-classes)). |
 | `node scripts/check-ignored-issues.mjs` | The weekly roster check. Set `GITHUB_TOKEN` to avoid the API's limit. |
 
 ### A change that a consumer must see before a release
