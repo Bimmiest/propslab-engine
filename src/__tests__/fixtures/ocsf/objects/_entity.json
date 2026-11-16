@@ -1,0 +1,9 @@
+{
+  "name": "_entity",
+  "caption": "Entity",
+  "extends": "object",
+  "attributes": {
+    "name": { "requirement": "recommended" },
+    "uid": { "requirement": "recommended" }
+  }
+}

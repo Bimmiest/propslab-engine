@@ -141,3 +141,32 @@ memory or from the prose of the documentation:
   tags: ['your_tag'],          // ALL tags must be present for the dataset to populate
 }
 ```
+
+## Add or update the OCSF classes
+
+A script makes `src/ocsf/ocsfClassesData.ts` from the
+[OCSF schema](https://github.com/ocsf/ocsf-schema). Do not change the file by
+hand. To make it again, clone the tag of the release, and run the script:
+
+```bash
+git clone --depth 1 --branch <tag> https://github.com/ocsf/ocsf-schema /tmp/ocsf-schema
+node scripts/generate-ocsf-classes.js /tmp/ocsf-schema
+```
+
+The script reads `OCSF_VERSION` from `version.json`, and `OCSF_COMMIT` from
+the checkout. The header of the file that it writes gives the rules.
+
+- The script stops on a part of the schema that its rules do not cover: an
+  include that is not a profile, a constraint kind that it does not know, or
+  an attribute that changes its type to an object.
+- Nothing runs this script when you build or install.
+
+`src/__tests__/generateOcsfClasses.test.ts` tests the transformation on a
+small schema in `src/__tests__/fixtures/ocsf`, and the format of the output.
+After you make the file again:
+
+1. Change the version and the commit in `src/__tests__/ocsfClasses.test.ts`.
+2. Read the diff of the data, and the OCSF changelog for each class that
+   changed.
+3. Compare the `NOTICE` of the schema with the OCSF section of `NOTICE`, and
+   `LICENSE` of the schema with `LICENSE-OCSF`.

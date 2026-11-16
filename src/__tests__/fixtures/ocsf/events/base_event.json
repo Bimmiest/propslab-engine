@@ -1,0 +1,14 @@
+{
+  "name": "base_event",
+  "caption": "Base Event",
+  "category": "other",
+  "attributes": {
+    "$include": ["profiles/cloud.json"],
+    "activity_id": { "requirement": "required" },
+    "class_uid": { "requirement": "required" },
+    "time": { "requirement": "required" },
+    "message": { "requirement": "recommended" },
+    "raw_data": { "requirement": "optional" },
+    "old_thing": { "requirement": "recommended", "@deprecated": { "message": "Use message.", "since": "0.0.1" } }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "uid": 3,
+  "name": "gizmo_tick",
+  "caption": "Gizmo Tick",
+  "extends": "base_event",
+  "category": "gizmos",
+  "attributes": {
+    "spare_a": { "requirement": "optional" },
+    "spare_b": { "requirement": "optional" }
+  },
+  "constraints": { "just_one": ["spare_b", "spare_a"] }
+}

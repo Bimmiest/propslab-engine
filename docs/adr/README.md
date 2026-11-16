@@ -65,6 +65,7 @@ to check when you change it.
 | [0004](0004-one-point-of-coverage-slack-tests-next-to-the-code-and-mutation-on-the-changed-files.md) | One point of coverage slack, tests next to the code, and mutation on the changed files | Accepted |
 | [0005](0005-each-topic-file-has-the-template-text-first-and-the-repository-text-below-one-heading.md) | Each topic file has the template text first, and the repository text below one heading | Accepted |
 | [0006](0006-the-package-ships-its-source-owns-the-regex-engine-pin-and-keeps-propslabs-test-layout.md) | The package ships its source, owns the regex engine's pin, and keeps propslab's test layout | Accepted |
+| [0007](0007-the-ocsf-check-is-presence-only-one-level-deep-with-no-profiles.md) | The OCSF check is presence only, one level deep, with no profiles | Accepted |
 
 ## Numbers with no record
 

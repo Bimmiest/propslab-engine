@@ -384,6 +384,38 @@ The table of formats for automatic timestamp recognition
 patterns from strftime formats, a user does not write them, and they run on
 each line.
 
+## Schema coverage
+
+The engine checks the names of the extracted fields against two schemas. Each
+function takes the field names, and gives one result for each model or class.
+
+| Function | Schema | Data |
+|---|---|---|
+| `validateCimCompliance` | The Splunk CIM | `CIM_MODELS`, `CIM_VERSION` |
+| `validateOcsfCoverage` | OCSF | `OCSF_CLASSES`, `OCSF_OBJECTS`, `OCSF_VERSION` |
+
+**An OCSF attribute is present** when a field name is its path, or starts
+with its path and a `.`. The engine first removes each `{}`, the array marker
+of the JSON extraction. Thus `src_endpoint.ip` makes `src_endpoint` present,
+and `src_endpoint_ip` does not. The comparison is case-sensitive.
+`ocsfPresentPaths` gives the paths that a set of field names makes present.
+
+**The OCSF check has limits:**
+
+- It checks presence only. It does not check the type or the value of an
+  attribute. An `activity_id` of `99` is present.
+- It does not include profiles or extensions. A class has only the attributes
+  that it and its parents declare.
+- It goes one level into an object. The attributes of `src_endpoint` have a
+  result, and the attributes of `src_endpoint.location` do not.
+- It does not include deprecated classes or attributes.
+
+A result gives the attributes in order of requirement, the present and
+missing lists for the required and recommended attributes, two shares, and
+the state of each constraint (`at_least_one` or `just_one`). Each class has
+the attributes of `OCSF_BASE_EVENT`. A consumer that ranks classes can leave
+those out, because they do not make one class different from another.
+
 ## Running the engine under Node
 
 `captureOffsets: false` does not record the positions of the captures. Use it

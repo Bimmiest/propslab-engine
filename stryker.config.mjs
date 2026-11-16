@@ -11,8 +11,8 @@ export default {
   // The engine is where correctness lives, so all of it is mutated. Left out:
   // type-only modules (no code to mutate), the shared test scaffolding, and the
   // generated or hand-written data tables — the directive registry, the CIM
-  // models and the support roster — whose mutants are edits to description
-  // prose that no behavioural test should be asserting.
+  // models, the OCSF classes and the support roster — whose mutants are edits
+  // to description prose that no behavioural test should be asserting.
   mutate: [
     'src/**/*.ts',
     '!src/**/__tests__/**',
@@ -22,6 +22,7 @@ export default {
     '!src/types.ts',
     '!src/scaffold/types.ts',
     '!src/cim/cimModelsData.ts',
+    '!src/ocsf/ocsfClassesData.ts',
     '!src/registry/**',
     '!src/directiveSupport.ts',
   ],

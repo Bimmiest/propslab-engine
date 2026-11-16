@@ -8,6 +8,16 @@ A release changes `Unreleased` to `x.y.z — YYYY-MM-DD`, and adds a new `Unrele
 
 ## Unreleased
 
+### Added
+
+- `validateOcsfCoverage` checks the names of the extracted fields against
+  each OCSF 1.9.0 event class, and `OCSF_CLASSES` and `OCSF_OBJECTS` give the
+  classes. The check is for presence only, one level into an object, with no
+  profiles ([#31](https://github.com/Bimmiest/propslab-engine/issues/31),
+  [ADR 0007](docs/adr/0007-the-ocsf-check-is-presence-only-one-level-deep-with-no-profiles.md)).
+  A consumer that distributes the data must carry the OCSF section of
+  `NOTICE` and `LICENSE-OCSF`.
+
 ## 0.4.0 — 2026-11-13
 
 ### Added

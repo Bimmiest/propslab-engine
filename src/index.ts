@@ -22,6 +22,26 @@ export { isUndocumentedAttribute } from './directiveSupport';
 export { type GroupedNoOp, groupNoOps } from './groupNoOps';
 export { misspelledCanonical, MISSPELLED_MESSAGE } from './misspelledDirective';
 export { describeNoOp } from './noOpExplainer';
+export {
+  OCSF_BASE_EVENT,
+  OCSF_CLASSES,
+  OCSF_COMMIT,
+  OCSF_OBJECT_TYPES,
+  OCSF_OBJECTS,
+  OCSF_VERSION,
+  type OcsfAttributeLists,
+  type OcsfClass,
+  type OcsfConstraint,
+  type OcsfObject,
+  type OcsfRequirement,
+} from './ocsf/ocsfClassesData';
+export {
+  type OcsfAttributeCoverage,
+  type OcsfConstraintCoverage,
+  type OcsfCoverageResult,
+  ocsfPresentPaths,
+  validateOcsfCoverage,
+} from './ocsf/ocsfClasses';
 export { DIRECTIVE_RE, miscasedCanonical, MISCASED_MESSAGE, parseConf, STANZA_RE } from './parser/confParser';
 export {
   type EffectiveDirective,

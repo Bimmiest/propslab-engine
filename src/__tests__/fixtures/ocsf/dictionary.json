@@ -1,0 +1,22 @@
+{
+  "attributes": {
+    "activity_id": { "caption": "Activity ID", "type": "integer_t" },
+    "class_uid": { "caption": "Class ID", "type": "integer_t" },
+    "time": { "caption": "Time", "type": "timestamp_t" },
+    "message": { "caption": "Message", "type": "string_t" },
+    "raw_data": { "caption": "Raw Data", "type": "string_t" },
+    "old_thing": { "caption": "Old Thing", "type": "string_t" },
+    "cloud_thing": { "caption": "Cloud Thing", "type": "string_t" },
+    "size": { "caption": "Size", "type": "integer_t" },
+    "actor": { "caption": "Actor", "type": "actor" },
+    "gadget": { "caption": "Gadget", "type": "gadget" },
+    "part": { "caption": "Part", "type": "part" },
+    "colour": { "caption": "Colour", "type": "string_t" },
+    "name": { "caption": "Name", "type": "string_t" },
+    "uid": { "caption": "Unique ID", "type": "string_t" },
+    "owner": { "caption": "Owner", "type": "string_t" },
+    "spare_a": { "caption": "Spare A", "type": "string_t" },
+    "spare_b": { "caption": "Spare B", "type": "string_t" },
+    "note": { "caption": "Note", "type": "string_t" }
+  }
+}

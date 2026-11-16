@@ -37,6 +37,7 @@
     "scripts/generate-cim-models.js",
     "pcre2.wasm.sha256",
     "LICENSE",
+    "LICENSE-OCSF",
     "NOTICE",
     "README.md"
   ],

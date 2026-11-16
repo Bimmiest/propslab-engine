@@ -1,0 +1,5 @@
+{
+  "name": "cloud",
+  "caption": "Cloud",
+  "attributes": { "cloud_thing": { "requirement": "required", "profile": "cloud" } }
+}

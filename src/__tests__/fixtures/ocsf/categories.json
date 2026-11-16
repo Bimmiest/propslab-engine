@@ -1,0 +1,6 @@
+{
+  "attributes": {
+    "widgets": { "uid": 9, "caption": "Widget Activity" },
+    "gizmos": { "uid": 8, "caption": "Gizmo Activity" }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "actor",
+  "caption": "Actor",
+  "extends": "_entity",
+  "attributes": {
+    "name": { "description": "The name of the actor." },
+    "owner": { "requirement": "required" }
+  }
+}

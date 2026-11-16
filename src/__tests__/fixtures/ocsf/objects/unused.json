@@ -1,0 +1,6 @@
+{
+  "name": "unused",
+  "caption": "Unused",
+  "extends": "object",
+  "attributes": { "note": { "requirement": "optional" } }
+}

@@ -1,0 +1,8 @@
+{
+  "uid": 2,
+  "name": "widget_old",
+  "caption": "Widget Old",
+  "extends": "widget",
+  "@deprecated": { "message": "Use widget_spin.", "since": "0.0.1" },
+  "attributes": {}
+}
