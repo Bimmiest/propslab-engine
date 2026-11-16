@@ -8,6 +8,8 @@ A release changes `Unreleased` to `x.y.z — YYYY-MM-DD`, and adds a new `Unrele
 
 ## Unreleased
 
+## 0.5.0 — 2026-11-16
+
 ### Added
 
 - `validateOcsfCoverage` checks the names of the extracted fields against
